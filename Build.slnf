@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "Shiny.Maui.Controls.slnx",
+    "projects": [
+      "src/Shiny.Maui.Controls/Shiny.Maui.Controls.csproj"
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+[assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls")]
+[assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.Sections")]
+[assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.Cells")]
+[assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.Pages")]
+[assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.Scheduler")]
+[assembly: Microsoft.Maui.Controls.XmlnsPrefix("http://shiny.net/maui/controls", "shiny")]

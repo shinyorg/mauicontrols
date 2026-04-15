@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tv="http://shiny.net/maui/controls"
+    x:Class="Sample.Pages.BasicSettingsPage"
+    Title="Basic Settings">
+
+    <tv:TableView x:Name="MyTableView"
+                  CellSelectedColor="#E0E0E0">
+        <tv:TableRoot>
+            <!-- Toggle Controls -->
+            <tv:TableSection Title="Toggle Controls">
+                <tv:SwitchCell Title="Wi-Fi"
+                               Description="Connect to wireless networks"
+                               On="{Binding WifiEnabled, Mode=TwoWay}" />
+                <tv:SwitchCell Title="Bluetooth"
+                               On="{Binding BluetoothEnabled, Mode=TwoWay}" />
+                <tv:CheckboxCell Title="Accept Terms"
+                                  Description="You must accept the terms to continue"
+                                  Checked="{Binding TermsAccepted, Mode=TwoWay}" />
+                <tv:SimpleCheckCell Title="Dark Mode"
+                                     Checked="{Binding DarkMode, Mode=TwoWay}" />
+            </tv:TableSection>
+
+            <!-- Labels & Commands -->
+            <tv:TableSection Title="Labels and Commands">
+                <tv:LabelCell Title="Version"
+                               ValueText="1.0.0" />
+                <tv:LabelCell Title="Build"
+                               ValueText="2024.01.15"
+                               Description="Latest stable release" />
+                <tv:CommandCell Title="About"
+                                 ValueText="Learn more"
+                                 Command="{Binding AboutCommand}" />
+                <tv:CommandCell Title="Privacy Policy"
+                                 Command="{Binding PrivacyCommand}" />
+            </tv:TableSection>
+
+            <!-- Text Input -->
+            <tv:TableSection Title="Text Input">
+                <tv:EntryCell Title="Username"
+                               ValueText="{Binding Username, Mode=TwoWay}"
+                               Placeholder="Enter your name" />
+                <tv:EntryCell Title="Password"
+                               ValueText="{Binding Password, Mode=TwoWay}"
+                               Placeholder="Enter password"
+                               IsPassword="True" />
+                <tv:EntryCell Title="Email"
+                               ValueText="{Binding Email, Mode=TwoWay}"
+                               Placeholder="user@example.com"
+                               Keyboard="Email" />
+            </tv:TableSection>
+
+            <!-- Radio Selection -->
+            <tv:TableSection Title="Theme" tv:RadioCell.SelectedValue="{Binding SelectedTheme, Mode=TwoWay}">
+                <tv:RadioCell Title="Light" Value="Light" />
+                <tv:RadioCell Title="Dark" Value="Dark" />
+                <tv:RadioCell Title="System" Value="System" />
+            </tv:TableSection>
+
+            <!-- Pickers -->
+            <tv:TableSection Title="Pickers">
+                <tv:NumberPickerCell Title="Font Size"
+                                      Number="{Binding FontSizeValue, Mode=TwoWay}"
+                                      Min="8" Max="72" Unit="pt" />
+                <tv:TimePickerCell Title="Alarm"
+                                    Time="{Binding AlarmTime, Mode=TwoWay}" />
+                <tv:DatePickerCell Title="Birthday"
+                                    Date="{Binding BirthDate, Mode=TwoWay}" />
+                <tv:DurationPickerCell Title="Session Length"
+                                        Duration="{Binding SessionLength, Mode=TwoWay}"
+                                        MaxDuration="4:00:00" />
+            </tv:TableSection>
+
+            <!-- Button -->
+            <tv:TableSection Title="Actions">
+                <tv:ButtonCell Title="Reset All Settings"
+                                Command="{Binding ResetCommand}" />
+            </tv:TableSection>
+        </tv:TableRoot>
+    </tv:TableView>
+
+</ContentPage>

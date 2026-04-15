@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tv="http://shiny.net/maui/controls"
+    x:Class="Sample.Pages.DragSortPage"
+    Title="Drag &amp; Sort">
+
+    <tv:TableView x:Name="DragTableView"
+                  ItemDroppedCommand="{Binding ItemDroppedCommand}">
+        <tv:TableRoot>
+            <tv:TableSection Title="Drag to Reorder" UseDragSort="True">
+                <tv:LabelCell Title="First Item" ValueText="1" />
+                <tv:LabelCell Title="Second Item" ValueText="2" />
+                <tv:LabelCell Title="Third Item" ValueText="3" />
+                <tv:LabelCell Title="Fourth Item" ValueText="4" />
+                <tv:LabelCell Title="Fifth Item" ValueText="5" />
+            </tv:TableSection>
+
+            <tv:TableSection Title="Non-Draggable Section">
+                <tv:LabelCell Title="This section is fixed" ValueText="Cannot drag" />
+            </tv:TableSection>
+        </tv:TableRoot>
+    </tv:TableView>
+
+</ContentPage>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample"
+             xmlns:bs="clr-namespace:Shiny.Maui.Controls;assembly=Shiny.Maui.Controls"
+             x:Class="Sample.MainPage"
+             x:DataType="local:MainViewModel">
+  <Grid>
+
+    <!-- Main page content -->
+    <ScrollView>
+        <VerticalStackLayout Padding="30,0" Spacing="25">
+            <Image
+                Source="dotnet_bot.png"
+                HeightRequest="185"
+                Aspect="AspectFit" />
+
+            <Label
+                Text="Bottom Sheet Demo"
+                FontSize="28"
+                FontAttributes="Bold"
+                HorizontalTextAlignment="Center" />
+
+            <Label
+                Text="{Binding StatusMessage}"
+                FontSize="16"
+                HorizontalTextAlignment="Center"
+                TextColor="Gray" />
+
+            <Button
+                Text="Open Sheet"
+                Command="{Binding OpenSheetCommand}" />
+
+            <Button
+                Text="Toggle Sheet"
+                Command="{Binding ToggleSheetCommand}" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+    <!-- Bottom sheet overlay -->
+    <bs:BottomSheetView IsOpen="{Binding IsSheetOpen}"
+                        HasBackdrop="True"
+                        CloseOnBackdropTap="True"
+                        HandleColor="Gray"
+                        SheetBackgroundColor="White"
+                        SheetCornerRadius="20"
+                        ExpandOnInputFocus="True">
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="Bottom Sheet Content"
+                   FontSize="22"
+                   FontAttributes="Bold" />
+
+            <Label Text="Swipe up or down to move between detents. Swipe down past the lowest snap point to dismiss."
+                   FontSize="14" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Entry Placeholder="Type something here..."
+                   Text="{Binding EntryText}"
+                   FontSize="16" />
+
+            <Editor Placeholder="Multi-line editor..."
+                    Text="{Binding EditorText}"
+                    HeightRequest="80"
+                    FontSize="16" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Item 1" FontSize="16" />
+            <Label Text="Item 2" FontSize="16" />
+            <Label Text="Item 3" FontSize="16" />
+            <Label Text="Item 4" FontSize="16" />
+            <Label Text="Item 5" FontSize="16" />
+            <Label Text="Item 6" FontSize="16" />
+            <Label Text="Item 7" FontSize="16" />
+            <Label Text="Item 8" FontSize="16" />
+            <Label Text="Item 9" FontSize="16" />
+            <Label Text="Item 10" FontSize="16" />
+
+            <Button Text="Close from inside"
+                    Command="{Binding CloseSheetCommand}" />
+        </VerticalStackLayout>
+    </bs:BottomSheetView>
+
+  </Grid>
+</ContentPage>
