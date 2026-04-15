@@ -28,20 +28,18 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
           fetch-depth: 0
 
     - name: Setup .NET 10.0
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
-          dotnet-version: '10.0.x'
-
-    - name: Add .NET Workloads
-      run: dotnet workload install maui
+          dotnet-version: '10.0.202'
+          workloads: maui
 
     - name: Build
-      run: dotnet build src/Shiny.Maui.Controls/Shiny.Maui.Controls.csproj /restore -m -property:Configuration=Release
+      run: dotnet build Build.slnf /restore -m -property:Configuration=Release
 
     - name: Post NuGet Artifacts
       uses: actions/upload-artifact@v4

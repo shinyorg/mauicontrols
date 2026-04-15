@@ -9,5 +9,4 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls"/>
     </ItemGroup>
-
 </Project>

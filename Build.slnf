@@ -1,8 +1,9 @@
 {
-  "solution": {
-    "path": "Shiny.Maui.Controls.slnx",
-    "projects": [
-      "src/Shiny.Maui.Controls/Shiny.Maui.Controls.csproj"
-    ]
-  }
+    "solution": {
+        "path": "Shiny.Maui.Controls.slnx",
+        "projects": [
+            "src/Shiny.Maui.Controls/Shiny.Maui.Controls.csproj",
+            "src/Shiny.Maui.Controls.MermaidDiagrams/Shiny.Maui.Controls.MermaidDiagrams.csproj"
+        ]
+    }
 }

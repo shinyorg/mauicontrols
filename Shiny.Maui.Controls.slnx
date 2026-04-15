@@ -4,6 +4,7 @@
     <File Path=".github\workflows\sync-skills.yml" />
     <File Path="Build.slnf" />
     <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
     <File Path="Directory.packages.props" />
     <File Path="nuget.png" />
     <File Path="nuget.txt" />
