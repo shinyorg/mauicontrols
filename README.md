@@ -1,3 +1,12 @@
+# TODO
+* Signature Pad
+
+* Prompt
+Update the shiny documentation at ~/Desktop/shinyorg/shiny - we're going to create a new section called "MAUI Controls" and rename "MAUI" to "MAUI Services".
+Controls will have one set of release notes since it 1 solidified package.  Update the homepage and add a new card for the controls.  Update the skills, however, the skills
+will still go under "MAUI" as will the services.  Also update the App/Lib builder changing the packages used by scheduler, tableview, & mermaid diagrams while also adding
+bottom sheet & markdown controls
+
 # Shiny.Maui.Controls
 
 A .NET MAUI controls library providing rich, ready-to-use UI components for mobile and desktop applications.

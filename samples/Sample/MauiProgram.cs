@@ -1,7 +1,12 @@
 using Microsoft.Extensions.Logging;
-using Sample.Pages;
-using Sample.Services;
-using Sample.ViewModels;
+using Sample.Features.BottomSheet;
+using Sample.Features.Diagrams;
+using Sample.Features.Home;
+using Sample.Features.ImageViewer;
+using Sample.Features.Markdown;
+using Sample.Features.Pills;
+using Sample.Features.Scheduler;
+using Sample.Features.TableView;
 using Shiny;
 using Shiny.Maui.Controls.Scheduler;
 
@@ -16,7 +21,8 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .UseShinyControls()
             .UseShinyShell(x => x
-                .Add<MainPage, MainViewModel>(registerRoute: false)
+                .Add<HomePage, HomeViewModel>(registerRoute: false)
+                .Add<BottomSheetPage, BottomSheetViewModel>(registerRoute: false)
                 .Add<PillPage, PillViewModel>(registerRoute: false)
                 .Add<BasicSettingsPage, BasicSettingsViewModel>(registerRoute: false)
                 .Add<DragSortPage, DragSortViewModel>(registerRoute: false)
@@ -25,6 +31,9 @@ public static class MauiProgram
                 .Add<CalendarPage, CalendarViewModel>(registerRoute: false)
                 .Add<AgendaPage, AgendaViewModel>(registerRoute: false)
                 .Add<CalendarListPage, CalendarListViewModel>(registerRoute: false)
+                .Add<ImageViewerPage, ImageViewerViewModel>(registerRoute: false)
+                .Add<MarkdownViewPage, MarkdownViewViewModel>(registerRoute: false)
+                .Add<MarkdownEditorPage, MarkdownEditorViewModel>(registerRoute: false)
             )
             .ConfigureFonts(fonts =>
             {
@@ -41,6 +50,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ISchedulerEventProvider, SampleSchedulerProvider>();
 
 #if DEBUG
+        builder.Logging.SetMinimumLevel(LogLevel.Trace);
         builder.Logging.AddDebug();
 #endif
 

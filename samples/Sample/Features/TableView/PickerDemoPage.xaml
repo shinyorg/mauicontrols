@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tv="http://shiny.net/maui/controls"
+    x:Class="Sample.Features.TableView.PickerDemoPage"
+    Title="Picker Demo">
+
+    <tv:TableView>
+        <tv:TableRoot>
+            <tv:TableSection Title="Text Picker">
+                <tv:TextPickerCell Title="Favorite Color"
+                                    ItemsSource="{Binding Colors}"
+                                    SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}" />
+            </tv:TableSection>
+
+            <tv:TableSection Title="Single Select Picker">
+                <tv:PickerCell Title="Country"
+                                ItemsSource="{Binding Countries}"
+                                SelectionMode="Single"
+                                SelectedItem="{Binding SelectedCountry, Mode=TwoWay}"
+                                PageTitle="Select Country" />
+            </tv:TableSection>
+
+            <tv:TableSection Title="Multi Select Picker">
+                <tv:PickerCell Title="Hobbies"
+                                ItemsSource="{Binding Hobbies}"
+                                SelectionMode="Multiple"
+                                MaxSelectedNumber="3"
+                                SelectedItems="{Binding SelectedHobbies, Mode=TwoWay}"
+                                PageTitle="Select Hobbies (max 3)" />
+            </tv:TableSection>
+
+            <tv:TableSection Title="Date / Time">
+                <tv:DatePickerCell Title="Start Date"
+                                    Date="{Binding StartDate, Mode=TwoWay}"
+                                    Format="D" />
+                <tv:TimePickerCell Title="Reminder Time"
+                                    Time="{Binding ReminderTime, Mode=TwoWay}"
+                                    Format="T" />
+                <tv:NumberPickerCell Title="Repeat Count"
+                                      Number="{Binding RepeatCount, Mode=TwoWay}"
+                                      Min="1" Max="10" Unit="times" />
+            </tv:TableSection>
+        </tv:TableRoot>
+    </tv:TableView>
+
+</ContentPage>

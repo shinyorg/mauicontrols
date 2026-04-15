@@ -33,6 +33,7 @@
 		
 		<MauiFont Include="Resources\Fonts\*" />
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+		<MauiAsset Include="..\..\README.md" LogicalName="README.md" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -44,6 +45,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Shiny.Maui.Controls\Shiny.Maui.Controls.csproj" />
+		<ProjectReference Include="..\..\src\Shiny.Maui.Controls.Markdown\Shiny.Maui.Controls.Markdown.csproj" />
 		<ProjectReference Include="..\..\src\Shiny.Maui.Controls.MermaidDiagrams\Shiny.Maui.Controls.MermaidDiagrams.csproj" />
 	</ItemGroup>
 </Project>

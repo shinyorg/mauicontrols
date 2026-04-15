@@ -14,6 +14,7 @@
   </Folder>
   <Project Path="samples/Sample/Sample.csproj" />
   <Project Path="src/Shiny.Maui.Controls/Shiny.Maui.Controls.csproj" />
+  <Project Path="src/Shiny.Maui.Controls.Markdown/Shiny.Maui.Controls.Markdown.csproj" />
   <Project Path="src/Shiny.Maui.Controls.MermaidDiagrams/Shiny.Maui.Controls.MermaidDiagrams.csproj" />
   <Project Path="tests/Shiny.Maui.Controls.MermaidDiagrams.Tests/Shiny.Maui.Controls.MermaidDiagrams.Tests.csproj" />
 </Solution>

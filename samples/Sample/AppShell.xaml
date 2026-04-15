@@ -4,68 +4,90 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:shiny="clr-namespace:Shiny;assembly=Shiny.Maui.Shell"
-    xmlns:local="clr-namespace:Sample"
-    xmlns:pages="clr-namespace:Sample.Pages"
+    xmlns:home="clr-namespace:Sample.Features.Home"
+    xmlns:bottomsheet="clr-namespace:Sample.Features.BottomSheet"
+    xmlns:pills="clr-namespace:Sample.Features.Pills"
+    xmlns:tv="clr-namespace:Sample.Features.TableView"
+    xmlns:scheduler="clr-namespace:Sample.Features.Scheduler"
+    xmlns:diagrams="clr-namespace:Sample.Features.Diagrams"
+    xmlns:imgviewer="clr-namespace:Sample.Features.ImageViewer"
+    xmlns:markdown="clr-namespace:Sample.Features.Markdown"
     Title="Sample">
 
+    <FlyoutItem Title="Home">
+        <ShellContent ContentTemplate="{DataTemplate home:HomePage}" Route="home" />
+    </FlyoutItem>
+
     <FlyoutItem Title="Bottom Sheet">
-        <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
+        <ShellContent ContentTemplate="{DataTemplate bottomsheet:BottomSheetPage}" Route="bottomsheet" />
     </FlyoutItem>
 
     <FlyoutItem Title="Pills">
-        <ShellContent ContentTemplate="{DataTemplate local:PillPage}" Route="PillPage" />
+        <ShellContent ContentTemplate="{DataTemplate pills:PillPage}" Route="pills" />
     </FlyoutItem>
 
     <FlyoutItem Title="TableView - Basic Settings">
-        <ShellContent ContentTemplate="{DataTemplate pages:BasicSettingsPage}" Route="basic" />
+        <ShellContent ContentTemplate="{DataTemplate tv:BasicSettingsPage}" Route="basic" />
     </FlyoutItem>
 
     <FlyoutItem Title="TableView - Dynamic Sections">
-        <ShellContent ContentTemplate="{DataTemplate pages:DynamicSectionsPage}" Route="dynamic" />
+        <ShellContent ContentTemplate="{DataTemplate tv:DynamicSectionsPage}" Route="dynamic" />
     </FlyoutItem>
 
     <FlyoutItem Title="TableView - Drag &amp; Sort">
-        <ShellContent ContentTemplate="{DataTemplate pages:DragSortPage}" Route="dragsort" />
+        <ShellContent ContentTemplate="{DataTemplate tv:DragSortPage}" Route="dragsort" />
     </FlyoutItem>
 
     <FlyoutItem Title="TableView - Picker Demo">
-        <ShellContent ContentTemplate="{DataTemplate pages:PickerDemoPage}" Route="picker" />
+        <ShellContent ContentTemplate="{DataTemplate tv:PickerDemoPage}" Route="picker" />
     </FlyoutItem>
 
     <FlyoutItem Title="TableView - Styling">
-        <ShellContent ContentTemplate="{DataTemplate pages:StylingPage}" Route="styling" />
+        <ShellContent ContentTemplate="{DataTemplate tv:StylingPage}" Route="styling" />
     </FlyoutItem>
 
     <FlyoutItem Title="Scheduler - Calendar">
-        <ShellContent ContentTemplate="{DataTemplate pages:CalendarPage}" Route="calendar" />
+        <ShellContent ContentTemplate="{DataTemplate scheduler:CalendarPage}" Route="calendar" />
     </FlyoutItem>
 
     <FlyoutItem Title="Scheduler - Agenda">
-        <ShellContent ContentTemplate="{DataTemplate pages:AgendaPage}" Route="agenda" />
+        <ShellContent ContentTemplate="{DataTemplate scheduler:AgendaPage}" Route="agenda" />
     </FlyoutItem>
 
     <FlyoutItem Title="Scheduler - Event List">
-        <ShellContent ContentTemplate="{DataTemplate pages:CalendarListPage}" Route="calendarlist" />
+        <ShellContent ContentTemplate="{DataTemplate scheduler:CalendarListPage}" Route="calendarlist" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Image Viewer">
+        <ShellContent ContentTemplate="{DataTemplate imgviewer:ImageViewerPage}" Route="imageviewer" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Markdown - Viewer">
+        <ShellContent ContentTemplate="{DataTemplate markdown:MarkdownViewPage}" Route="markdownview" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Markdown - Editor">
+        <ShellContent ContentTemplate="{DataTemplate markdown:MarkdownEditorPage}" Route="markdowneditor" />
     </FlyoutItem>
 
     <FlyoutItem Title="Diagrams - Basic Flowchart">
-        <ShellContent ContentTemplate="{DataTemplate pages:BasicFlowchartPage}" Route="flowchart" />
+        <ShellContent ContentTemplate="{DataTemplate diagrams:BasicFlowchartPage}" Route="flowchart" />
     </FlyoutItem>
 
     <FlyoutItem Title="Diagrams - Directions">
-        <ShellContent ContentTemplate="{DataTemplate pages:DirectionsPage}" Route="directions" />
+        <ShellContent ContentTemplate="{DataTemplate diagrams:DirectionsPage}" Route="directions" />
     </FlyoutItem>
 
     <FlyoutItem Title="Diagrams - Themes">
-        <ShellContent ContentTemplate="{DataTemplate pages:ThemesPage}" Route="themes" />
+        <ShellContent ContentTemplate="{DataTemplate diagrams:ThemesPage}" Route="themes" />
     </FlyoutItem>
 
     <FlyoutItem Title="Diagrams - Subgraphs">
-        <ShellContent ContentTemplate="{DataTemplate pages:SubgraphsPage}" Route="subgraphs" />
+        <ShellContent ContentTemplate="{DataTemplate diagrams:SubgraphsPage}" Route="subgraphs" />
     </FlyoutItem>
 
     <FlyoutItem Title="Diagrams - Editor">
-        <ShellContent ContentTemplate="{DataTemplate pages:InteractiveEditorPage}" Route="editor" />
+        <ShellContent ContentTemplate="{DataTemplate diagrams:InteractiveEditorPage}" Route="editor" />
     </FlyoutItem>
 
 </shiny:ShinyShell>
