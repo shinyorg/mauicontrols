@@ -14,7 +14,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
-            .UseShinyTableView()
+            .UseShinyControls()
             .UseShinyShell(x => x
                 .Add<MainPage, MainViewModel>(registerRoute: false)
                 .Add<PillPage, PillViewModel>(registerRoute: false)

@@ -5,7 +5,7 @@ namespace Shiny;
 
 public static class TableViewMauiAppBuilderExtensions
 {
-    public static MauiAppBuilder UseShinyTableView(this MauiAppBuilder builder)
+    public static MauiAppBuilder UseShinyControls(this MauiAppBuilder builder)
     {
         EntryHandler.Mapper.AppendToMapping("ShinyBorderless", (handler, view) =>
         {
