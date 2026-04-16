@@ -1,9 +1,9 @@
 ﻿--------------
-Shiny Controls for .NET MAUI
+Shiny Controls for .NET MAUI & Blazor
 --------------
 
-GitHub: https://github.com/shinyorg/mauicontrols
-Docs: https://shinylib.net/mauicontrols
+GitHub: https://github.com/shinyorg/controls
+Docs: https://shinylib.net/controls
 Blog: https://shinylib.net/blog
 
 

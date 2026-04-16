@@ -12,14 +12,14 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 
-        <Description>Shiny MAUI Controls - Makes your UI beautiful and highly functional with complex controls for free</Description>
+        <Description>Shiny Controls for Blazor and .NET MAUI - Makes your UI shine beautifully with complex controls for free</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://shinylib.net/maui/controls/</PackageProjectUrl>
+        <PackageProjectUrl>https://shinylib.net/controls/</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
-        <PackageReleaseNotes>https://shinylib.net/maui/controls/release-notes/</PackageReleaseNotes>
-        <PackageTags>maui shiny scheduler agenda calendar pill fab securitypin markdown imagezoom</PackageTags>
-        <RepositoryUrl>https://github.com/shinyorg/mauicontrols</RepositoryUrl>
+        <PackageReleaseNotes>https://shinylib.net/controls/release-notes/</PackageReleaseNotes>
+        <PackageTags>maui blazor shiny scheduler agenda calendar pill fab securitypin markdown imagezoom</PackageTags>
+        <RepositoryUrl>https://github.com/shinyorg/controls</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <CI Condition="'$(GITHUB_ACTIONS)' == 'true'">true</CI>
         <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>

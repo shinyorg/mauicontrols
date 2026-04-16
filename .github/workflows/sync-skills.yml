@@ -33,9 +33,9 @@ jobs:
       - name: Sync skills directory
         run: |
           if [ -d "source/SKILLS/shiny-controls" ]; then
-            rm -rf skills-repo/plugins/shiny-maui/skills/shiny-controls
-            mkdir -p skills-repo/plugins/shiny-maui/skills
-            cp -r source/SKILLS/shiny-controls skills-repo/plugins/shiny-maui/skills/
+            rm -rf skills-repo/plugins/controls/skills/shiny-controls
+            mkdir -p skills-repo/plugins/controls/skills
+            cp -r source/SKILLS/shiny-controls skills-repo/plugins/controls/skills/
           fi
 
       - name: Create Pull Request
