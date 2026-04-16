@@ -89,7 +89,7 @@ using Shiny;
 var builder = MauiApp.CreateBuilder();
 builder
     .UseMauiApp<App>()
-    .UseShinyTableView(); // Required for TableView's BorderlessEntry handler
+    .UseShinyControls();
 ```
 
 ### 3. Add XAML Namespace
