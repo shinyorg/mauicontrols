@@ -1,11 +1,10 @@
-# TODO
-* Signature Pad
-
 * Prompt
 Update the shiny documentation at ~/Desktop/shinyorg/shiny - we're going to create a new section called "MAUI Controls" and rename "MAUI" to "MAUI Services".
 Controls will have one set of release notes since it 1 solidified package.  Update the homepage and add a new card for the controls.  Update the skills, however, the skills
 will still go under "MAUI" as will the services.  Also update the App/Lib builder changing the packages used by scheduler, tableview, & mermaid diagrams while also adding
 bottom sheet & markdown controls
+
+Update the MAUI template to reflect the new package structure and control usage.  You will need to remove scheduler, tableview, and mermaid diagram references from the main MAUI package and add them to the new controls package.  Also add references for the new bottom sheet and markdown controls.  Update the XAML namespaces and usage examples in the template to reflect the new control locations.  Finally, update the documentation to reflect the new structure and provide clear guidance on how to use the new controls in a MAUI application.
 
 # Shiny.Maui.Controls
 
@@ -25,13 +24,23 @@ Register in your `MauiProgram.cs`:
 var builder = MauiApp.CreateBuilder();
 builder
     .UseMauiApp<App>()
-    .UseShinyTableView();
+    .UseShinyControls();
 ```
 
 Add the XAML namespace:
 
 ```xml
 xmlns:shiny="http://shiny.net/maui/controls"
+```
+
+For Markdown controls (separate package):
+
+```bash
+dotnet add package Shiny.Maui.Controls.Markdown
+```
+
+```xml
+xmlns:md="http://shiny.net/maui/markdown"
 ```
 
 ## Controls
@@ -121,6 +130,45 @@ A bottom sheet overlay that slides up from the bottom of the screen with configu
 | AnimationDuration | double | Animation speed (ms) |
 | ExpandOnInputFocus | bool | Auto-expand when input focused |
 
+### ImageViewer
+
+A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animated open/close transitions.
+
+<!-- TODO: Add screenshots -->
+
+```xml
+<Grid>
+    <!-- Page content with tappable images -->
+    <ScrollView>
+        <VerticalStackLayout>
+            <Image Source="photo.png">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenViewerCommand}"
+                                          CommandParameter="photo.png" />
+                </Image.GestureRecognizers>
+            </Image>
+        </VerticalStackLayout>
+    </ScrollView>
+
+    <!-- ImageViewer overlays on top -->
+    <shiny:ImageViewer Source="{Binding SelectedImage}"
+                       IsOpen="{Binding IsViewerOpen}" />
+</Grid>
+```
+
+| Property | Type | Description |
+|---|---|---|
+| Source | ImageSource? | The image to display |
+| IsOpen | bool | Show/hide the viewer (TwoWay) |
+| MaxZoom | double | Maximum zoom scale (default: 5.0) |
+
+**Features:**
+- Pinch-to-zoom with origin tracking
+- Pan when zoomed (clamped to image bounds)
+- Double-tap to zoom in (2.5x) / reset
+- Animated fade open/close with backdrop
+- Close button overlay
+
 ### PillView
 
 Pill/chip/tag elements for displaying categories, filters, or status indicators with predefined or custom color schemes.
@@ -185,6 +233,54 @@ A settings-style table view with 14+ built-in cell types, section grouping, drag
 ```xml
 <shiny:TableView ItemsSource="{Binding Items}" ItemTemplate="{StaticResource SectionTemplate}" />
 ```
+
+### Markdown Controls
+
+> Separate NuGet package: `Shiny.Maui.Controls.Markdown`
+
+Render and edit markdown content using native MAUI controls — no WebView required. Auto-resolves Light/Dark theming.
+
+<!-- TODO: Add screenshots -->
+
+**MarkdownView** — Read-only markdown renderer:
+
+```xml
+<md:MarkdownView Markdown="{Binding DocumentContent}" Padding="16" />
+```
+
+| Property | Type | Description |
+|---|---|---|
+| Markdown | string | Markdown content to render |
+| Theme | MarkdownTheme? | Rendering theme (auto Light/Dark if null) |
+| IsScrollEnabled | bool | Enable/disable scrolling (default: true) |
+
+Events: `LinkTapped` — fired when a link is tapped; set `Handled = true` to prevent default browser launch.
+
+**MarkdownEditor** — Editor with formatting toolbar and live preview:
+
+```xml
+<md:MarkdownEditor Markdown="{Binding NoteContent, Mode=TwoWay}"
+                   Placeholder="Start writing..."
+                   Padding="8" />
+```
+
+| Property | Type | Description |
+|---|---|---|
+| Markdown | string | Markdown content (TwoWay) |
+| Theme | MarkdownTheme? | Preview theme (auto Light/Dark if null) |
+| Placeholder | string | Placeholder text |
+| ToolbarItems | IReadOnlyList\<MarkdownToolbarItem\>? | Toolbar buttons (default set provided) |
+| IsPreviewVisible | bool | Toggle preview pane (TwoWay) |
+| ToolbarBackgroundColor | Color? | Toolbar background |
+| EditorBackgroundColor | Color? | Editor background |
+
+**Features:**
+- Formatting toolbar: bold, italic, headings, lists, code, links, blockquotes
+- Live preview toggle
+- Auto-growing editor
+- Full Markdig support: tables, task lists, strikethrough, fenced code blocks
+- Customizable themes with colors, font sizes, and spacing
+- Custom toolbar item support
 
 ### MermaidDiagramControl
 

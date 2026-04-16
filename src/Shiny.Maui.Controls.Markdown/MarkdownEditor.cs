@@ -3,12 +3,14 @@ namespace Shiny.Maui.Controls.Markdown;
 public class MarkdownEditor : ContentView
 {
     readonly Grid rootGrid;
+    readonly Grid toolbarRow;
     readonly Editor editor;
     readonly ScrollView toolbarScroll;
     readonly HorizontalStackLayout toolbar;
     readonly MarkdownView previewView;
     readonly Grid editorContainer;
     readonly Button toggleButton;
+    readonly BoxView toolbarSeparator;
     bool isPreviewMode;
     bool isUpdating;
 
@@ -23,38 +25,48 @@ public class MarkdownEditor : ContentView
         };
         editor.TextChanged += OnEditorTextChanged;
 
-        toolbar = new HorizontalStackLayout { Spacing = 2 };
+        toolbar = new HorizontalStackLayout { Spacing = 4, VerticalOptions = LayoutOptions.Center };
         toolbarScroll = new ScrollView
         {
             Orientation = ScrollOrientation.Horizontal,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
             Content = toolbar,
-            HeightRequest = 44
+            Padding = new Thickness(8, 0, 0, 0)
         };
 
         toggleButton = new Button
         {
-            Text = "\uD83D\uDC41",
-            WidthRequest = 44,
-            HeightRequest = 44,
+            Text = "\uD83D\uDC41\uFE0F",
+            WidthRequest = 40,
+            HeightRequest = 40,
             Padding = 0,
             CornerRadius = 8,
             BackgroundColor = Colors.Transparent,
-            FontSize = 20
+            FontSize = 18,
+            VerticalOptions = LayoutOptions.Center
         };
         toggleButton.Clicked += OnTogglePreview;
 
-        var toolbarRow = new Grid
+        toolbarRow = new Grid
         {
             ColumnDefinitions =
             {
                 new ColumnDefinition(GridLength.Star),
-                new ColumnDefinition(new GridLength(44))
+                new ColumnDefinition(new GridLength(48))
             },
+            Padding = new Thickness(4, 6),
+            ColumnSpacing = 0,
+            HeightRequest = 52,
             Children = { toolbarScroll }
         };
         Grid.SetColumn(toggleButton, 1);
         toolbarRow.Children.Add(toggleButton);
+
+        toolbarSeparator = new BoxView
+        {
+            HeightRequest = 1,
+            HorizontalOptions = LayoutOptions.Fill
+        };
 
         previewView = new MarkdownView
         {
@@ -71,16 +83,20 @@ public class MarkdownEditor : ContentView
             RowDefinitions =
             {
                 new RowDefinition(GridLength.Auto),
+                new RowDefinition(new GridLength(1)),
                 new RowDefinition(GridLength.Star)
             },
             Children = { toolbarRow }
         };
-        Grid.SetRow(editorContainer, 1);
-        Grid.SetRow(previewView, 1);
+        Grid.SetRow(toolbarSeparator, 1);
+        Grid.SetRow(editorContainer, 2);
+        Grid.SetRow(previewView, 2);
+        rootGrid.Children.Add(toolbarSeparator);
         rootGrid.Children.Add(editorContainer);
         rootGrid.Children.Add(previewView);
 
         Content = rootGrid;
+        ApplyThemeColors();
         BuildToolbar(MarkdownToolbarItems.Default);
     }
 
@@ -174,7 +190,7 @@ public class MarkdownEditor : ContentView
         propertyChanged: (b, _, n) =>
         {
             if (n is Color c)
-                ((MarkdownEditor)b).toolbarScroll.BackgroundColor = c;
+                ((MarkdownEditor)b).toolbarRow.BackgroundColor = c;
         });
 
     public Color? ToolbarBackgroundColor
@@ -253,27 +269,101 @@ public class MarkdownEditor : ContentView
         }
     }
 
+    void ApplyThemeColors()
+    {
+        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+
+        toolbarRow.BackgroundColor = isDark
+            ? Color.FromArgb("#1F2937")
+            : Color.FromArgb("#F9FAFB");
+
+        toolbarSeparator.Color = isDark
+            ? Color.FromArgb("#374151")
+            : Color.FromArgb("#E5E7EB");
+
+        toggleButton.TextColor = isDark
+            ? Color.FromArgb("#D1D5DB")
+            : Color.FromArgb("#6B7280");
+    }
+
     void BuildToolbar(IReadOnlyList<MarkdownToolbarItem> items)
     {
         toolbar.Children.Clear();
 
+        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        var buttonBg = isDark ? Color.FromArgb("#374151") : Color.FromArgb("#E5E7EB");
+        var buttonText = isDark ? Color.FromArgb("#E5E7EB") : Color.FromArgb("#374151");
+        var separatorColor = isDark ? Color.FromArgb("#4B5563") : Color.FromArgb("#D1D5DB");
+
+        string? lastGroup = null;
+
         foreach (var item in items)
         {
+            var group = GetToolbarGroup(item);
+            if (lastGroup != null && group != lastGroup)
+            {
+                toolbar.Children.Add(new BoxView
+                {
+                    WidthRequest = 1,
+                    HeightRequest = 24,
+                    Color = separatorColor,
+                    VerticalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(2, 0)
+                });
+            }
+            lastGroup = group;
+
             var button = new Button
             {
                 Text = item.Icon,
-                WidthRequest = 40,
-                HeightRequest = 40,
+                WidthRequest = 38,
+                HeightRequest = 38,
+                MinimumWidthRequest = 38,
                 Padding = 0,
-                CornerRadius = 6,
-                BackgroundColor = Colors.Transparent,
-                FontSize = 15
+                CornerRadius = 8,
+                BorderWidth = 0,
+                FontSize = 14,
+                BackgroundColor = buttonBg,
+                TextColor = buttonText
             };
+
+            if (ReferenceEquals(item, MarkdownToolbarItems.Bold))
+                button.FontAttributes = FontAttributes.Bold;
+            else if (ReferenceEquals(item, MarkdownToolbarItems.Italic))
+                button.FontAttributes = FontAttributes.Italic;
 
             var captured = item;
             button.Clicked += (_, _) => InsertFormatting(captured);
             toolbar.Children.Add(button);
         }
+    }
+
+    static string GetToolbarGroup(MarkdownToolbarItem item)
+    {
+        if (ReferenceEquals(item, MarkdownToolbarItems.Bold) ||
+            ReferenceEquals(item, MarkdownToolbarItems.Italic) ||
+            ReferenceEquals(item, MarkdownToolbarItems.Strikethrough) ||
+            ReferenceEquals(item, MarkdownToolbarItems.InlineCode))
+            return "format";
+
+        if (ReferenceEquals(item, MarkdownToolbarItems.H1) ||
+            ReferenceEquals(item, MarkdownToolbarItems.H2) ||
+            ReferenceEquals(item, MarkdownToolbarItems.H3))
+            return "heading";
+
+        if (ReferenceEquals(item, MarkdownToolbarItems.BulletList) ||
+            ReferenceEquals(item, MarkdownToolbarItems.NumberedList) ||
+            ReferenceEquals(item, MarkdownToolbarItems.TaskList))
+            return "list";
+
+        if (ReferenceEquals(item, MarkdownToolbarItems.Link) ||
+            ReferenceEquals(item, MarkdownToolbarItems.Image) ||
+            ReferenceEquals(item, MarkdownToolbarItems.Quote) ||
+            ReferenceEquals(item, MarkdownToolbarItems.CodeBlock) ||
+            ReferenceEquals(item, MarkdownToolbarItems.HorizontalRule))
+            return "insert";
+
+        return "other";
     }
 
     void OnEditorTextChanged(object? sender, TextChangedEventArgs e)
@@ -307,7 +397,7 @@ public class MarkdownEditor : ContentView
         {
             previewView.IsVisible = false;
             editorContainer.IsVisible = true;
-            toggleButton.Text = "\uD83D\uDC41";
+            toggleButton.Text = "\uD83D\uDC41\uFE0F";
         }
     }
 }

@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate .NET MAUI UI using Shiny.Maui.Controls - includes TableView with 14 cell types, BottomSheetView with detents, PillView status badges, and Scheduler views (calendar grid, agenda timeline, event list) with ISchedulerEventProvider
+description: Generate .NET MAUI UI using Shiny.Maui.Controls - includes TableView with 14 cell types, BottomSheetView with detents, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, Scheduler views (calendar grid, agenda timeline, event list), and Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar)
 auto_invoke: true
 triggers:
   - tableview
@@ -19,6 +19,16 @@ triggers:
   - event list
   - calendar view
   - timeline
+  - image viewer
+  - imageviewer
+  - image zoom
+  - pinch to zoom
+  - photo viewer
+  - markdown
+  - markdown view
+  - markdown editor
+  - markdown preview
+  - rich text
 ---
 
 # Shiny.Maui.Controls Skill
@@ -27,9 +37,12 @@ You are an expert in Shiny.Maui.Controls, a .NET MAUI controls library containin
 - **TableView**: A pure MAUI settings-style TableView with 14 cell types, cascading styles, sections, drag-sort reordering, and full MVVM/binding support
 - **BottomSheetView**: A draggable bottom sheet overlay with configurable detents, backdrop, animations, and keyboard handling
 - **PillView**: A status badge/label control with 6 preset themes, custom colors, and WCAG-accessible contrast
+- **ImageViewer**: A full-screen image overlay with pinch-to-zoom, pan when zoomed, double-tap to toggle zoom, animated open/close, and a close button
 - **SchedulerCalendarView**: Monthly calendar grid with swipe navigation, event display, and pinch-to-zoom
 - **SchedulerAgendaView**: Day/multi-day timeline with overlap detection, Apple Calendar-style date picker, and timezone support
 - **SchedulerCalendarListView**: Vertically scrolling event list grouped by day with infinite scroll
+- **MarkdownView**: A read-only markdown renderer that converts markdown text to native MAUI controls with theming and link handling
+- **MarkdownEditor**: A markdown editor with formatting toolbar, live preview toggle, and customizable toolbar items
 
 ## When to Use This Skill
 
@@ -45,12 +58,17 @@ Invoke this skill when the user wants to:
 - Add a bottom sheet / sliding panel to a page
 - Show status badges, tags, or labels (pill views)
 - Display categorized status indicators (success, warning, critical, etc.)
+- Add a zoomable image viewer / photo viewer overlay
+- Display full-screen images with pinch-to-zoom, pan, and double-tap zoom
 - Create scheduler/calendar views (monthly grid, day/week agenda, event list)
 - Implement event providers for calendar data
 - Customize event templates or day header templates for scheduler views
 - Configure agenda timeline with overlap detection, timezone support, and time markers
 - Set up infinite scrolling event lists grouped by day
 - Build any calendar, appointment, or scheduling UI
+- Render markdown text as native MAUI controls
+- Build a markdown editor with formatting toolbar and live preview
+- Display documentation, notes, or rich text content from markdown strings
 
 ## Library Overview
 
@@ -663,16 +681,297 @@ A status badge/label control with preset color themes and custom color support. 
 
 ---
 
+# ImageViewer
+
+A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to toggle zoom, animated fade open/close, and a close button. Designed to overlay page content like BottomSheetView.
+
+## Basic Usage
+
+```xml
+<Grid>
+    <!-- Main page content -->
+    <ScrollView>
+        <VerticalStackLayout>
+            <Image Source="photo.png">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenViewerCommand}"
+                                          CommandParameter="photo.png" />
+                </Image.GestureRecognizers>
+            </Image>
+        </VerticalStackLayout>
+    </ScrollView>
+
+    <!-- ImageViewer overlays on top -->
+    <shiny:ImageViewer Source="{Binding SelectedImage}"
+                       IsOpen="{Binding IsViewerOpen}" />
+</Grid>
+```
+
+## ImageViewer Properties
+
+| Property | Type | Default | Binding Mode | Description |
+|---|---|---|---|---|
+| `Source` | `ImageSource?` | `null` | OneWay | The image to display |
+| `IsOpen` | `bool` | `false` | TwoWay | Opens/closes the viewer with fade animation |
+| `MaxZoom` | `double` | `5.0` | OneWay | Maximum pinch zoom scale |
+
+## ImageViewer Features
+
+- **Pinch-to-zoom**: Two-finger pinch gesture scales around the pinch origin, clamped between 1x and MaxZoom
+- **Pan when zoomed**: One-finger pan is enabled after zooming in, with translation clamped to image bounds
+- **Double-tap to zoom**: Double-tap zooms to 2.5x centered on the tap point; double-tap again resets to 1x
+- **Animated open/close**: Backdrop, image, and close button fade in/out together (250ms)
+- **Close button**: "✕" button in the top-right corner to close the viewer
+- **Backdrop**: Black overlay that swallows touches so nothing falls through to the page behind
+
+## ImageViewer Placement
+
+Like BottomSheetView, ImageViewer must be placed inside a Grid that fills the page so it overlays correctly:
+
+```xml
+<ContentPage>
+    <Grid>
+        <!-- Main page content -->
+        <ScrollView>
+            <!-- ... -->
+        </ScrollView>
+
+        <!-- ImageViewer overlays on top -->
+        <shiny:ImageViewer Source="{Binding SelectedImage}"
+                           IsOpen="{Binding IsViewerOpen}" />
+    </Grid>
+</ContentPage>
+```
+
+## ImageViewer ViewModel Pattern
+
+```csharp
+public partial class ImageViewerViewModel : ObservableObject
+{
+    [ObservableProperty] ImageSource? selectedImage;
+    [ObservableProperty] bool isViewerOpen;
+
+    [RelayCommand]
+    void OpenViewer(string imageSource)
+    {
+        SelectedImage = imageSource;
+        IsViewerOpen = true;
+    }
+}
+```
+
+---
+
+# Markdown Controls
+
+Two controls for rendering and editing markdown content. Uses Markdig for parsing. Separate NuGet package from the main controls library.
+
+**NuGet Package**: `Shiny.Maui.Controls.Markdown`
+**Namespace**: `Shiny.Maui.Controls.Markdown`
+**XAML Namespace**: `http://shiny.net/maui/markdown` (prefix: `md`)
+
+```xml
+xmlns:md="http://shiny.net/maui/markdown"
+```
+
+## MarkdownView
+
+A read-only markdown renderer that converts markdown text to native MAUI controls (Labels, Grids, BoxViews, Borders) with theming and link handling.
+
+```xml
+<md:MarkdownView Markdown="{Binding Markdown}" Padding="16" />
+```
+
+### MarkdownView Properties
+
+| Property | Type | Default | Binding Mode | Description |
+|---|---|---|---|---|
+| `Markdown` | `string` | `""` | OneWay | The markdown content to render |
+| `Theme` | `MarkdownTheme?` | `null` | OneWay | Rendering theme; auto-resolves Light/Dark based on app theme if null |
+| `IsScrollEnabled` | `bool` | `true` | OneWay | Enable/disable scrolling of the content |
+
+### MarkdownView Events
+
+| Event | EventArgs | Description |
+|---|---|---|
+| `LinkTapped` | `LinkTappedEventArgs` | Fired when a link is tapped; set `Handled = true` to prevent default browser launch |
+
+### LinkTappedEventArgs
+
+| Property | Type | Description |
+|---|---|---|
+| `Url` | `string` | The URL of the tapped link |
+| `Handled` | `bool` | Set to `true` to prevent default browser launch |
+
+## MarkdownEditor
+
+A markdown editor with formatting toolbar, live preview toggle, and customizable toolbar items.
+
+```xml
+<md:MarkdownEditor Markdown="{Binding Markdown, Mode=TwoWay}"
+                   Placeholder="Start writing markdown..."
+                   Padding="8" />
+```
+
+### MarkdownEditor Properties
+
+| Property | Type | Default | Binding Mode | Description |
+|---|---|---|---|---|
+| `Markdown` | `string` | `""` | TwoWay | The markdown content being edited |
+| `Theme` | `MarkdownTheme?` | `null` | OneWay | Theme for preview rendering |
+| `Placeholder` | `string` | `"Write markdown here..."` | OneWay | Placeholder text in the editor |
+| `ToolbarItems` | `IReadOnlyList<MarkdownToolbarItem>?` | `MarkdownToolbarItems.Default` | OneWay | Formatting toolbar buttons |
+| `IsPreviewVisible` | `bool` | `false` | TwoWay | Show/hide the preview pane |
+| `ToolbarBackgroundColor` | `Color?` | `null` | OneWay | Toolbar background color |
+| `EditorBackgroundColor` | `Color?` | `null` | OneWay | Editor text area background color |
+
+### MarkdownEditor Events
+
+| Event | EventArgs | Description |
+|---|---|---|
+| `LinkTapped` | `LinkTappedEventArgs` | Forwarded from preview link taps |
+| `TextChanged` | `TextChangedEventArgs` | Fired when editor text changes |
+
+### MarkdownEditor Features
+
+- **Formatting toolbar**: Buttons for bold, italic, headings, lists, code, links, etc.
+- **Live preview**: Toggle between edit and preview modes with eye/pencil icon button
+- **Auto-growing editor**: Editor height grows as you type
+- **Custom toolbar**: Replace default toolbar items with a custom set
+
+## MarkdownTheme
+
+Comprehensive theming for rendered markdown appearance. Auto-resolves Light or Dark based on `Application.Current?.RequestedTheme` when set to null.
+
+### Static Themes
+
+```csharp
+MarkdownTheme.Light    // Light color scheme
+MarkdownTheme.Dark     // Dark color scheme
+```
+
+### Theme Color Properties
+
+| Property | Light Default | Dark Default | Description |
+|---|---|---|---|
+| `TextColor` | Black | `#E5E7EB` | Main text color |
+| `MutedTextColor` | `#6B7280` | `#9CA3AF` | Dimmed text |
+| `LinkColor` | `#2563EB` | `#60A5FA` | Hyperlink color |
+| `CodeBackgroundColor` | `#F3F4F6` | `#374151` | Inline code background |
+| `CodeTextColor` | `#D946EF` | `#F472B6` | Inline code text |
+| `CodeBlockBackgroundColor` | `#1F2937` | `#111827` | Code block background |
+| `CodeBlockTextColor` | `#E5E7EB` | `#D1D5DB` | Code block text |
+| `BlockquoteBorderColor` | `#D1D5DB` | `#4B5563` | Blockquote left border |
+| `BlockquoteBackgroundColor` | `#F9FAFB` | `#1F2937` | Blockquote background |
+| `HorizontalRuleColor` | `#E5E7EB` | `#374151` | Divider color |
+| `TableBorderColor` | `#E5E7EB` | `#374151` | Table cell borders |
+| `TableHeaderBackgroundColor` | `#F3F4F6` | `#1F2937` | Table header background |
+
+### Theme Font/Spacing Properties
+
+| Property | Default | Description |
+|---|---|---|
+| `BaseFontSize` | `16` | Default text size |
+| `H1FontSize` | `32` | Heading 1 size |
+| `H2FontSize` | `24` | Heading 2 size |
+| `H3FontSize` | `20` | Heading 3 size |
+| `H4FontSize` | `18` | Heading 4 size |
+| `H5FontSize` | `16` | Heading 5 size |
+| `H6FontSize` | `14` | Heading 6 size |
+| `CodeFontSize` | `14` | Code font size |
+| `BlockSpacing` | `12` | Vertical spacing between block elements |
+| `ListIndent` | `24` | Left indent for list items |
+| `CodeFontFamily` | `""` | Monospace font family |
+
+## MarkdownToolbarItem
+
+```csharp
+public record MarkdownToolbarItem(
+    string Label,      // Display name
+    string Icon,       // Emoji/text icon
+    string Prefix,     // Text before selection
+    string Suffix,     // Text after selection
+    bool IsBlockLevel = false
+);
+```
+
+### Pre-defined Toolbar Items
+
+Available via `MarkdownToolbarItems.*`:
+
+| Item | Icon | Description |
+|---|---|---|
+| `Bold` | 🗒 | **Bold text** |
+| `Italic` | 𝘐 | *Italic text* |
+| `Strikethrough` | S̶ | ~~Strikethrough~~ |
+| `InlineCode` | `</>` | `inline code` |
+| `Link` | 🔗 | Hyperlink |
+| `Image` | 🖼 | Image |
+| `H1` | H1 | Heading 1 |
+| `H2` | H2 | Heading 2 |
+| `H3` | H3 | Heading 3 |
+| `BulletList` | • | Unordered list |
+| `NumberedList` | 1. | Ordered list |
+| `TaskList` | ☑ | Task list |
+| `Quote` | " | Blockquote |
+| `CodeBlock` | `{}` | Code block |
+| `HorizontalRule` | — | Horizontal divider |
+
+### Toolbar Collections
+
+```csharp
+MarkdownToolbarItems.Default  // Recommended set: Bold, Italic, InlineCode, H1-H3, Lists, Link, Quote, CodeBlock
+MarkdownToolbarItems.All      // All 15 items
+```
+
+## Supported Markdown Elements
+
+Bold, italic, strikethrough, H1-H6 headings, unordered/ordered/task lists, inline code, fenced code blocks, links (with LinkTapped event), images (as placeholder text), blockquotes, tables, horizontal rules, line breaks.
+
+## Complete Markdown Example
+
+```xml
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:md="http://shiny.net/maui/markdown"
+             x:Class="MyApp.DocsPage"
+             Title="Documentation">
+
+    <md:MarkdownView Markdown="{Binding DocumentContent}" Padding="16" />
+</ContentPage>
+```
+
+## Complete Markdown Editor Example
+
+```xml
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:md="http://shiny.net/maui/markdown"
+             x:Class="MyApp.NotesPage"
+             Title="Notes">
+
+    <md:MarkdownEditor Markdown="{Binding NoteContent, Mode=TwoWay}"
+                       Placeholder="Write your notes..."
+                       Padding="8" />
+</ContentPage>
+```
+
+---
+
 # Code Generation Instructions
 
 When generating code with Shiny.Maui.Controls:
 
 ### 1. Page Structure
 - Always add `xmlns:shiny="http://shiny.net/maui/controls"` to the page
+- For Markdown controls: add `xmlns:md="http://shiny.net/maui/markdown"` to the page
 - For TableView: wrap content in `shiny:TableView > shiny:TableRoot > shiny:TableSection`
 - For BottomSheet: place `shiny:BottomSheetView` inside a Grid that fills the page (it overlays on top)
+- For ImageViewer: place `shiny:ImageViewer` inside a Grid that fills the page (it overlays on top, same pattern as BottomSheet)
 - For PillView: use inline within any layout
 - For Scheduler views: use `shiny:SchedulerCalendarView`, `shiny:SchedulerAgendaView`, or `shiny:SchedulerCalendarListView` and bind `Provider` to an `ISchedulerEventProvider`
+- For MarkdownView: use `md:MarkdownView` anywhere you need to render markdown content
+- For MarkdownEditor: use `md:MarkdownEditor` for editable markdown with toolbar and preview
 
 ### 2. Cell Selection (TableView)
 - Use `SwitchCell` for on/off toggles
@@ -690,8 +989,9 @@ When generating code with Shiny.Maui.Controls:
 - Use `CustomCell` for any custom MAUI view
 
 ### 3. Binding Patterns
-- Always use `Mode=TwoWay` for editable properties (`On`, `Checked`, `ValueText`, `Date`, `Time`, `Number`, `SelectedIndex`, `SelectedItem`, `SelectedItems`, `IsOpen`)
-- Use `Mode=OneWay` (default) for display-only properties (`Title`, `Description`, `ValueText` on LabelCell, `Text` on PillView)
+- Always use `Mode=TwoWay` for editable properties (`On`, `Checked`, `ValueText`, `Date`, `Time`, `Number`, `SelectedIndex`, `SelectedItem`, `SelectedItems`, `IsOpen`, `IsViewerOpen`, `IsPreviewVisible`)
+- Use `Mode=TwoWay` for `MarkdownEditor.Markdown` (editor content)
+- Use `Mode=OneWay` (default) for display-only properties (`Title`, `Description`, `ValueText` on LabelCell, `Text` on PillView, `Source` on ImageViewer, `Markdown` on MarkdownView)
 - Commands use default `Mode=OneWay`
 - RadioCell selection binds at section level: `shiny:RadioCell.SelectedValue="{Binding Prop, Mode=TwoWay}"`
 
@@ -838,9 +1138,12 @@ The BottomSheetView must be placed inside a Grid that fills the page so it can o
 8. **Use RadioCell for exclusive choices** - Bind `SelectedValue` at the section level
 9. **Use PickerCell for long lists** - Full-page picker is better than inline for more than 4-5 items
 10. **Use ItemTemplate for dynamic content** - Bind `ItemsSource` on sections for data-driven cells
-11. **Place BottomSheetView in a Grid** - It must overlay page content, so use a Grid as the page root
+11. **Place BottomSheetView and ImageViewer in a Grid** - They must overlay page content, so use a Grid as the page root
 12. **Use PillView for status indicators** - Prefer preset types for consistency; use custom colors for brand-specific needs
 13. **Use AOT-safe bindings for scheduler templates** - Always use `static (T item) => item.Property` lambda bindings, never string-based
+14. **Leave MarkdownView/MarkdownEditor Theme as null** - It auto-resolves Light/Dark based on the app theme
+15. **Use MarkdownView for read-only content** - Documentation, notes, changelogs; use MarkdownEditor only when the user needs to edit
+16. **ImageViewer Source is set before IsOpen** - Always set the image source before opening the viewer
 14. **Register scheduler pages and ViewModels in DI** - Use `AddTransient` for pages and ViewModels, `AddSingleton` for the event provider
 15. **Use `SelectedDate` with TwoWay binding** - All scheduler views share this property for coordination
 16. **Implement all `ISchedulerEventProvider` methods** - Even if some are no-ops, all must be implemented
