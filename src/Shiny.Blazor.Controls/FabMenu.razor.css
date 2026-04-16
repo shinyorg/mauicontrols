@@ -1,0 +1,84 @@
+.shiny-fab-menu {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+    position: relative;
+}
+
+.shiny-fab-backdrop {
+    position: fixed;
+    inset: 0;
+    transition: opacity 200ms ease;
+    z-index: 100;
+}
+
+.shiny-fab-backdrop-open {
+    pointer-events: auto;
+}
+
+.shiny-fab-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-end;
+    z-index: 101;
+}
+
+.shiny-fab-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(16px);
+    pointer-events: none;
+    transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.shiny-fab-menu-item-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.shiny-fab-menu-label {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: inherit;
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.shiny-fab-menu-btn {
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: transform 100ms ease;
+}
+
+.shiny-fab-menu-btn:hover {
+    transform: translateY(-1px);
+}
+
+.shiny-fab-menu-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shiny-fab-menu-icon img,
+.shiny-fab-menu-icon svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.shiny-fab-shadow {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}

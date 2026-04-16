@@ -1,0 +1,37 @@
+.nav-header {
+    padding: 20px 16px;
+    border-bottom: 1px solid #374151;
+}
+
+.nav-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+}
+
+::deep .nav-link {
+    display: block;
+    padding: 10px 20px;
+    color: #D1D5DB;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    font-size: 14px;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+::deep .nav-link:hover {
+    background: #374151;
+    color: white;
+}
+
+::deep .nav-link.active {
+    background: #111827;
+    color: white;
+    border-left-color: #2196F3;
+}

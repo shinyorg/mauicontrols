@@ -1,0 +1,129 @@
+.shiny-agenda {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    height: 100%;
+    min-height: 500px;
+}
+
+.shiny-agenda-allday {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #E5E7EB;
+    background: #F9FAFB;
+    align-items: center;
+}
+
+.shiny-agenda-allday-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6B7280;
+    text-transform: uppercase;
+    flex: 0 0 auto;
+}
+
+.shiny-agenda-allday-list { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.shiny-agenda-allday-event {
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.shiny-agenda-datepicker {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #E5E7EB;
+    overflow-x: auto;
+}
+
+.shiny-agenda-date {
+    flex: 0 0 auto;
+    width: 56px;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #F9FAFB;
+}
+
+.shiny-agenda-date.is-selected { background: #DBEAFE; }
+.shiny-agenda-date.is-today .shiny-agenda-date-num { color: #3B82F6; font-weight: 700; }
+.shiny-agenda-date-name { font-size: 11px; color: #6B7280; text-transform: uppercase; }
+.shiny-agenda-date-num { font-size: 18px; font-weight: 600; }
+
+.shiny-agenda-day { flex: 1 1 auto; overflow: auto; display: flex; flex-direction: column; }
+.shiny-agenda-day-header { padding: 8px 12px; font-weight: 600; border-bottom: 1px solid #E5E7EB; }
+
+.shiny-agenda-timeline { position: relative; }
+
+.shiny-agenda-row {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    border-bottom: 1px solid #F3F4F6;
+    cursor: pointer;
+}
+
+.shiny-agenda-timecol {
+    font-size: 11px;
+    color: #9CA3AF;
+    padding: 2px 8px 0 0;
+    text-align: right;
+    border-right: 1px solid #F3F4F6;
+}
+
+.shiny-agenda-slot { width: 100%; }
+
+.shiny-agenda-event {
+    position: absolute;
+    left: 60px;
+    right: 8px;
+    color: white;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.shiny-agenda-event-title { font-weight: 600; }
+.shiny-agenda-event-time { font-size: 11px; opacity: 0.85; }
+
+.shiny-agenda-now {
+    position: absolute;
+    left: 56px;
+    right: 0;
+    height: 2px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.shiny-agenda-now::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: inherit;
+}
+
+.shiny-agenda-loader {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6B7280;
+}

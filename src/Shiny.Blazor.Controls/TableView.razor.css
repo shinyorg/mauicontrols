@@ -1,0 +1,232 @@
+.shiny-tv {
+    --shiny-tv-sep-color: #E5E7EB;
+    --shiny-tv-sep-height: 1px;
+    --shiny-tv-sep-padding: 16px;
+    --shiny-tv-section-sep-color: transparent;
+    --shiny-tv-section-sep-height: 8px;
+    --shiny-tv-cell-bg: #FFFFFF;
+
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: #111827;
+    background: transparent;
+}
+
+::deep .shiny-tv-section {
+    display: flex;
+    flex-direction: column;
+    background: var(--shiny-tv-cell-bg);
+}
+
+::deep .shiny-tv-section-header {
+    padding: 12px 16px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6B7280;
+}
+
+::deep .shiny-tv-section-footer {
+    padding: 6px 16px 12px;
+    font-size: 12px;
+    color: #6B7280;
+}
+
+::deep .shiny-tv-section-sep {
+    height: var(--shiny-tv-section-sep-height);
+    background: var(--shiny-tv-section-sep-color);
+}
+
+::deep .shiny-tv-section-cells {
+    display: flex;
+    flex-direction: column;
+}
+
+::deep .shiny-tv-separator {
+    height: var(--shiny-tv-sep-height);
+    background: var(--shiny-tv-sep-color);
+    margin: 0 var(--shiny-tv-sep-padding);
+}
+
+::deep .shiny-tv-cell {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    padding: 12px 16px;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 120ms ease;
+    border-bottom: 1px solid #F1F5F9;
+}
+
+::deep .shiny-tv-cell:last-child {
+    border-bottom: none;
+}
+
+::deep .shiny-tv-cell:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+::deep .shiny-tv-cell-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::deep .shiny-tv-cell-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+::deep .shiny-tv-cell-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+::deep .shiny-tv-cell-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+}
+
+::deep .shiny-tv-cell-title {
+    font-size: 16px;
+    color: #111827;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+}
+
+::deep .shiny-tv-cell-hint {
+    font-size: 12px;
+    color: #6B7280;
+    flex-shrink: 0;
+}
+
+::deep .shiny-tv-cell-description {
+    font-size: 12px;
+    color: #6B7280;
+    line-height: 1.4;
+}
+
+::deep .shiny-tv-cell-accessory {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6B7280;
+    font-size: 14px;
+}
+
+/* button cell */
+::deep .shiny-tv-button {
+    width: 100%;
+    text-align: center;
+    border: none;
+    background: transparent;
+    color: #2196F3;
+    font-weight: 600;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+}
+
+::deep .shiny-tv-button:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+/* form controls */
+::deep .shiny-tv-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    text-align: right;
+    min-width: 120px;
+}
+
+::deep .shiny-tv-switch {
+    position: relative;
+    width: 44px;
+    height: 26px;
+    display: inline-block;
+}
+
+::deep .shiny-tv-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+::deep .shiny-tv-switch-slider {
+    position: absolute;
+    inset: 0;
+    background: #D1D5DB;
+    border-radius: 13px;
+    transition: background-color 200ms ease;
+    cursor: pointer;
+}
+
+::deep .shiny-tv-switch-slider::before {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    left: 2px;
+    top: 2px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 200ms ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+::deep .shiny-tv-switch input:checked + .shiny-tv-switch-slider {
+    background: var(--shiny-tv-switch-on, #34C759);
+}
+
+::deep .shiny-tv-switch input:checked + .shiny-tv-switch-slider::before {
+    transform: translateX(18px);
+}
+
+::deep .shiny-tv-checkbox {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--shiny-tv-accent, #2196F3);
+    cursor: pointer;
+}
+
+::deep .shiny-tv-radio {
+    width: 22px;
+    height: 22px;
+    accent-color: var(--shiny-tv-accent, #2196F3);
+    cursor: pointer;
+}
+
+::deep .shiny-tv-check-mark {
+    width: 18px;
+    height: 18px;
+    color: var(--shiny-tv-accent, #2196F3);
+}
+
+::deep .shiny-tv-chevron {
+    width: 14px;
+    height: 14px;
+    color: #9CA3AF;
+}
+
+::deep .shiny-tv-value {
+    text-align: right;
+}
+

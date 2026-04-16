@@ -1,0 +1,51 @@
+.shiny-sheet-root {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.shiny-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    background: black;
+    transition: opacity 200ms ease;
+}
+
+.shiny-sheet-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    transform: translateY(100%);
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+}
+
+.shiny-sheet-handle-host {
+    flex: 0 0 auto;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    touch-action: none;
+}
+
+.shiny-sheet-handle-host:active { cursor: grabbing; }
+
+.shiny-sheet-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.shiny-sheet-scroll {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px 16px;
+}

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>$(BaseTargetFramework)</TargetFramework>
+        <IsAotCompatible>true</IsAotCompatible>
+        <RootNamespace>Shiny.Blazor.Controls.MermaidDiagrams</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web"/>
+    </ItemGroup>
+</Project>

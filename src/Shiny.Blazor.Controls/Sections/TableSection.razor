@@ -1,0 +1,96 @@
+@namespace Shiny.Blazor.Controls.Sections
+
+@if (IsVisible)
+{
+    <section class="shiny-tv-section">
+        @if (HeaderTemplate is not null)
+        {
+            @HeaderTemplate
+        }
+        else if (!string.IsNullOrEmpty(Title))
+        {
+            <header class="shiny-tv-section-header" style="@HeaderStyle">@Title</header>
+        }
+
+        <CascadingValue Value="this" IsFixed="true">
+            <div class="shiny-tv-section-cells">
+                @if (ChildContent is not null)
+                {
+                    @ChildContent
+                }
+                @if (ItemsSource is not null && ItemTemplate is not null)
+                {
+                    foreach (var item in ItemsSource)
+                    {
+                        @ItemTemplate(item)
+                    }
+                }
+            </div>
+        </CascadingValue>
+
+        @if (FooterVisible)
+        {
+            if (FooterTemplate is not null)
+            {
+                @FooterTemplate
+            }
+            else if (!string.IsNullOrEmpty(FooterText))
+            {
+                <footer class="shiny-tv-section-footer" style="@FooterStyle">@FooterText</footer>
+            }
+        }
+    </section>
+
+    @if (RenderSectionSeparator)
+    {
+        <div class="shiny-tv-section-sep"></div>
+    }
+}
+
+@code {
+    [CascadingParameter] public TableView? Table { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? FooterText { get; set; }
+    [Parameter] public bool IsVisible { get; set; } = true;
+    [Parameter] public bool FooterVisible { get; set; } = true;
+    [Parameter] public bool RenderSectionSeparator { get; set; } = true;
+
+    [Parameter] public string? HeaderBackgroundColor { get; set; }
+    [Parameter] public string? HeaderTextColor { get; set; }
+    [Parameter] public double HeaderFontSize { get; set; } = -1;
+    [Parameter] public string? FooterTextColor { get; set; }
+    [Parameter] public double FooterFontSize { get; set; } = -1;
+    [Parameter] public string? FooterBackgroundColor { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    [Parameter] public System.Collections.IEnumerable? ItemsSource { get; set; }
+    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
+
+    string HeaderStyle
+    {
+        get
+        {
+            var sb = new System.Text.StringBuilder();
+            if (!string.IsNullOrEmpty(HeaderBackgroundColor)) sb.Append("background:").Append(HeaderBackgroundColor).Append(';');
+            if (!string.IsNullOrEmpty(HeaderTextColor)) sb.Append("color:").Append(HeaderTextColor).Append(';');
+            if (HeaderFontSize > 0) sb.Append("font-size:").Append(HeaderFontSize).Append("px;");
+            return sb.ToString();
+        }
+    }
+
+    string FooterStyle
+    {
+        get
+        {
+            var sb = new System.Text.StringBuilder();
+            if (!string.IsNullOrEmpty(FooterBackgroundColor)) sb.Append("background:").Append(FooterBackgroundColor).Append(';');
+            if (!string.IsNullOrEmpty(FooterTextColor)) sb.Append("color:").Append(FooterTextColor).Append(';');
+            if (FooterFontSize > 0) sb.Append("font-size:").Append(FooterFontSize).Append("px;");
+            return sb.ToString();
+        }
+    }
+}

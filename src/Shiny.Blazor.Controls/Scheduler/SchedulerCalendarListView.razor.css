@@ -1,0 +1,58 @@
+.shiny-cal-list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    background: white;
+    overflow: auto;
+    height: 100%;
+    min-height: 400px;
+}
+
+.shiny-cal-list-empty {
+    padding: 24px;
+    text-align: center;
+    color: #6B7280;
+}
+
+.shiny-cal-list-day { display: flex; flex-direction: column; }
+
+.shiny-cal-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 12px;
+    border-bottom: 1px solid #E5E7EB;
+    border-top: 1px solid #E5E7EB;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.shiny-cal-list-day.is-today .shiny-cal-list-header { color: #3B82F6; }
+
+.shiny-cal-list-date { font-size: 13px; font-weight: 600; }
+.shiny-cal-list-count { font-size: 12px; color: #6B7280; }
+
+.shiny-cal-list-events { display: flex; flex-direction: column; }
+
+.shiny-cal-list-event {
+    display: flex;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #F3F4F6;
+    cursor: pointer;
+}
+
+.shiny-cal-list-event:hover { background: #F9FAFB; }
+
+.shiny-cal-list-event-bar {
+    width: 4px;
+    border-radius: 2px;
+    flex: 0 0 auto;
+}
+
+.shiny-cal-list-event-body { flex: 1; min-width: 0; }
+.shiny-cal-list-event-title { font-size: 14px; font-weight: 600; color: #111827; }
+.shiny-cal-list-event-desc { font-size: 12px; color: #6B7280; margin-top: 2px; }
+.shiny-cal-list-event-time { font-size: 11px; color: #9CA3AF; margin-top: 4px; }

@@ -1,0 +1,125 @@
+.shiny-cal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+}
+
+.shiny-cal-header {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.shiny-cal-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.shiny-cal-nav {
+    border: 0;
+    background: transparent;
+    color: #3B82F6;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.shiny-cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.shiny-cal-dayheaders {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #F9FAFB;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.shiny-cal-dayheader {
+    text-align: center;
+    padding: 8px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6B7280;
+    text-transform: uppercase;
+}
+
+.shiny-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(92px, 1fr);
+}
+
+.shiny-cal-cell {
+    border-right: 1px solid #F3F4F6;
+    border-bottom: 1px solid #F3F4F6;
+    padding: 4px 4px 6px;
+    min-height: 92px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.shiny-cal-cell.not-in-month { opacity: 0.35; }
+
+.shiny-cal-daynum {
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
+    min-width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    border-radius: 50%;
+    align-self: flex-start;
+}
+
+.shiny-cal-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.shiny-cal-event {
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.shiny-cal-overflow {
+    font-size: 10px;
+    color: #6B7280;
+    padding-left: 4px;
+}
+
+.shiny-cal-count {
+    font-size: 11px;
+    color: #3B82F6;
+    padding-left: 4px;
+}
+
+.shiny-cal-loader {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6B7280;
+}

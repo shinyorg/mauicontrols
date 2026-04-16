@@ -1,0 +1,42 @@
+@namespace Shiny.Blazor.Controls.MermaidDiagrams
+@using Microsoft.JSInterop
+@inject Microsoft.JSInterop.IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="shiny-mermaid" @ref="hostEl"></div>
+
+@code {
+    Microsoft.AspNetCore.Components.ElementReference hostEl;
+    Microsoft.JSInterop.IJSObjectReference? module;
+    string? lastRendered;
+
+    [Parameter] public string? Diagram { get; set; }
+    [Parameter] public string Theme { get; set; } = "default";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<Microsoft.JSInterop.IJSObjectReference>(
+                "import",
+                "./_content/Shiny.Blazor.Controls.MermaidDiagrams/mermaid-interop.js");
+        }
+
+        if (module is null) return;
+
+        if (Diagram != lastRendered)
+        {
+            lastRendered = Diagram;
+            await module.InvokeVoidAsync("render", hostEl, Diagram ?? string.Empty, Theme);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try { await module.DisposeAsync(); }
+            catch { /* ignore */ }
+        }
+    }
+}

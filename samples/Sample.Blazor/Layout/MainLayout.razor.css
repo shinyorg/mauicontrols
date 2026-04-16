@@ -1,0 +1,31 @@
+.page {
+    display: flex;
+    min-height: 100vh;
+    background: #F3F4F6;
+}
+
+.sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: #1F2937;
+    color: #E5E7EB;
+}
+
+.content {
+    flex: 1;
+    padding: 24px 32px;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+#blazor-error-ui {
+    display: none;
+    background: #FEE2E2;
+    color: #991B1B;
+    padding: 12px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}

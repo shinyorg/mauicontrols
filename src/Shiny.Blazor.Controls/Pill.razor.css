@@ -1,0 +1,46 @@
+.shiny-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 1px solid transparent;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-align: center;
+    vertical-align: middle;
+    font-family: inherit;
+}
+
+.shiny-pill-none {
+    background-color: #F3F4F6;
+    color: #374151;
+    border-color: #D1D5DB;
+}
+
+.shiny-pill-success {
+    background-color: #DCFCE7;
+    color: #166534;
+    border-color: #86EFAC;
+}
+
+.shiny-pill-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+    border-color: #93C5FD;
+}
+
+.shiny-pill-warning {
+    background-color: #FEF9C3;
+    color: #854D0E;
+    border-color: #FDE047;
+}
+
+.shiny-pill-caution {
+    background-color: #FFEDD5;
+    color: #9A3412;
+    border-color: #FDBA74;
+}
+
+.shiny-pill-critical {
+    background-color: #FEE2E2;
+    color: #991B1B;
+    border-color: #FCA5A5;
+}

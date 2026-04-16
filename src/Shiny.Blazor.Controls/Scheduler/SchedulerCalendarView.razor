@@ -1,0 +1,222 @@
+@namespace Shiny.Blazor.Controls.Scheduler
+@implements IDisposable
+
+<div class="shiny-cal">
+    <div class="shiny-cal-header">
+        <button type="button" class="shiny-cal-nav" disabled="@(!canPrev)" @onclick="() => NavigateMonth(-1)">&lt;</button>
+        <div class="shiny-cal-title">@MonthTitle</div>
+        <button type="button" class="shiny-cal-nav" disabled="@(!canNext)" @onclick="() => NavigateMonth(1)">&gt;</button>
+    </div>
+
+    <div class="shiny-cal-dayheaders">
+        @foreach (var name in DayHeaderNames())
+        {
+            <div class="shiny-cal-dayheader">@name</div>
+        }
+    </div>
+
+    <div class="shiny-cal-grid">
+        @for (var i = 0; i < 42; i++)
+        {
+            var date = gridStart.AddDays(i);
+            var inMonth = date.Month == DisplayMonth.Month && date.Year == DisplayMonth.Year;
+            var isToday = date == DateOnly.FromDateTime(DateTime.Today);
+            var isSelected = date == SelectedDate;
+            var dayEvents = GetDayEvents(date);
+            var capturedDate = date;
+            <div class="shiny-cal-cell @(inMonth ? "" : "not-in-month") @(isSelected ? "is-selected" : "") @(isToday ? "is-today" : "")"
+                 style="background:@(isSelected ? CalendarCellSelectedColor : CalendarCellColor);"
+                 @onclick="() => OnDayTapped(capturedDate)">
+                <div class="shiny-cal-daynum @(isToday ? "today" : "")"
+                     style="@(isToday ? $"background:{CurrentDayColor};color:white;" : "")">@date.Day</div>
+                @if (ShowCalendarCellEventCountOnly)
+                {
+                    @if (dayEvents.Count > 0)
+                    {
+                        <div class="shiny-cal-count">@dayEvents.Count event@(dayEvents.Count == 1 ? "" : "s")</div>
+                    }
+                }
+                else
+                {
+                    <div class="shiny-cal-events">
+                        @foreach (var evt in dayEvents.Take(MaxEventsPerCell))
+                        {
+                            var captured = evt;
+                            <div class="shiny-cal-event"
+                                 style="background:@(evt.Color ?? "#3B82F6");"
+                                 @onclick:stopPropagation
+                                 @onclick="() => OnEventTapped(captured)">@evt.Title</div>
+                        }
+                        @if (dayEvents.Count > MaxEventsPerCell)
+                        {
+                            <div class="shiny-cal-overflow">+@(dayEvents.Count - MaxEventsPerCell) more</div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="shiny-cal-loader">Loading…</div>
+    }
+</div>
+
+@code {
+    Dictionary<DateOnly, List<SchedulerEvent>> eventsByDay = new();
+    DateOnly gridStart;
+    bool isLoading;
+    bool canPrev = true;
+    bool canNext = true;
+    CancellationTokenSource? loadCts;
+
+    [Parameter] public ISchedulerEventProvider? Provider { get; set; }
+    [Parameter] public DateOnly SelectedDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+    [Parameter] public EventCallback<DateOnly> SelectedDateChanged { get; set; }
+    [Parameter] public DateOnly DisplayMonth { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+    [Parameter] public EventCallback<DateOnly> DisplayMonthChanged { get; set; }
+    [Parameter] public bool ShowCalendarCellEventCountOnly { get; set; }
+    [Parameter] public int MaxEventsPerCell { get; set; } = 3;
+    [Parameter] public string CalendarCellColor { get; set; } = "#FFFFFF";
+    [Parameter] public string CalendarCellSelectedColor { get; set; } = "#DBEAFE";
+    [Parameter] public string CurrentDayColor { get; set; } = "#3B82F6";
+    [Parameter] public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
+    [Parameter] public DateOnly? MinDate { get; set; }
+    [Parameter] public DateOnly? MaxDate { get; set; }
+
+    ISchedulerEventProvider? lastProvider;
+    DateOnly lastDisplayMonth;
+    DayOfWeek lastFirstDay;
+
+    string MonthTitle => new DateTime(DisplayMonth.Year, DisplayMonth.Month, 1).ToString("MMMM yyyy");
+
+    protected override void OnParametersSet()
+    {
+        var providerChanged = !ReferenceEquals(Provider, lastProvider);
+        var monthChanged = DisplayMonth != lastDisplayMonth;
+        var dayChanged = FirstDayOfWeek != lastFirstDay;
+        if (providerChanged || monthChanged || dayChanged)
+        {
+            lastProvider = Provider;
+            lastDisplayMonth = DisplayMonth;
+            lastFirstDay = FirstDayOfWeek;
+            RebuildGrid();
+            UpdateNavBounds();
+            _ = LoadEventsAsync();
+        }
+    }
+
+    void RebuildGrid()
+    {
+        var firstOfMonth = new DateOnly(DisplayMonth.Year, DisplayMonth.Month, 1);
+        var offset = ((int)firstOfMonth.DayOfWeek - (int)FirstDayOfWeek + 7) % 7;
+        gridStart = firstOfMonth.AddDays(-offset);
+    }
+
+    void UpdateNavBounds()
+    {
+        if (MinDate.HasValue)
+        {
+            var prev = DisplayMonth.AddMonths(-1);
+            var lastDayPrev = new DateOnly(prev.Year, prev.Month, DateTime.DaysInMonth(prev.Year, prev.Month));
+            canPrev = lastDayPrev >= MinDate.Value;
+        }
+        else canPrev = true;
+
+        if (MaxDate.HasValue)
+        {
+            var next = DisplayMonth.AddMonths(1);
+            canNext = new DateOnly(next.Year, next.Month, 1) <= MaxDate.Value;
+        }
+        else canNext = true;
+    }
+
+    IEnumerable<string> DayHeaderNames()
+    {
+        var names = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedDayNames;
+        var first = (int)FirstDayOfWeek;
+        for (var i = 0; i < 7; i++) yield return names[(first + i) % 7];
+    }
+
+    async Task NavigateMonth(int dir)
+    {
+        var target = DisplayMonth.AddMonths(dir);
+        if (MinDate.HasValue)
+        {
+            var lastDay = new DateOnly(target.Year, target.Month, DateTime.DaysInMonth(target.Year, target.Month));
+            if (lastDay < MinDate.Value) return;
+        }
+        if (MaxDate.HasValue && new DateOnly(target.Year, target.Month, 1) > MaxDate.Value) return;
+
+        DisplayMonth = target;
+        await DisplayMonthChanged.InvokeAsync(target);
+    }
+
+    async Task OnDayTapped(DateOnly date)
+    {
+        if (MinDate.HasValue && date < MinDate.Value) return;
+        if (MaxDate.HasValue && date > MaxDate.Value) return;
+        if (Provider is not null && !Provider.CanCalendarSelect(date)) return;
+
+        SelectedDate = date;
+        await SelectedDateChanged.InvokeAsync(date);
+
+        if (date.Month != DisplayMonth.Month || date.Year != DisplayMonth.Year)
+        {
+            DisplayMonth = new DateOnly(date.Year, date.Month, 1);
+            await DisplayMonthChanged.InvokeAsync(DisplayMonth);
+        }
+
+        Provider?.OnCalendarDateSelected(date);
+    }
+
+    void OnEventTapped(SchedulerEvent evt) => Provider?.OnEventSelected(evt);
+
+    List<SchedulerEvent> GetDayEvents(DateOnly date)
+        => eventsByDay.TryGetValue(date, out var list) ? list : new List<SchedulerEvent>();
+
+    async Task LoadEventsAsync()
+    {
+        if (Provider is null) return;
+
+        loadCts?.Cancel();
+        loadCts = new CancellationTokenSource();
+        var token = loadCts.Token;
+        isLoading = true;
+        StateHasChanged();
+        try
+        {
+            var endDate = gridStart.AddDays(42);
+            var start = new DateTimeOffset(gridStart.ToDateTime(TimeOnly.MinValue));
+            var end = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MinValue));
+            var events = await Provider.GetEvents(start, end);
+            if (token.IsCancellationRequested) return;
+
+            var dict = new Dictionary<DateOnly, List<SchedulerEvent>>();
+            foreach (var e in events)
+            {
+                var s = DateOnly.FromDateTime(e.Start.LocalDateTime);
+                var en = DateOnly.FromDateTime(e.End.LocalDateTime);
+                if (e.End.LocalDateTime.TimeOfDay == TimeSpan.Zero && en > s) en = en.AddDays(-1);
+                for (var d = s; d <= en; d = d.AddDays(1))
+                {
+                    if (!dict.TryGetValue(d, out var list)) dict[d] = list = new();
+                    list.Add(e);
+                }
+            }
+            eventsByDay = dict;
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    public void Dispose() => loadCts?.Cancel();
+}

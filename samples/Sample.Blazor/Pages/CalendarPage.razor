@@ -1,0 +1,29 @@
+@page "/calendar"
+
+<PageTitle>Scheduler · Calendar</PageTitle>
+
+<h1>Scheduler — Calendar View</h1>
+
+<div class="demo-section">
+    <h2>Month grid</h2>
+    <p>Click a day to select it. Click an event to fire <code>OnEventSelected</code>.</p>
+
+    <SchedulerCalendarView
+        Provider="provider"
+        @bind-SelectedDate="selectedDate"
+        @bind-DisplayMonth="displayMonth"
+        FirstDayOfWeek="DayOfWeek.Sunday"
+        MaxEventsPerCell="2" />
+
+    <div class="state">
+        Selected day: <code>@selectedDate</code><br/>
+        Display month: <code>@displayMonth.ToString("MMMM yyyy")</code><br/>
+        Last event: <code>@(provider.LastSelectedEvent ?? "—")</code>
+    </div>
+</div>
+
+@code {
+    SampleEventProvider provider = new();
+    DateOnly selectedDate = DateOnly.FromDateTime(DateTime.Today);
+    DateOnly displayMonth = DateOnly.FromDateTime(DateTime.Today);
+}

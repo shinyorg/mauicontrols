@@ -1,0 +1,44 @@
+@page "/fab"
+
+<PageTitle>Fab</PageTitle>
+
+<h1>Floating Action Button</h1>
+
+<section class="demo-section">
+    <h2>Icon-only (circle)</h2>
+    <div class="row">
+        <Fab Icon="<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5'><path d='M12 5v14M5 12h14' stroke-linecap='round'/></svg>"
+             Clicked="@(_ => count++)" />
+        <Fab Icon="<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 2l2.39 6.95H22l-6 4.36 2.3 7.05L12 16l-6.3 4.36 2.3-7.05-6-4.36h7.61L12 2z'/></svg>"
+             FabBackgroundColor="#F59E0B" />
+        <Fab Icon="<svg viewBox='0 0 24 24' fill='currentColor'><path d='M3 6h18M3 12h18M3 18h18'/></svg>"
+             FabBackgroundColor="#EC4899" />
+    </div>
+    <p>Counter: <strong>@count</strong></p>
+</section>
+
+<section class="demo-section">
+    <h2>Extended (with text)</h2>
+    <div class="row">
+        <Fab Text="Compose"
+             Icon="<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z'/></svg>"
+             FabBackgroundColor="#10B981" />
+        <Fab Text="Add to Cart"
+             FabBackgroundColor="#7C3AED"
+             Icon="<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 7h12'/></svg>" />
+    </div>
+</section>
+
+<section class="demo-section">
+    <h2>Sizes &amp; shadow</h2>
+    <div class="row">
+        <Fab Icon="+" Size="40" />
+        <Fab Icon="+" Size="56" />
+        <Fab Icon="+" Size="72" />
+        <Fab Icon="+" HasShadow="false" FabBackgroundColor="#0EA5E9" />
+    </div>
+</section>
+
+@code {
+    int count;
+}

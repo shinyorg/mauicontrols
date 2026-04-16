@@ -1,10 +1,13 @@
 {
     "solution": {
-        "path": "Shiny.Maui.Controls.slnx",
+        "path": "Shiny.Controls.slnx",
         "projects": [
             "src/Shiny.Maui.Controls/Shiny.Maui.Controls.csproj",
             "src/Shiny.Maui.Controls.Markdown/Shiny.Maui.Controls.Markdown.csproj",
-            "src/Shiny.Maui.Controls.MermaidDiagrams/Shiny.Maui.Controls.MermaidDiagrams.csproj"
+            "src/Shiny.Maui.Controls.MermaidDiagrams/Shiny.Maui.Controls.MermaidDiagrams.csproj",
+            "src/Shiny.Blazor.Controls/Shiny.Blazor.Controls.csproj",
+            "src/Shiny.Blazor.Controls.Markdown/Shiny.Blazor.Controls.Markdown.csproj",
+            "src/Shiny.Blazor.Controls.MermaidDiagrams/Shiny.Blazor.Controls.MermaidDiagrams.csproj"
         ]
     }
 }

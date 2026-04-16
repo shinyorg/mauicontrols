@@ -1,0 +1,38 @@
+.md-host {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.md-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.md-input label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+}
+
+.md-input textarea,
+.md-input select {
+    width: 100%;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.md-preview {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 320px;
+}

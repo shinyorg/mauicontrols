@@ -1,0 +1,23 @@
+@page "/agendalist"
+
+<PageTitle>Scheduler · List</PageTitle>
+
+<h1>Scheduler — Calendar List</h1>
+
+<div class="demo-section" style="height:560px;display:flex;flex-direction:column;">
+    <h2>Grouped by day</h2>
+    <SchedulerCalendarListView Provider="provider"
+                               @bind-SelectedDate="selectedDate"
+                               DaysPerPage="30" />
+</div>
+
+<div class="demo-section">
+    <div class="state">
+        Last event: <code>@(provider.LastSelectedEvent ?? "—")</code>
+    </div>
+</div>
+
+@code {
+    SampleEventProvider provider = new();
+    DateOnly selectedDate = DateOnly.FromDateTime(DateTime.Today);
+}

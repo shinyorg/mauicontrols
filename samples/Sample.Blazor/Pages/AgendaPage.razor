@@ -1,0 +1,25 @@
+@page "/agenda"
+
+<PageTitle>Scheduler · Agenda</PageTitle>
+
+<h1>Scheduler — Agenda View</h1>
+
+<div class="demo-section" style="height:600px;display:flex;flex-direction:column;">
+    <h2>Single day timeline</h2>
+    <SchedulerAgendaView Provider="provider"
+                         @bind-SelectedDate="selectedDate"
+                         Use24HourTime="false" />
+</div>
+
+<div class="demo-section">
+    <div class="state">
+        Selected day: <code>@selectedDate</code><br/>
+        Last event: <code>@(provider.LastSelectedEvent ?? "—")</code><br/>
+        Last time slot tap: <code>@(provider.LastSelectedAgendaTime?.ToString("g") ?? "—")</code>
+    </div>
+</div>
+
+@code {
+    SampleEventProvider provider = new();
+    DateOnly selectedDate = DateOnly.FromDateTime(DateTime.Today);
+}

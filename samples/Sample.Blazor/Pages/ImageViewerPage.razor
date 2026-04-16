@@ -1,0 +1,39 @@
+@page "/imageviewer"
+
+<PageTitle>Image Viewer</PageTitle>
+
+<h1>Image Viewer</h1>
+
+<div class="demo-section">
+    <h2>Pinch &amp; pan</h2>
+    <p>Pinch to zoom, drag to pan, double-click to toggle zoom, X or backdrop to close.</p>
+    <div class="row">
+        @foreach (var url in samples)
+        {
+            var captured = url;
+            <img src="@url"
+                 alt="thumb"
+                 style="width:120px;height:80px;object-fit:cover;border-radius:8px;cursor:zoom-in;border:1px solid #E5E7EB;"
+                 @onclick="() => Open(captured)" />
+        }
+    </div>
+</div>
+
+<ImageViewer Source="@current" @bind-IsOpen="isOpen" MaxZoom="6" />
+
+@code {
+    bool isOpen;
+    string? current;
+    string[] samples = new[]
+    {
+        "https://picsum.photos/seed/blazor1/1200/800",
+        "https://picsum.photos/seed/blazor2/1200/800",
+        "https://picsum.photos/seed/blazor3/1200/800"
+    };
+
+    void Open(string url)
+    {
+        current = url;
+        isOpen = true;
+    }
+}

@@ -1,0 +1,31 @@
+@page "/fab-menu"
+
+<PageTitle>Fab Menu</PageTitle>
+
+<h1>Fab Menu</h1>
+
+<p>Speed-dial style menu. Tap the floating button at the bottom right to open.</p>
+<p>Last tapped: <strong>@lastTapped</strong></p>
+
+<div class="fab-menu-host">
+    <FabMenu Items="items"
+             Icon="+"
+             FabBackgroundColor="#7C3AED"
+             ItemTapped="OnItemTapped" />
+</div>
+
+@code {
+    string lastTapped = "(none)";
+
+    readonly List<FabMenuItem> items = new()
+    {
+        new FabMenuItem { Text = "New Note",     Icon = "📝", FabBackgroundColor = "#10B981", Tag = "note"  },
+        new FabMenuItem { Text = "New Photo",    Icon = "📷", FabBackgroundColor = "#F59E0B", Tag = "photo" },
+        new FabMenuItem { Text = "New Reminder", Icon = "⏰", FabBackgroundColor = "#EF4444", Tag = "alarm" },
+    };
+
+    void OnItemTapped(FabMenuItem item)
+    {
+        lastTapped = item.Text ?? item.Tag?.ToString() ?? "(unknown)";
+    }
+}

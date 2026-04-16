@@ -1,0 +1,62 @@
+@page "/markdown"
+
+<PageTitle>Markdown</PageTitle>
+
+<h1>Markdown</h1>
+
+<div class="md-host">
+    <div class="md-input">
+        <label for="md-source">Source</label>
+        <textarea id="md-source" @bind="source" @bind:event="oninput" rows="20"></textarea>
+        <label class="theme-toggle">
+            <input type="checkbox" @bind="dark" />
+            Dark theme
+        </label>
+    </div>
+    <div class="md-preview">
+        <MarkdownView Markdown="@source"
+                      Theme="@(dark ? MarkdownTheme.Dark : MarkdownTheme.Light)"
+                      LinkTapped="OnLinkTapped" />
+        <p class="last-link">Last link tapped: <strong>@lastLink</strong></p>
+    </div>
+</div>
+
+@code {
+    bool dark;
+    string lastLink = "(none)";
+
+    string source = """
+# Hello, Shiny.Blazor.Controls.Markdown
+
+A drop-in **Markdown viewer** for Blazor — same API surface as the MAUI version, just built on Razor + Markdig.
+
+## Features
+
+- Headings, **bold**, *italics*, `inline code`
+- Code blocks with syntax-friendly styling
+- Lists, blockquotes, tables, links and images
+- Light & dark themes via `MarkdownTheme`
+- Custom link handling via `LinkTapped`
+
+```csharp
+var html = Markdig.Markdown.ToHtml("# Hi");
+Console.WriteLine(html);
+```
+
+> Tip: hook the `LinkTapped` event to intercept clicks and decide whether to navigate yourself.
+
+| Feature | MAUI | Blazor |
+|---------|------|--------|
+| Renderer | Custom MAUI tree | HTML (via Markdig) |
+| Themes | ✓ | ✓ |
+| Links | ✓ | ✓ |
+
+[Visit shinylib.net](https://shinylib.net)
+""";
+
+    void OnLinkTapped(LinkTappedEventArgs args)
+    {
+        lastLink = args.Url;
+        // Set args.Handled = true to suppress the default behaviour (open in new tab).
+    }
+}

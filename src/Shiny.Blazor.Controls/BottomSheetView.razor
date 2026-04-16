@@ -1,0 +1,154 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@if (rendered)
+{
+    <div class="shiny-sheet-root @(isOpen ? "is-open" : "")"
+         @ref="rootEl"
+         style="@(isOpen ? "" : "pointer-events:none;")">
+        @if (HasBackdrop)
+        {
+            <div class="shiny-sheet-backdrop"
+                 style="opacity:@(backdropOpacity.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture));"
+                 @onclick="OnBackdropClick"></div>
+        }
+        <div class="shiny-sheet-container"
+             @ref="sheetEl"
+             style="@SheetStyle">
+            <div class="shiny-sheet-handle-host" @ref="handleEl">
+                <div class="shiny-sheet-handle" style="@HandleStyle"></div>
+            </div>
+            <div class="shiny-sheet-scroll">
+                @SheetContent
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    Microsoft.AspNetCore.Components.ElementReference rootEl;
+    Microsoft.AspNetCore.Components.ElementReference sheetEl;
+    Microsoft.AspNetCore.Components.ElementReference handleEl;
+    IJSObjectReference? module;
+    DotNetObjectReference<BottomSheetView>? selfRef;
+    bool rendered;
+    bool isOpen;
+    double backdropOpacity;
+
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public RenderFragment? SheetContent { get; set; }
+    [Parameter] public IList<DetentValue>? Detents { get; set; }
+    [Parameter] public string SheetBackgroundColor { get; set; } = "#FFFFFF";
+    [Parameter] public string HandleColor { get; set; } = "#9CA3AF";
+    [Parameter] public double SheetCornerRadius { get; set; } = 16;
+    [Parameter] public bool HasBackdrop { get; set; } = true;
+    [Parameter] public bool CloseOnBackdropTap { get; set; } = true;
+    [Parameter] public int AnimationDurationMs { get; set; } = 250;
+    [Parameter] public EventCallback Opened { get; set; }
+    [Parameter] public EventCallback Closed { get; set; }
+    [Parameter] public EventCallback<DetentValue> DetentChanged { get; set; }
+
+    IList<DetentValue> ResolveDetents()
+        => (Detents != null && Detents.Count > 0)
+            ? Detents
+            : new List<DetentValue> { DetentValue.Quarter, DetentValue.Half, DetentValue.Full };
+
+    string SheetStyle
+    {
+        get
+        {
+            var radius = SheetCornerRadius.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return $"background:{SheetBackgroundColor};border-top-left-radius:{radius}px;border-top-right-radius:{radius}px;transition:transform {AnimationDurationMs}ms cubic-bezier(.2,.8,.2,1);";
+        }
+    }
+
+    string HandleStyle => $"background:{HandleColor};";
+
+    protected override void OnInitialized()
+    {
+        isOpen = IsOpen;
+        backdropOpacity = IsOpen ? 0.5 : 0;
+        rendered = true;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsOpen != isOpen)
+        {
+            isOpen = IsOpen;
+            if (module is not null)
+            {
+                if (isOpen) await module.InvokeVoidAsync("open", sheetEl, GetSortedRatios());
+                else await module.InvokeVoidAsync("close", sheetEl);
+            }
+        }
+    }
+
+    double[] GetSortedRatios() => ResolveDetents().Select(d => d.Ratio).OrderBy(r => r).ToArray();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/Shiny.Blazor.Controls/bottom-sheet.js");
+            selfRef = DotNetObjectReference.Create(this);
+            await module.InvokeVoidAsync("init", rootEl, sheetEl, handleEl, selfRef, GetSortedRatios(), AnimationDurationMs);
+            if (isOpen)
+                await module.InvokeVoidAsync("open", sheetEl, GetSortedRatios());
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnOpenChanged(bool value)
+    {
+        if (isOpen == value) return;
+        isOpen = value;
+        IsOpen = value;
+        await IsOpenChanged.InvokeAsync(value);
+        if (value) await Opened.InvokeAsync();
+        else await Closed.InvokeAsync();
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public Task OnBackdropOpacity(double value)
+    {
+        backdropOpacity = value;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public Task OnDetentChanged(double ratio)
+    {
+        return DetentChanged.InvokeAsync(new DetentValue(ratio));
+    }
+
+    Task OnBackdropClick()
+    {
+        if (CloseOnBackdropTap)
+            return OnOpenChanged(false);
+        return Task.CompletedTask;
+    }
+
+    public async Task SnapToDetentAsync(DetentValue detent)
+    {
+        if (module is not null)
+            await module.InvokeVoidAsync("snapTo", sheetEl, detent.Ratio);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try { await module.InvokeVoidAsync("dispose", sheetEl); } catch { }
+            try { await module.DisposeAsync(); } catch { }
+        }
+        selfRef?.Dispose();
+    }
+}

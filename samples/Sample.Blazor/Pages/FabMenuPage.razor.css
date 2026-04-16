@@ -1,0 +1,13 @@
+.fab-menu-host {
+    position: relative;
+    height: 480px;
+    background: white;
+    border-radius: 12px;
+    border: 1px dashed #D1D5DB;
+}
+
+::deep .shiny-fab-menu {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+}

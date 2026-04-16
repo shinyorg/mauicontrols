@@ -1,0 +1,41 @@
+.shiny-md-editor {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 320px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.shiny-md-editor.is-split { flex-direction: row; }
+
+.shiny-md-editor-pane {
+    flex: 1 1 0;
+    display: flex;
+    min-height: 0;
+}
+
+.shiny-md-editor.is-split .shiny-md-editor-input {
+    border-right: 1px solid #E5E7EB;
+}
+
+.shiny-md-editor-textarea {
+    flex: 1;
+    width: 100%;
+    border: 0;
+    outline: none;
+    padding: 12px 14px;
+    resize: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #111827;
+    background: white;
+}
+
+.shiny-md-editor-preview {
+    overflow: auto;
+    padding: 12px 14px;
+}

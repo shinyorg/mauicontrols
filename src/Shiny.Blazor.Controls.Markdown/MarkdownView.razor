@@ -1,0 +1,114 @@
+@namespace Shiny.Blazor.Controls.Markdown
+@using global::Markdig
+@using Microsoft.JSInterop
+@inject Microsoft.JSInterop.IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="@CssClass" style="@HostStyle">
+    <div class="shiny-md-content" style="@ContentStyle" @ref="contentEl">
+        @((MarkupString)html)
+    </div>
+</div>
+
+@code {
+    string html = "";
+    Microsoft.AspNetCore.Components.ElementReference contentEl;
+    Microsoft.JSInterop.DotNetObjectReference<MarkdownView>? selfRef;
+    Microsoft.JSInterop.IJSObjectReference? module;
+
+    [Parameter] public string? Markdown { get; set; }
+    [Parameter] public MarkdownTheme? Theme { get; set; }
+    [Parameter] public bool IsScrollEnabled { get; set; } = true;
+    [Parameter] public EventCallback<LinkTappedEventArgs> LinkTapped { get; set; }
+
+    string CssClass => IsScrollEnabled ? "shiny-md shiny-md-scroll" : "shiny-md";
+
+    MarkdownTheme ResolveTheme() => Theme ?? MarkdownTheme.Light;
+
+    string HostStyle
+    {
+        get
+        {
+            var t = ResolveTheme();
+            return $"color:{t.TextColor};font-size:{t.BaseFontSize}px;";
+        }
+    }
+
+    string ContentStyle
+    {
+        get
+        {
+            var t = ResolveTheme();
+            var sb = new System.Text.StringBuilder();
+            sb.Append("--md-text:").Append(t.TextColor).Append(';');
+            sb.Append("--md-muted:").Append(t.MutedTextColor).Append(';');
+            sb.Append("--md-link:").Append(t.LinkColor).Append(';');
+            sb.Append("--md-code-bg:").Append(t.CodeBackgroundColor).Append(';');
+            sb.Append("--md-code-fg:").Append(t.CodeTextColor).Append(';');
+            sb.Append("--md-codeblock-bg:").Append(t.CodeBlockBackgroundColor).Append(';');
+            sb.Append("--md-codeblock-fg:").Append(t.CodeBlockTextColor).Append(';');
+            sb.Append("--md-quote-border:").Append(t.BlockquoteBorderColor).Append(';');
+            sb.Append("--md-quote-bg:").Append(t.BlockquoteBackgroundColor).Append(';');
+            sb.Append("--md-hr:").Append(t.HorizontalRuleColor).Append(';');
+            sb.Append("--md-table-border:").Append(t.TableBorderColor).Append(';');
+            sb.Append("--md-table-header-bg:").Append(t.TableHeaderBackgroundColor).Append(';');
+            sb.Append("--md-h1:").Append(t.H1FontSize).Append("px;");
+            sb.Append("--md-h2:").Append(t.H2FontSize).Append("px;");
+            sb.Append("--md-h3:").Append(t.H3FontSize).Append("px;");
+            sb.Append("--md-h4:").Append(t.H4FontSize).Append("px;");
+            sb.Append("--md-h5:").Append(t.H5FontSize).Append("px;");
+            sb.Append("--md-h6:").Append(t.H6FontSize).Append("px;");
+            sb.Append("--md-code-size:").Append(t.CodeFontSize).Append("px;");
+            sb.Append("--md-block-spacing:").Append(t.BlockSpacing).Append("px;");
+            sb.Append("--md-list-indent:").Append(t.ListIndent).Append("px;");
+            sb.Append("--md-code-font:").Append(t.CodeFontFamily).Append(';');
+            return sb.ToString();
+        }
+    }
+
+    static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .UseSoftlineBreakAsHardlineBreak()
+        .Build();
+
+    protected override void OnParametersSet()
+    {
+        html = string.IsNullOrWhiteSpace(Markdown)
+            ? string.Empty
+            : Markdig.Markdown.ToHtml(Markdown, Pipeline);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<Microsoft.JSInterop.IJSObjectReference>(
+                "import",
+                "./_content/Shiny.Blazor.Controls.Markdown/markdown-interop.js");
+            selfRef = Microsoft.JSInterop.DotNetObjectReference.Create(this);
+        }
+        if (module is not null && selfRef is not null)
+            await module.InvokeVoidAsync("attachLinks", contentEl, selfRef);
+    }
+
+    [Microsoft.JSInterop.JSInvokable]
+    public async Task OnLinkClicked(string url)
+    {
+        var args = new LinkTappedEventArgs(url);
+        if (LinkTapped.HasDelegate)
+            await LinkTapped.InvokeAsync(args);
+
+        if (!args.Handled && !string.IsNullOrEmpty(url))
+            await JS.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try { await module.DisposeAsync(); }
+            catch { /* ignore */ }
+        }
+        selfRef?.Dispose();
+    }
+}

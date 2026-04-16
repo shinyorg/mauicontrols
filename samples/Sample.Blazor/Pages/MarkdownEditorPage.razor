@@ -1,0 +1,39 @@
+@page "/markdown-editor"
+
+<PageTitle>Markdown Editor</PageTitle>
+
+<h1>Markdown Editor</h1>
+
+<div class="demo-section">
+    <h2>Live preview</h2>
+    <p>Edit on the left, see the rendered Markdown on the right.</p>
+    <div style="height:520px;display:flex;">
+        <MarkdownEditor @bind-Markdown="text" Theme="MarkdownTheme.Light" IsSplit="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Editor only</h2>
+    <div style="height:200px;display:flex;">
+        <MarkdownEditor @bind-Markdown="text" IsSplit="false" Placeholder="Markdown only — no preview" />
+    </div>
+</div>
+
+@code {
+    string? text = """
+# Hello, Markdown editor!
+
+Type on the left, watch the preview render on the right.
+
+- Lists
+- **Bold** and _italic_
+- `inline code`
+- Links: [Shiny](https://shinylib.net)
+
+```csharp
+Console.WriteLine("Hello, world!");
+```
+
+> Block quotes work too.
+""";
+}

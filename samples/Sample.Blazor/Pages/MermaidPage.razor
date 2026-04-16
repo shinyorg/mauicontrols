@@ -1,0 +1,34 @@
+@page "/mermaid"
+
+<PageTitle>Mermaid</PageTitle>
+
+<h1>Mermaid Diagrams</h1>
+
+<div class="md-host">
+    <div class="md-input">
+        <label for="mm-source">Source</label>
+        <textarea id="mm-source" @bind="source" @bind:event="oninput" rows="20"></textarea>
+        <label for="mm-theme">Theme</label>
+        <select id="mm-theme" @bind="theme">
+            <option value="default">default</option>
+            <option value="forest">forest</option>
+            <option value="dark">dark</option>
+            <option value="neutral">neutral</option>
+        </select>
+    </div>
+    <div class="md-preview">
+        <MermaidDiagram Diagram="@source" Theme="@theme" />
+    </div>
+</div>
+
+@code {
+    string theme = "default";
+    string source = """
+flowchart TD
+    A[Start] --> B{Has account?}
+    B -- yes --> C[Sign in]
+    B -- no  --> D[Sign up]
+    C --> E[Dashboard]
+    D --> E
+""";
+}

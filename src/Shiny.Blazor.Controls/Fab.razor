@@ -1,0 +1,91 @@
+@namespace Shiny.Blazor.Controls
+
+<button type="button"
+        class="@CssClass"
+        style="@InlineStyle"
+        @onclick="HandleClick"
+        @onclick:stopPropagation="true"
+        disabled="@Disabled">
+    @if (!string.IsNullOrEmpty(Icon))
+    {
+        <span class="shiny-fab-icon" style="@IconStyle">
+            @if (IsImageUrl(Icon!))
+            {
+                <img src="@Icon" alt="" />
+            }
+            else
+            {
+                @((MarkupString)Icon!)
+            }
+        </span>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span class="shiny-fab-text">@Text</span>
+    }
+</button>
+
+@code {
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string FabBackgroundColor { get; set; } = "#2196F3";
+    [Parameter] public string TextColor { get; set; } = "#FFFFFF";
+    [Parameter] public string? BorderColor { get; set; }
+    [Parameter] public double BorderThickness { get; set; }
+    [Parameter] public double FontSize { get; set; } = 14;
+    [Parameter] public double Size { get; set; } = 56;
+    [Parameter] public double IconSize { get; set; } = 24;
+    [Parameter] public bool HasShadow { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; }
+
+    [Parameter] public EventCallback<MouseEventArgs> Clicked { get; set; }
+
+    string CssClass
+    {
+        get
+        {
+            var c = "shiny-fab";
+            if (HasShadow) c += " shiny-fab-shadow";
+            if (string.IsNullOrEmpty(Text)) c += " shiny-fab-circle";
+            return c;
+        }
+    }
+
+    string InlineStyle
+    {
+        get
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append("background-color:").Append(FabBackgroundColor).Append(';');
+            sb.Append("color:").Append(TextColor).Append(';');
+            sb.Append("font-size:").Append(FontSize).Append("px;");
+            sb.Append("height:").Append(Size).Append("px;");
+            sb.Append("border-radius:").Append(Size / 2).Append("px;");
+            if (string.IsNullOrEmpty(Text))
+            {
+                sb.Append("width:").Append(Size).Append("px;");
+                sb.Append("padding:0;");
+            }
+            if (BorderThickness > 0 && !string.IsNullOrEmpty(BorderColor))
+                sb.Append("border:").Append(BorderThickness).Append("px solid ").Append(BorderColor).Append(';');
+            return sb.ToString();
+        }
+    }
+
+    string IconStyle => $"width:{IconSize}px;height:{IconSize}px;";
+
+    async Task HandleClick(MouseEventArgs e)
+    {
+        if (Disabled) return;
+        if (Clicked.HasDelegate)
+            await Clicked.InvokeAsync(e);
+    }
+
+    static bool IsImageUrl(string s)
+        => s.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+           || s.StartsWith("/")
+           || s.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
+}

@@ -1,0 +1,56 @@
+.shiny-fab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 20px;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+    font-family: inherit;
+    line-height: 1;
+}
+
+.shiny-fab:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.shiny-fab:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+.shiny-fab:not(:disabled):active {
+    transform: translateY(0);
+}
+
+.shiny-fab-shadow {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+.shiny-fab-shadow:not(:disabled):hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.shiny-fab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shiny-fab-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.shiny-fab-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.shiny-fab-text {
+    white-space: nowrap;
+    line-height: 1;
+}

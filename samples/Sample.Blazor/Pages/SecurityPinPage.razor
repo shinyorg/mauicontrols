@@ -1,0 +1,40 @@
+@page "/securitypin"
+
+<PageTitle>Security Pin</PageTitle>
+
+<h1>Security Pin</h1>
+
+<div class="demo-section">
+    <h2>Default (4-digit numeric)</h2>
+    <SecurityPin @bind-Value="value4" Length="4" Completed="OnCompleted" />
+    <div class="state">Value: <code>@value4</code></div>
+</div>
+
+<div class="demo-section">
+    <h2>Six digits, masked, custom colors</h2>
+    <SecurityPin @bind-Value="value6"
+                 Length="6"
+                 HideCharacter="●"
+                 CellSize="44"
+                 CellSpacing="6"
+                 CellBorderColor="#9CA3AF"
+                 CellFocusedBorderColor="#3B82F6"
+                 CellBackgroundColor="#F9FAFB"
+                 CellTextColor="#111827"
+                 FontSize="22"
+                 Completed="OnCompleted" />
+    <div class="state">Value: <code>@value6</code></div>
+</div>
+
+<div class="demo-section">
+    <h2>Last completion</h2>
+    <p>Last completed value: <code>@lastCompleted</code></p>
+</div>
+
+@code {
+    string value4 = "";
+    string value6 = "";
+    string? lastCompleted;
+
+    void OnCompleted(SecurityPinCompletedEventArgs e) => lastCompleted = e.Value;
+}

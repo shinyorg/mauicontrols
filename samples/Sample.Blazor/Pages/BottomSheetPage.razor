@@ -1,0 +1,34 @@
+@page "/bottomsheet"
+
+<PageTitle>Bottom Sheet</PageTitle>
+
+<h1>Bottom Sheet</h1>
+
+<div class="demo-section">
+    <h2>Detents</h2>
+    <p>Drag the handle. Snap to a detent or pull below the lowest to dismiss.</p>
+    <div class="row">
+        <button @onclick="() => isOpen = true">Open Sheet</button>
+        <button @onclick="() => detents = new List<DetentValue>{ DetentValue.Half, DetentValue.Full }">Half + Full only</button>
+        <button @onclick="() => detents = new List<DetentValue>{ DetentValue.Quarter, DetentValue.Half, DetentValue.ThreeQuarters, DetentValue.Full }">All four</button>
+    </div>
+    <div class="state">IsOpen: <code>@isOpen</code></div>
+</div>
+
+<BottomSheetView @bind-IsOpen="isOpen"
+                 Detents="detents"
+                 SheetCornerRadius="20">
+    <SheetContent>
+        <h2>Hello from a sheet</h2>
+        <p>Drag the handle, tap the backdrop, or press the button to dismiss.</p>
+        <button @onclick="() => isOpen = false">Close</button>
+    </SheetContent>
+</BottomSheetView>
+
+@code {
+    bool isOpen;
+    IList<DetentValue> detents = new List<DetentValue>
+    {
+        DetentValue.Quarter, DetentValue.Half, DetentValue.Full
+    };
+}

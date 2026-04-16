@@ -1,0 +1,193 @@
+@namespace Shiny.Blazor.Controls.Scheduler
+@implements IDisposable
+
+<div class="shiny-cal-list" @ref="hostEl" @onscroll="OnScroll">
+    @if (isLoading && groups.Count == 0)
+    {
+        <div class="shiny-cal-list-empty">Loading…</div>
+    }
+    else if (groups.Count == 0)
+    {
+        <div class="shiny-cal-list-empty">No events</div>
+    }
+    else
+    {
+        @foreach (var group in groups)
+        {
+            <div class="shiny-cal-list-day @(group.IsToday ? "is-today" : "")">
+                <div class="shiny-cal-list-header"
+                     style="background:@DayHeaderBackgroundColor;color:@DayHeaderTextColor;">
+                    <div class="shiny-cal-list-date">@group.DateDisplay</div>
+                    <div class="shiny-cal-list-count">@group.EventCountDisplay</div>
+                </div>
+                <div class="shiny-cal-list-events">
+                    @foreach (var evt in group)
+                    {
+                        var captured = evt;
+                        <div class="shiny-cal-list-event"
+                             @onclick="() => OnEventTapped(captured)">
+                            <div class="shiny-cal-list-event-bar"
+                                 style="background:@(evt.Color ?? DefaultEventColor);"></div>
+                            <div class="shiny-cal-list-event-body">
+                                <div class="shiny-cal-list-event-title">@evt.Title</div>
+                                @if (!string.IsNullOrWhiteSpace(evt.Description))
+                                {
+                                    <div class="shiny-cal-list-event-desc">@evt.Description</div>
+                                }
+                                <div class="shiny-cal-list-event-time">
+                                    @if (evt.IsAllDay)
+                                    {
+                                        <text>All day</text>
+                                    }
+                                    else
+                                    {
+                                        @evt.Start.LocalDateTime.ToString("h:mm tt")
+                                        <text> – </text>
+                                        @evt.End.LocalDateTime.ToString("h:mm tt")
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    Microsoft.AspNetCore.Components.ElementReference hostEl;
+    List<CalendarListDayGroup> groups = new();
+    DateOnly rangeStart;
+    DateOnly rangeEnd;
+    bool isLoading;
+    bool isLoadingMore;
+    CancellationTokenSource? loadCts;
+
+    [Parameter] public ISchedulerEventProvider? Provider { get; set; }
+    [Parameter] public DateOnly SelectedDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+    [Parameter] public EventCallback<DateOnly> SelectedDateChanged { get; set; }
+    [Parameter] public int DaysPerPage { get; set; } = 30;
+    [Parameter] public string DefaultEventColor { get; set; } = "#6366F1";
+    [Parameter] public string DayHeaderBackgroundColor { get; set; } = "#F9FAFB";
+    [Parameter] public string DayHeaderTextColor { get; set; } = "#111827";
+    [Parameter] public DateOnly? MinDate { get; set; }
+    [Parameter] public DateOnly? MaxDate { get; set; }
+
+    ISchedulerEventProvider? lastProvider;
+    DateOnly lastSelectedDate;
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(Provider, lastProvider) || SelectedDate != lastSelectedDate)
+        {
+            lastProvider = Provider;
+            lastSelectedDate = SelectedDate;
+            _ = LoadInitialAsync();
+        }
+    }
+
+    void OnEventTapped(SchedulerEvent evt) => Provider?.OnEventSelected(evt);
+
+    async Task LoadInitialAsync()
+    {
+        if (Provider is null) return;
+        loadCts?.Cancel();
+        loadCts = new CancellationTokenSource();
+        var token = loadCts.Token;
+        isLoading = true;
+        groups.Clear();
+        StateHasChanged();
+        try
+        {
+            var half = DaysPerPage / 2;
+            rangeStart = SelectedDate.AddDays(-half);
+            rangeEnd = SelectedDate.AddDays(half);
+            if (MinDate.HasValue && rangeStart < MinDate.Value) rangeStart = MinDate.Value;
+            if (MaxDate.HasValue && rangeEnd > MaxDate.Value) rangeEnd = MaxDate.Value;
+            var loaded = await LoadRangeAsync(rangeStart, rangeEnd, token);
+            if (token.IsCancellationRequested) return;
+            groups = loaded;
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    async Task<List<CalendarListDayGroup>> LoadRangeAsync(DateOnly start, DateOnly end, CancellationToken token)
+    {
+        var startDto = new DateTimeOffset(start.ToDateTime(TimeOnly.MinValue));
+        var endDto = new DateTimeOffset(end.ToDateTime(TimeOnly.MinValue));
+        var events = await Provider!.GetEvents(startDto, endDto);
+        if (token.IsCancellationRequested) return new();
+
+        var result = new List<CalendarListDayGroup>();
+        for (var date = start; date < end; date = date.AddDays(1))
+        {
+            var dayEvents = events
+                .Where(e =>
+                {
+                    var s = DateOnly.FromDateTime(e.Start.LocalDateTime);
+                    var en = e.End.LocalDateTime.TimeOfDay == TimeSpan.Zero
+                        ? DateOnly.FromDateTime(e.End.LocalDateTime.AddDays(-1))
+                        : DateOnly.FromDateTime(e.End.LocalDateTime);
+                    return s <= date && en >= date;
+                })
+                .OrderBy(e => !e.IsAllDay)
+                .ThenBy(e => e.Start)
+                .ToList();
+            if (dayEvents.Count > 0)
+                result.Add(new CalendarListDayGroup(date, dayEvents));
+        }
+        return result;
+    }
+
+    async Task OnScroll(EventArgs _)
+    {
+        if (isLoadingMore || Provider is null) return;
+        // Detect near-end load-more via JS would be more accurate; this is a no-op without scroll info.
+        await Task.CompletedTask;
+    }
+
+    public async Task LoadMoreNextAsync()
+    {
+        if (isLoadingMore || Provider is null) return;
+        if (MaxDate.HasValue && rangeEnd >= MaxDate.Value) return;
+        isLoadingMore = true;
+        try
+        {
+            var newEnd = rangeEnd.AddDays(DaysPerPage);
+            if (MaxDate.HasValue && newEnd > MaxDate.Value) newEnd = MaxDate.Value;
+            var loaded = await LoadRangeAsync(rangeEnd, newEnd, CancellationToken.None);
+            rangeEnd = newEnd;
+            groups.AddRange(loaded);
+            StateHasChanged();
+        }
+        finally { isLoadingMore = false; }
+    }
+
+    public async Task LoadMorePreviousAsync()
+    {
+        if (isLoadingMore || Provider is null) return;
+        if (MinDate.HasValue && rangeStart <= MinDate.Value) return;
+        isLoadingMore = true;
+        try
+        {
+            var newStart = rangeStart.AddDays(-DaysPerPage);
+            if (MinDate.HasValue && newStart < MinDate.Value) newStart = MinDate.Value;
+            var loaded = await LoadRangeAsync(newStart, rangeStart, CancellationToken.None);
+            rangeStart = newStart;
+            groups.InsertRange(0, loaded);
+            StateHasChanged();
+        }
+        finally { isLoadingMore = false; }
+    }
+
+    public void Dispose() => loadCts?.Cancel();
+}

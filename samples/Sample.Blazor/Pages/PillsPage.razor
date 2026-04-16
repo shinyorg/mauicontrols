@@ -1,0 +1,36 @@
+@page "/pills"
+
+<PageTitle>Pills</PageTitle>
+
+<h1>Pill</h1>
+
+<section class="demo-section">
+    <h2>Built-in types</h2>
+    <div class="row">
+        <Pill Text="None" Type="PillType.None" />
+        <Pill Text="Success" Type="PillType.Success" />
+        <Pill Text="Info" Type="PillType.Info" />
+        <Pill Text="Warning" Type="PillType.Warning" />
+        <Pill Text="Caution" Type="PillType.Caution" />
+        <Pill Text="Critical" Type="PillType.Critical" />
+    </div>
+</section>
+
+<section class="demo-section">
+    <h2>Custom colors</h2>
+    <div class="row">
+        <Pill Text="Brand" PillColor="#312E81" PillTextColor="#E0E7FF" PillBorderColor="#4338CA" />
+        <Pill Text="Mint" PillColor="#A7F3D0" PillTextColor="#065F46" />
+        <Pill Text="Orange" PillColor="#FED7AA" PillTextColor="#9A3412" />
+    </div>
+</section>
+
+<section class="demo-section">
+    <h2>Sizes &amp; bold</h2>
+    <div class="row">
+        <Pill Text="Small" Type="PillType.Info" FontSize="10" />
+        <Pill Text="Default" Type="PillType.Info" />
+        <Pill Text="Large" Type="PillType.Info" FontSize="16" />
+        <Pill Text="Bold" Type="PillType.Info" Bold="true" />
+    </div>
+</section>

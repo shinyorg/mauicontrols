@@ -1,0 +1,57 @@
+@namespace Shiny.Blazor.Controls
+
+<CascadingValue Value="this" IsFixed="true">
+    <div class="shiny-tv" style="@TableStyle">
+        @ChildContent
+    </div>
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // Cascading style properties consumed by child cells
+    [Parameter] public string? CellBackgroundColor { get; set; }
+    [Parameter] public string? CellSelectedColor { get; set; }
+    [Parameter] public string? CellTitleColor { get; set; }
+    [Parameter] public string? CellDescriptionColor { get; set; }
+    [Parameter] public string? CellHintTextColor { get; set; }
+    [Parameter] public string? CellValueTextColor { get; set; }
+    [Parameter] public string? CellBorderColor { get; set; }
+    [Parameter] public string? CellAccentColor { get; set; }
+    [Parameter] public double CellTitleFontSize { get; set; } = -1;
+    [Parameter] public double CellDescriptionFontSize { get; set; } = -1;
+    [Parameter] public double CellHintTextFontSize { get; set; } = -1;
+    [Parameter] public double CellValueTextFontSize { get; set; } = -1;
+    [Parameter] public double CellIconSize { get; set; } = -1;
+    [Parameter] public double CellIconRadius { get; set; } = -1;
+    [Parameter] public double CellBorderWidth { get; set; } = -1;
+    [Parameter] public double CellBorderRadius { get; set; } = -1;
+
+    // Separator / section separator
+    [Parameter] public bool ShowSectionSeparator { get; set; } = true;
+    [Parameter] public double SectionSeparatorHeight { get; set; } = 8;
+    [Parameter] public string? SectionSeparatorColor { get; set; }
+    [Parameter] public string? SeparatorColor { get; set; }
+    [Parameter] public double SeparatorHeight { get; set; } = -1;
+    [Parameter] public double SeparatorPadding { get; set; } = -1;
+
+    string TableStyle
+    {
+        get
+        {
+            var sb = new System.Text.StringBuilder();
+            if (!string.IsNullOrEmpty(CellBackgroundColor))
+                sb.Append("--shiny-tv-cell-bg:").Append(CellBackgroundColor).Append(';');
+            if (!string.IsNullOrEmpty(SeparatorColor))
+                sb.Append("--shiny-tv-sep-color:").Append(SeparatorColor).Append(';');
+            if (SeparatorHeight >= 0)
+                sb.Append("--shiny-tv-sep-height:").Append(SeparatorHeight).Append("px;");
+            if (SeparatorPadding >= 0)
+                sb.Append("--shiny-tv-sep-padding:").Append(SeparatorPadding).Append("px;");
+            if (!string.IsNullOrEmpty(SectionSeparatorColor))
+                sb.Append("--shiny-tv-section-sep-color:").Append(SectionSeparatorColor).Append(';');
+            sb.Append("--shiny-tv-section-sep-height:").Append(SectionSeparatorHeight).Append("px;");
+            return sb.ToString();
+        }
+    }
+}

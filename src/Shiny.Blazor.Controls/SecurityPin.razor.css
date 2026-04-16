@@ -1,0 +1,38 @@
+.shiny-pin {
+    position: relative;
+    display: inline-block;
+}
+
+.shiny-pin-hidden {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border: 0;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    cursor: pointer;
+    z-index: 2;
+    padding: 0;
+    margin: 0;
+}
+
+.shiny-pin-cells {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.shiny-pin-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.shiny-pin-cell.is-current {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}

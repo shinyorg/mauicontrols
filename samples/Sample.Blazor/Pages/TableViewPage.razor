@@ -1,0 +1,44 @@
+@page "/tableview"
+
+<PageTitle>Table View</PageTitle>
+
+<h1>Table View</h1>
+
+<p>Demonstrates a templated section bound to a collection.</p>
+
+<TableView CellAccentColor="#10B981">
+    <TableSection Title="Profile">
+        <LabelCell Title="Name" ValueText="Allan Ritchie" />
+        <LabelCell Title="Plan" ValueText="Pro" />
+    </TableSection>
+
+    <TableSection Title="Devices" ItemsSource="devices" ItemTemplate="DeviceTemplate" />
+
+    <TableSection Title="Danger zone">
+        <ButtonCell Title="Delete account" ButtonTextColor="#DC2626" OnClick="@(() => deleted = true)" />
+    </TableSection>
+</TableView>
+
+@if (deleted)
+{
+    <p style="color:#DC2626">Account deleted (demo only).</p>
+}
+
+@code {
+    bool deleted;
+
+    record Device(string Name, string Status);
+
+    readonly List<Device> devices = new()
+    {
+        new("iPhone 15 Pro", "online"),
+        new("MacBook Pro", "online"),
+        new("Pixel 8", "offline"),
+    };
+
+    RenderFragment<object> DeviceTemplate => item => __builder =>
+    {
+        var d = (Device)item;
+        <LabelCell Title="@d.Name" ValueText="@d.Status" />
+    };
+}

@@ -1,0 +1,32 @@
+@namespace Shiny.Blazor.Controls.Markdown
+
+<div class="shiny-md-editor @(IsSplit ? "is-split" : "")">
+    <div class="shiny-md-editor-pane shiny-md-editor-input">
+        <textarea class="shiny-md-editor-textarea"
+                  spellcheck="@SpellCheck.ToString().ToLowerInvariant()"
+                  placeholder="@Placeholder"
+                  value="@Markdown"
+                  @oninput="OnInput"></textarea>
+    </div>
+    @if (IsSplit)
+    {
+        <div class="shiny-md-editor-pane shiny-md-editor-preview">
+            <MarkdownView Markdown="@Markdown" Theme="@Theme" IsScrollEnabled="true" />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Markdown { get; set; }
+    [Parameter] public EventCallback<string?> MarkdownChanged { get; set; }
+    [Parameter] public MarkdownTheme? Theme { get; set; }
+    [Parameter] public bool IsSplit { get; set; } = true;
+    [Parameter] public bool SpellCheck { get; set; } = true;
+    [Parameter] public string Placeholder { get; set; } = "Type Markdown here…";
+
+    Task OnInput(ChangeEventArgs e)
+    {
+        Markdown = e.Value?.ToString();
+        return MarkdownChanged.InvokeAsync(Markdown);
+    }
+}

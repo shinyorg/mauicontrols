@@ -1,0 +1,77 @@
+@page "/cells"
+
+<PageTitle>Cells</PageTitle>
+
+<h1>Cells</h1>
+
+<p>Each cell type rendered inside a TableView with a single section.</p>
+
+<TableView CellAccentColor="#2563EB">
+    <TableSection Title="Display">
+        <LabelCell Title="Username" ValueText="@username" />
+        <LabelCell Title="Build" ValueText="2026.4.16" Description="Latest" />
+        <LabelCell Title="Server" ValueText="us-east-1" HintText="primary" />
+    </TableSection>
+
+    <TableSection Title="Toggles">
+        <SwitchCell Title="Notifications" @bind-On="notifications" />
+        <SwitchCell Title="Background sync" Description="Sync data over WiFi only" @bind-On="bgSync" />
+        <CheckboxCell Title="Subscribe" @bind-Checked="subscribe" />
+        <SimpleCheckCell Title="Default" @bind-Checked="isDefault" />
+    </TableSection>
+
+    <TableSection Title="Choose one">
+        <RadioCell Title="Small"  GroupName="size" Checked="@(size == "Small")"  CheckedChanged="@(_ => size = "Small")" />
+        <RadioCell Title="Medium" GroupName="size" Checked="@(size == "Medium")" CheckedChanged="@(_ => size = "Medium")" />
+        <RadioCell Title="Large"  GroupName="size" Checked="@(size == "Large")"  CheckedChanged="@(_ => size = "Large")" />
+    </TableSection>
+
+    <TableSection Title="Edit">
+        <EntryCell Title="Email" Placeholder="user@example.com" @bind-ValueText="email" />
+        <EntryCell Title="Password" IsPassword="true" @bind-ValueText="password" />
+        <NumberPickerCell Title="Age" Minimum="0" Maximum="120" @bind-Value="age" />
+        <DurationPickerCell Title="Reminder" @bind-Duration="reminder" />
+    </TableSection>
+
+    <TableSection Title="Pick">
+        <TextPickerCell Title="Country" Items="@countries" @bind-SelectedItem="country" Placeholder="Select..." />
+        <PickerCell Title="Theme" Items="@themes" @bind-SelectedItem="theme" />
+        <DatePickerCell Title="Birthdate" @bind-Date="birthdate" />
+        <TimePickerCell Title="Wakeup" @bind-Time="wakeup" />
+    </TableSection>
+
+    <TableSection Title="Actions">
+        <CommandCell Title="About" AccessoryText="v1.0" Tapped="@(() => message = "Tapped About")" />
+        <CommandCell Title="Privacy" Tapped="@(() => message = "Tapped Privacy")" />
+        <ButtonCell Title="Sign out" ButtonTextColor="#DC2626" OnClick="@(() => message = $"Signed out at {DateTime.Now:T}")" />
+    </TableSection>
+</TableView>
+
+<p class="state">Last action: <strong>@message</strong></p>
+
+<pre class="state">
+notifications=@notifications  bgSync=@bgSync  subscribe=@subscribe  default=@isDefault
+size=@size  email=@email  age=@age  reminder=@reminder
+country=@country  theme=@theme  birthdate=@birthdate?.ToString("d")  wakeup=@wakeup
+</pre>
+
+@code {
+    string username = "@allanritchie";
+    bool notifications = true;
+    bool bgSync;
+    bool subscribe;
+    bool isDefault = true;
+    string size = "Medium";
+    string email = "";
+    string password = "";
+    double age = 35;
+    TimeSpan reminder = new(2, 30, 0);
+    string? country;
+    string? theme = "Light";
+    DateTime? birthdate;
+    TimeSpan? wakeup = new(7, 0, 0);
+    string message = "(none)";
+
+    readonly string[] countries = { "Canada", "United States", "Mexico", "United Kingdom", "Germany" };
+    readonly string[] themes = { "Light", "Dark", "System" };
+}

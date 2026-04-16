@@ -1,0 +1,179 @@
+@namespace Shiny.Blazor.Controls.Scheduler
+@implements IDisposable
+
+<div class="shiny-agenda">
+    @if (allDayEvents.Count > 0)
+    {
+        <div class="shiny-agenda-allday">
+            <div class="shiny-agenda-allday-label">All-day</div>
+            <div class="shiny-agenda-allday-list">
+                @foreach (var evt in allDayEvents)
+                {
+                    var captured = evt;
+                    <div class="shiny-agenda-allday-event"
+                         style="background:@(evt.Color ?? DefaultEventColor);"
+                         @onclick="() => OnEventTapped(captured)">@evt.Title</div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (ShowCarouselDatePicker)
+    {
+        <div class="shiny-agenda-datepicker">
+            @for (var i = -3; i <= 3; i++)
+            {
+                var d = SelectedDate.AddDays(i);
+                var captured = d;
+                var isSel = d == SelectedDate;
+                var isToday = d == DateOnly.FromDateTime(DateTime.Today);
+                <div class="shiny-agenda-date @(isSel ? "is-selected" : "") @(isToday ? "is-today" : "")"
+                     @onclick="() => SetSelectedDateAsync(captured)">
+                    <div class="shiny-agenda-date-name">@d.ToString("ddd")</div>
+                    <div class="shiny-agenda-date-num">@d.Day</div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="shiny-agenda-day">
+        <div class="shiny-agenda-day-header">@SelectedDate.ToString("dddd, MMMM d, yyyy")</div>
+        <div class="shiny-agenda-timeline" style="--slot-h:@(TimeSlotHeight)px;">
+            @for (var hour = 0; hour < 24; hour++)
+            {
+                var hCaptured = hour;
+                <div class="shiny-agenda-row" style="height:@(TimeSlotHeight)px;"
+                     @onclick="() => OnTimeSlotTappedAsync(hCaptured)">
+                    <div class="shiny-agenda-timecol">@FormatHour(hour)</div>
+                    <div class="shiny-agenda-slot"></div>
+                </div>
+            }
+            @foreach (var (evt, top, height) in PositionedEvents())
+            {
+                var captured = evt;
+                <div class="shiny-agenda-event"
+                     style="top:@(top)px;height:@(height)px;background:@(evt.Color ?? DefaultEventColor);"
+                     @onclick:stopPropagation
+                     @onclick="() => OnEventTapped(captured)">
+                    <div class="shiny-agenda-event-title">@evt.Title</div>
+                    <div class="shiny-agenda-event-time">@evt.Start.LocalDateTime.ToString(TimeFormat) – @evt.End.LocalDateTime.ToString(TimeFormat)</div>
+                </div>
+            }
+            @if (ShowCurrentTimeMarker && SelectedDate == DateOnly.FromDateTime(DateTime.Today))
+            {
+                var minutes = DateTime.Now.TimeOfDay.TotalMinutes;
+                var top = minutes * (TimeSlotHeight / 60.0);
+                <div class="shiny-agenda-now" style="top:@(top.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))px;background:@CurrentTimeMarkerColor;"></div>
+            }
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="shiny-agenda-loader">Loading…</div>
+    }
+</div>
+
+@code {
+    List<SchedulerEvent> allDayEvents = new();
+    List<SchedulerEvent> timedEvents = new();
+    bool isLoading;
+    CancellationTokenSource? loadCts;
+
+    [Parameter] public ISchedulerEventProvider? Provider { get; set; }
+    [Parameter] public DateOnly SelectedDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+    [Parameter] public EventCallback<DateOnly> SelectedDateChanged { get; set; }
+    [Parameter] public bool ShowCarouselDatePicker { get; set; } = true;
+    [Parameter] public bool ShowCurrentTimeMarker { get; set; } = true;
+    [Parameter] public string CurrentTimeMarkerColor { get; set; } = "#EF4444";
+    [Parameter] public string DefaultEventColor { get; set; } = "#6366F1";
+    [Parameter] public double TimeSlotHeight { get; set; } = 60.0;
+    [Parameter] public DateOnly? MinDate { get; set; }
+    [Parameter] public DateOnly? MaxDate { get; set; }
+    [Parameter] public bool Use24HourTime { get; set; } = true;
+
+    string TimeFormat => Use24HourTime ? "HH:mm" : "h:mm tt";
+
+    ISchedulerEventProvider? lastProvider;
+    DateOnly lastSelectedDate;
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(Provider, lastProvider) || SelectedDate != lastSelectedDate)
+        {
+            lastProvider = Provider;
+            lastSelectedDate = SelectedDate;
+            _ = LoadEventsAsync();
+        }
+    }
+
+    string FormatHour(int hour) => Use24HourTime ? $"{hour:D2}:00" : new TimeOnly(hour, 0).ToString("h tt");
+
+    IEnumerable<(SchedulerEvent Event, double Top, double Height)> PositionedEvents()
+    {
+        foreach (var evt in timedEvents)
+        {
+            var s = evt.Start.LocalDateTime;
+            var e = evt.End.LocalDateTime;
+            if (s.Date < SelectedDate.ToDateTime(TimeOnly.MinValue)) s = SelectedDate.ToDateTime(TimeOnly.MinValue);
+            if (e.Date > SelectedDate.ToDateTime(TimeOnly.MinValue)) e = SelectedDate.ToDateTime(new TimeOnly(23, 59));
+            var top = s.TimeOfDay.TotalMinutes * (TimeSlotHeight / 60.0);
+            var height = Math.Max(20, (e - s).TotalMinutes * (TimeSlotHeight / 60.0));
+            yield return (evt, top, height);
+        }
+    }
+
+    async Task SetSelectedDateAsync(DateOnly d)
+    {
+        if (MinDate.HasValue && d < MinDate.Value) return;
+        if (MaxDate.HasValue && d > MaxDate.Value) return;
+        SelectedDate = d;
+        await SelectedDateChanged.InvokeAsync(d);
+    }
+
+    Task OnTimeSlotTappedAsync(int hour)
+    {
+        var dt = new DateTimeOffset(SelectedDate.ToDateTime(new TimeOnly(hour, 0)));
+        if (Provider is not null && Provider.CanSelectAgendaTime(dt))
+            Provider.OnAgendaTimeSelected(dt);
+        return Task.CompletedTask;
+    }
+
+    void OnEventTapped(SchedulerEvent evt) => Provider?.OnEventSelected(evt);
+
+    async Task LoadEventsAsync()
+    {
+        if (Provider is null) return;
+        loadCts?.Cancel();
+        loadCts = new CancellationTokenSource();
+        var token = loadCts.Token;
+        isLoading = true;
+        StateHasChanged();
+        try
+        {
+            var startDto = new DateTimeOffset(SelectedDate.ToDateTime(TimeOnly.MinValue));
+            var endDto = new DateTimeOffset(SelectedDate.AddDays(1).ToDateTime(TimeOnly.MinValue));
+            var events = await Provider.GetEvents(startDto, endDto);
+            if (token.IsCancellationRequested) return;
+
+            allDayEvents = events.Where(e => e.IsAllDay).ToList();
+            timedEvents = events
+                .Where(e => !e.IsAllDay)
+                .Where(e => DateOnly.FromDateTime(e.Start.LocalDateTime) <= SelectedDate
+                         && DateOnly.FromDateTime(e.End.LocalDateTime) >= SelectedDate)
+                .OrderBy(e => e.Start)
+                .ToList();
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    public void Dispose() => loadCts?.Cancel();
+}

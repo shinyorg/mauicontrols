@@ -1,0 +1,111 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="shiny-pin" style="@HostStyle" @onclick="OnHostClickAsync">
+    <input
+        @ref="inputRef"
+        class="shiny-pin-hidden"
+        type="@InputType"
+        inputmode="@InputMode"
+        autocomplete="one-time-code"
+        autocorrect="off"
+        spellcheck="false"
+        maxlength="@Math.Max(1, Length)"
+        value="@Value"
+        @oninput="OnInputChanged"
+        @onkeydown="OnKeyDown"
+        @onfocus="OnFocus"
+        @onblur="OnBlur" />
+
+    <div class="shiny-pin-cells" style="gap:@(CellSpacing.ToString(System.Globalization.CultureInfo.InvariantCulture))px;">
+        @for (var i = 0; i < Math.Max(1, Length); i++)
+        {
+            var idx = i;
+            var ch = idx < (Value?.Length ?? 0) ? (Value![idx].ToString()) : "";
+            var display = !string.IsNullOrEmpty(HideCharacter) && !string.IsNullOrEmpty(ch) ? HideCharacter : ch;
+            var isCurrent = idx == CurrentIndex && isFocused;
+            <div class="shiny-pin-cell @(isCurrent ? "is-current" : "")" style="@CellStyle(isCurrent)">
+                <span style="font-size:@(FontSize.ToString(System.Globalization.CultureInfo.InvariantCulture))px;@(CellTextColor is null ? "" : $"color:{CellTextColor};")">@display</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    Microsoft.AspNetCore.Components.ElementReference inputRef;
+    bool isFocused;
+
+    [Parameter] public int Length { get; set; } = 4;
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string? HideCharacter { get; set; }
+    [Parameter] public bool IsNumeric { get; set; } = true;
+    [Parameter] public bool IsPassword { get; set; }
+    [Parameter] public double CellSize { get; set; } = 50;
+    [Parameter] public double CellSpacing { get; set; } = 8;
+    [Parameter] public double CellCornerRadius { get; set; } = 8;
+    [Parameter] public string? CellBorderColor { get; set; }
+    [Parameter] public string? CellFocusedBorderColor { get; set; }
+    [Parameter] public string? CellBackgroundColor { get; set; }
+    [Parameter] public string? CellTextColor { get; set; }
+    [Parameter] public double FontSize { get; set; } = 24;
+    [Parameter] public EventCallback<SecurityPinCompletedEventArgs> Completed { get; set; }
+
+    string InputType => IsPassword ? "password" : "text";
+    string InputMode => IsNumeric ? "numeric" : "text";
+
+    int CurrentIndex => Math.Min(Value?.Length ?? 0, Math.Max(1, Length) - 1);
+
+    string HostStyle => "position:relative;display:inline-block;";
+
+    string CellStyle(bool isCurrent)
+    {
+        var size = CellSize.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var radius = CellCornerRadius.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var border = isCurrent && CellFocusedBorderColor is not null
+            ? CellFocusedBorderColor
+            : (CellBorderColor ?? "#D1D5DB");
+        var bg = CellBackgroundColor ?? "white";
+        return $"width:{size}px;height:{size}px;border-radius:{radius}px;border:1px solid {border};background:{bg};";
+    }
+
+    public ValueTask FocusAsync() => inputRef.FocusAsync();
+
+    Task OnHostClickAsync() => inputRef.FocusAsync().AsTask();
+
+    public Task ClearAsync() => UpdateValueAsync("");
+
+    void OnFocus() { isFocused = true; }
+    void OnBlur() { isFocused = false; }
+
+    async Task OnInputChanged(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString() ?? "";
+        if (IsNumeric)
+            raw = new string(raw.Where(char.IsDigit).ToArray());
+        var max = Math.Max(1, Length);
+        if (raw.Length > max)
+            raw = raw.Substring(0, max);
+
+        await UpdateValueAsync(raw);
+
+        if (raw.Length >= max)
+            await Completed.InvokeAsync(new SecurityPinCompletedEventArgs(raw));
+    }
+
+    Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && (Value?.Length ?? 0) >= Length)
+            return Completed.InvokeAsync(new SecurityPinCompletedEventArgs(Value ?? ""));
+        return Task.CompletedTask;
+    }
+
+    async Task UpdateValueAsync(string newValue)
+    {
+        if (Value != newValue)
+        {
+            Value = newValue;
+            await ValueChanged.InvokeAsync(newValue);
+        }
+    }
+}

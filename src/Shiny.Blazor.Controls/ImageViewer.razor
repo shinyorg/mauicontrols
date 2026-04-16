@@ -1,0 +1,75 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@if (rendered)
+{
+    <div class="shiny-imgviewer @(IsOpen ? "is-open" : "")"
+         @ref="rootEl"
+         style="@(IsOpen ? "" : "pointer-events:none;")">
+        <div class="shiny-imgviewer-backdrop" @ref="backdropEl"></div>
+        <img class="shiny-imgviewer-img"
+             @ref="imgEl"
+             src="@Source"
+             alt="" />
+        <button type="button" class="shiny-imgviewer-close" @onclick="OnCloseClick">&#10005;</button>
+    </div>
+}
+
+@code {
+    Microsoft.AspNetCore.Components.ElementReference rootEl;
+    Microsoft.AspNetCore.Components.ElementReference backdropEl;
+    Microsoft.AspNetCore.Components.ElementReference imgEl;
+    IJSObjectReference? module;
+    DotNetObjectReference<ImageViewer>? selfRef;
+    bool rendered;
+    bool wasOpen;
+
+    [Parameter] public string? Source { get; set; }
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+    [Parameter] public double MaxZoom { get; set; } = 5.0;
+
+    protected override void OnInitialized() { rendered = true; wasOpen = IsOpen; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JS.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/Shiny.Blazor.Controls/image-viewer.js");
+            selfRef = DotNetObjectReference.Create(this);
+            await module.InvokeVoidAsync("init", rootEl, backdropEl, imgEl, selfRef, MaxZoom);
+            if (IsOpen) await module.InvokeVoidAsync("open", rootEl);
+        }
+        else if (IsOpen != wasOpen)
+        {
+            wasOpen = IsOpen;
+            if (module is null) return;
+            if (IsOpen) await module.InvokeVoidAsync("open", rootEl);
+            else await module.InvokeVoidAsync("close", rootEl);
+        }
+    }
+
+    [JSInvokable]
+    public Task OnRequestClose()
+    {
+        IsOpen = false;
+        wasOpen = false;
+        return IsOpenChanged.InvokeAsync(false);
+    }
+
+    Task OnCloseClick() => OnRequestClose();
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try { await module.InvokeVoidAsync("dispose", rootEl); } catch { }
+            try { await module.DisposeAsync(); } catch { }
+        }
+        selfRef?.Dispose();
+    }
+}

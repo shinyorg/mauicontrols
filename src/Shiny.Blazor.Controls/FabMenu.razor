@@ -1,0 +1,152 @@
+@namespace Shiny.Blazor.Controls
+
+@if (HasBackdrop)
+{
+    <div class="@BackdropClass"
+         style="@BackdropStyle"
+         @onclick="OnBackdropClicked"></div>
+}
+
+<div class="shiny-fab-menu">
+    <div class="shiny-fab-menu-items">
+        @if (Items != null)
+        {
+            var idx = 0;
+            foreach (var item in Items)
+            {
+                var localIndex = idx;
+                var staggerDelay = isOpen
+                    ? (Items.Count - 1 - localIndex) * 30
+                    : localIndex * 30;
+                var itemStyle = $"transition-delay:{staggerDelay}ms;";
+                <div class="@ItemClass" style="@itemStyle">
+                    @if (!string.IsNullOrEmpty(item.Text))
+                    {
+                        <span class="shiny-fab-menu-label"
+                              style="@($"background:{item.LabelBackgroundColor};color:{item.TextColor};font-size:{item.FontSize}px;")"
+                              @onclick="@(_ => OnItemClicked(item))">
+                            @item.Text
+                        </span>
+                    }
+                    <button type="button"
+                            class="shiny-fab-menu-btn shiny-fab-shadow"
+                            style="@($"background:{item.FabBackgroundColor};width:{item.Size}px;height:{item.Size}px;border-radius:{item.Size/2}px;")"
+                            @onclick="@(_ => OnItemClicked(item))">
+                        @if (!string.IsNullOrEmpty(item.Icon))
+                        {
+                            <span class="shiny-fab-menu-icon" style="@($"width:{item.IconSize}px;height:{item.IconSize}px;")">
+                                @if (IsImageUrl(item.Icon!))
+                                {
+                                    <img src="@item.Icon" alt="" />
+                                }
+                                else
+                                {
+                                    @((MarkupString)item.Icon!)
+                                }
+                            </span>
+                        }
+                    </button>
+                </div>
+                idx++;
+            }
+        }
+    </div>
+
+    <Fab Icon="@Icon"
+         Text="@Text"
+         FabBackgroundColor="@FabBackgroundColor"
+         TextColor="@TextColor"
+         BorderColor="@BorderColor"
+         BorderThickness="@BorderThickness"
+         Clicked="OnMainClicked" />
+</div>
+
+@code {
+    bool isOpen;
+
+    [Parameter] public List<FabMenuItem>? Items { get; set; }
+
+    [Parameter]
+    public bool IsOpen
+    {
+        get => isOpen;
+        set
+        {
+            if (isOpen == value) return;
+            isOpen = value;
+            _ = IsOpenChanged.InvokeAsync(isOpen);
+        }
+    }
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+    // main fab passthroughs
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string FabBackgroundColor { get; set; } = "#2196F3";
+    [Parameter] public string TextColor { get; set; } = "#FFFFFF";
+    [Parameter] public string? BorderColor { get; set; }
+    [Parameter] public double BorderThickness { get; set; }
+
+    [Parameter] public bool HasBackdrop { get; set; } = true;
+    [Parameter] public bool CloseOnBackdropTap { get; set; } = true;
+    [Parameter] public bool CloseOnItemTap { get; set; } = true;
+    [Parameter] public string BackdropColor { get; set; } = "#000000";
+    [Parameter] public double BackdropOpacity { get; set; } = 0.4;
+
+    [Parameter] public EventCallback<FabMenuItem> ItemTapped { get; set; }
+
+    public void Open() => SetOpen(true);
+    public void Close() => SetOpen(false);
+    public void Toggle() => SetOpen(!isOpen);
+
+    string BackdropClass => isOpen
+        ? "shiny-fab-backdrop shiny-fab-backdrop-open"
+        : "shiny-fab-backdrop";
+
+    string BackdropStyle
+    {
+        get
+        {
+            var op = isOpen ? BackdropOpacity : 0;
+            var pe = isOpen ? "auto" : "none";
+            return $"background:{BackdropColor};opacity:{op.ToString(System.Globalization.CultureInfo.InvariantCulture)};pointer-events:{pe};";
+        }
+    }
+
+    string ItemClass => isOpen
+        ? "shiny-fab-menu-item shiny-fab-menu-item-open"
+        : "shiny-fab-menu-item";
+
+    void OnMainClicked(MouseEventArgs e) => Toggle();
+
+    Task OnBackdropClicked(MouseEventArgs e)
+    {
+        if (CloseOnBackdropTap)
+            SetOpen(false);
+        return Task.CompletedTask;
+    }
+
+    async Task OnItemClicked(FabMenuItem item)
+    {
+        if (ItemTapped.HasDelegate)
+            await ItemTapped.InvokeAsync(item);
+        if (CloseOnItemTap)
+            SetOpen(false);
+    }
+
+    void SetOpen(bool value)
+    {
+        if (isOpen == value) return;
+        isOpen = value;
+        _ = IsOpenChanged.InvokeAsync(isOpen);
+        StateHasChanged();
+    }
+
+    static bool IsImageUrl(string s)
+        => s.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+           || s.StartsWith("/")
+           || s.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
+}
