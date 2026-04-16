@@ -1,3 +1,4 @@
+using MauiDevFlow.Agent;
 using Microsoft.Extensions.Logging;
 using Sample.Features.BottomSheet;
 using Sample.Features.Diagrams;
@@ -52,6 +53,7 @@ public static class MauiProgram
 #if DEBUG
         builder.Logging.SetMinimumLevel(LogLevel.Trace);
         builder.Logging.AddDebug();
+        builder.AddMauiDevFlowAgent();
 #endif
 
         return builder.Build();
