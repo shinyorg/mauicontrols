@@ -39,8 +39,9 @@
                            Command="{Binding AddCommand}"
                            HorizontalOptions="Start" />
 
-                <Label Text="Outlined Fab" FontAttributes="Bold" />
-                <shiny:Fab Text="Outlined"
+                <Label Text="Outlined Fab (icon + text)" FontAttributes="Bold" />
+                <shiny:Fab Icon="dotnet_bot.png"
+                           Text="Outlined"
                            FabBackgroundColor="Transparent"
                            BorderColor="#9C27B0"
                            BorderThickness="2"
@@ -52,10 +53,8 @@
 
                 <Label Text="The floating Fab &amp; FabMenu are pinned to the bottom-right. Tap the main FAB to open the menu."
                        FontSize="14"
-                       TextColor="Gray" />
-
-                <!-- Spacer so scroll content doesn't sit underneath the FabMenu -->
-                <BoxView HeightRequest="120" Color="Transparent" />
+                       TextColor="Gray"
+                       Margin="0,0,0,140" />
 
             </VerticalStackLayout>
         </ScrollView>

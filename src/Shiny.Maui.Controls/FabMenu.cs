@@ -24,8 +24,6 @@ public class FabMenu : ContentView
 
     public FabMenu()
     {
-        Items = new ObservableCollection<FabMenuItem>();
-
         backdrop = new BoxView
         {
             Color = Colors.Black,
@@ -63,10 +61,9 @@ public class FabMenu : ContentView
         VerticalOptions = LayoutOptions.Fill;
         InputTransparent = false;
 
-        if (Items is INotifyCollectionChanged notify)
-            notify.CollectionChanged += OnItemsCollectionChanged;
-
-        RebuildItemsLayout();
+        // Assign Items last — the ItemsProperty change handler calls RebuildItemsLayout(),
+        // which requires itemsLayout to already be constructed.
+        Items = new ObservableCollection<FabMenuItem>();
     }
 
 

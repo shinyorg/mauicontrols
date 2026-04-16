@@ -90,7 +90,9 @@ public class MyEventProvider : ISchedulerEventProvider
 
 A bottom sheet overlay that slides up from the bottom of the screen with configurable snap positions (detents).
 
-<!-- TODO: Add screenshots -->
+| Closed | Open |
+|:---:|:---:|
+| ![Closed](assets/bottomsheet1.png) | ![Open](assets/bottomsheet2.png) |
 
 ```xml
 <shiny:BottomSheetView
@@ -126,7 +128,9 @@ A bottom sheet overlay that slides up from the bottom of the screen with configu
 
 A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animated open/close transitions.
 
-<!-- TODO: Add screenshots -->
+| Gallery | Viewer |
+|:---:|:---:|
+| ![Gallery](assets/imageviewer1.png) | ![Viewer](assets/imageviewer2.png) |
 
 ```xml
 <Grid>
@@ -165,7 +169,7 @@ A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animat
 
 Pill/chip/tag elements for displaying categories, filters, or status indicators with predefined or custom color schemes.
 
-<!-- TODO: Add screenshots -->
+![Pills](assets/pills.png)
 
 ```xml
 <shiny:PillView Text="Success" Type="Success" />
@@ -186,7 +190,9 @@ Pill/chip/tag elements for displaying categories, filters, or status indicators 
 
 A Material Design-style floating action button, plus an expanding multi-action menu that animates up from the main FAB.
 
-<!-- TODO: Add screenshots -->
+| Closed | Menu Open |
+|:---:|:---:|
+| ![FAB Closed](assets/fab-closed.png) | ![FAB Menu Open](assets/fab-open.png) |
 
 ```xml
 <!-- Single Fab -->
@@ -272,7 +278,7 @@ Methods: `Open()`, `Close()`, `Toggle()`.
 
 A PIN entry control with individually rendered cells that captures input through a hidden Entry. Digits remain visible by default and can optionally be masked with any character.
 
-<!-- TODO: Add screenshots -->
+![SecurityPin](assets/securitypin.png)
 
 ```xml
 <shiny:SecurityPin Length="4"
@@ -305,7 +311,9 @@ Methods: `Focus()`, `Unfocus()`, `Clear()`.
 
 A settings-style table view with 14+ built-in cell types, section grouping, drag-to-reorder, and dynamic data binding.
 
-<!-- TODO: Add screenshots -->
+| Basic | Dynamic | Drag & Sort | Pickers | Styling |
+|:---:|:---:|:---:|:---:|:---:|
+| ![Basic](assets/tableview-basic.png) | ![Dynamic](assets/tableview-dynamic.png) | ![Drag & Sort](assets/tableview-dragsort.png) | ![Pickers](assets/tableview-picker.png) | ![Styling](assets/tableview-styling.png) |
 
 ```xml
 <shiny:TableView>
@@ -351,7 +359,9 @@ A settings-style table view with 14+ built-in cell types, section grouping, drag
 
 Render and edit markdown content using native MAUI controls — no WebView required. Auto-resolves Light/Dark theming.
 
-<!-- TODO: Add screenshots -->
+| Viewer | Editor |
+|:---:|:---:|
+| ![Viewer](assets/markdown-view.png) | ![Editor](assets/markdown-editor.png) |
 
 **MarkdownView** — Read-only markdown renderer:
 
