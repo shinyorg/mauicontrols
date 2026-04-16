@@ -13,10 +13,10 @@
 
         <Description>Shiny MAUI Controls - Makes your UI beautiful and highly functional with complex controls for free</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://github.com/shinyorg/mauicontrols</PackageProjectUrl>
+        <PackageProjectUrl>https://shinylib.net/maui/controls/</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
-        <PackageReleaseNotes>https://github.com/shinyorg/mauicontrols</PackageReleaseNotes>
+        <PackageReleaseNotes>https://shinylib.net/maui/controls/release-notes/</PackageReleaseNotes>
         <PackageTags>maui shiny scheduler agenda calendar pill fab securitypin markdown imagezoom</PackageTags>
         <RepositoryUrl>https://github.com/shinyorg/mauicontrols</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
