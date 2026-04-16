@@ -1,12 +1,35 @@
 <Project>
     <PropertyGroup>
-        <BaseTargetFramework>net10.0</BaseTargetFramework>
-        <MauiVersion>10.0.51</MauiVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <Authors>Allan Ritchie</Authors>
+        <Owners>aritchie;shinylib</Owners>
+        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
 
+        <BaseTargetFramework>net10.0</BaseTargetFramework>
+        <MauiVersion>10.0.51</MauiVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+
+        <Description>Shiny MAUI Controls - Makes your UI beautiful and highly functional with complex controls for free</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/shinyorg/mauicontrols</PackageProjectUrl>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+        <PackageReleaseNotes>https://github.com/shinyorg/mauicontrols</PackageReleaseNotes>
+        <PackageTags>maui shiny scheduler agenda calendar pill fab securitypin markdown imagezoom</PackageTags>
+        <RepositoryUrl>https://github.com/shinyorg/mauicontrols</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <CI Condition="'$(GITHUB_ACTIONS)' == 'true'">true</CI>
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <IncludeSource>True</IncludeSource>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>True</PublishRepositoryUrl>
+        <EmbedUntrackedSources>True</EmbedUntrackedSources>
     </PropertyGroup>
 </Project>
