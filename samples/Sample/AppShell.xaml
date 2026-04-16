@@ -12,6 +12,8 @@
     xmlns:diagrams="clr-namespace:Sample.Features.Diagrams"
     xmlns:imgviewer="clr-namespace:Sample.Features.ImageViewer"
     xmlns:markdown="clr-namespace:Sample.Features.Markdown"
+    xmlns:securitypin="clr-namespace:Sample.Features.SecurityPin"
+    xmlns:fab="clr-namespace:Sample.Features.Fab"
     Title="Sample">
 
     <FlyoutItem Title="Home">
@@ -24,6 +26,14 @@
 
     <FlyoutItem Title="Pills">
         <ShellContent ContentTemplate="{DataTemplate pills:PillPage}" Route="pills" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Security Pin">
+        <ShellContent ContentTemplate="{DataTemplate securitypin:SecurityPinPage}" Route="securitypin" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="FAB &amp; FabMenu">
+        <ShellContent ContentTemplate="{DataTemplate fab:FabPage}" Route="fab" />
     </FlyoutItem>
 
     <FlyoutItem Title="TableView - Basic Settings">

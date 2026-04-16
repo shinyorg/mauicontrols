@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Features.SecurityPin"
+             xmlns:shiny="http://shiny.net/maui/controls"
+             x:Class="Sample.Features.SecurityPin.SecurityPinPage"
+             x:DataType="local:SecurityPinViewModel"
+             Title="Security Pin">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="30">
+
+            <Label Text="SecurityPin Demo"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+
+            <Label Text="{Binding StatusMessage}"
+                   FontSize="14"
+                   TextColor="Gray"
+                   HorizontalTextAlignment="Center" />
+
+            <!-- Hidden PIN (masked) -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="4-digit masked PIN (HideCharacter='*')"
+                       FontAttributes="Bold" />
+                <shiny:SecurityPin x:Name="HiddenPinControl"
+                                   Length="4"
+                                   HideCharacter="*"
+                                   Value="{Binding HiddenPin}"
+                                   Keyboard="Numeric"
+                                   Completed="OnHiddenPinCompleted" />
+                <Label Text="{Binding HiddenPin, StringFormat='Current value: {0}'}"
+                       FontSize="12"
+                       TextColor="Gray"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Visible PIN -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="6-digit visible PIN (no HideCharacter)"
+                       FontAttributes="Bold" />
+                <shiny:SecurityPin x:Name="VisiblePinControl"
+                                   Length="6"
+                                   Value="{Binding VisiblePin}"
+                                   Keyboard="Numeric"
+                                   CellSize="42"
+                                   FontSize="20"
+                                   Completed="OnVisiblePinCompleted" />
+            </VerticalStackLayout>
+
+            <!-- Styled alpha PIN -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="5-character alphanumeric PIN (custom styling)"
+                       FontAttributes="Bold" />
+                <shiny:SecurityPin x:Name="AlphaPinControl"
+                                   Length="5"
+                                   Value="{Binding AlphaPin}"
+                                   Keyboard="Default"
+                                   HideCharacter="●"
+                                   CellSize="48"
+                                   CellSpacing="10"
+                                   CellCornerRadius="12"
+                                   CellBorderColor="LightGray"
+                                   CellFocusedBorderColor="DodgerBlue"
+                                   CellBackgroundColor="#F5F5F5"
+                                   CellTextColor="Black"
+                                   FontSize="22"
+                                   Completed="OnAlphaPinCompleted" />
+            </VerticalStackLayout>
+
+            <Button Text="Clear All"
+                    Command="{Binding ClearCommand}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

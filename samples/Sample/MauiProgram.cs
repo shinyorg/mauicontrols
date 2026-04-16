@@ -2,11 +2,13 @@ using MauiDevFlow.Agent;
 using Microsoft.Extensions.Logging;
 using Sample.Features.BottomSheet;
 using Sample.Features.Diagrams;
+using Sample.Features.Fab;
 using Sample.Features.Home;
 using Sample.Features.ImageViewer;
 using Sample.Features.Markdown;
 using Sample.Features.Pills;
 using Sample.Features.Scheduler;
+using Sample.Features.SecurityPin;
 using Sample.Features.TableView;
 using Shiny;
 using Shiny.Maui.Controls.Scheduler;
@@ -25,6 +27,8 @@ public static class MauiProgram
                 .Add<HomePage, HomeViewModel>(registerRoute: false)
                 .Add<BottomSheetPage, BottomSheetViewModel>(registerRoute: false)
                 .Add<PillPage, PillViewModel>(registerRoute: false)
+                .Add<SecurityPinPage, SecurityPinViewModel>(registerRoute: false)
+                .Add<FabPage, FabViewModel>(registerRoute: false)
                 .Add<BasicSettingsPage, BasicSettingsViewModel>(registerRoute: false)
                 .Add<DragSortPage, DragSortViewModel>(registerRoute: false)
                 .Add<DynamicSectionsPage, DynamicSectionsViewModel>(registerRoute: false)

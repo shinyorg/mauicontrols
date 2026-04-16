@@ -182,6 +182,125 @@ Pill/chip/tag elements for displaying categories, filters, or status indicators 
 | Caution | Orange |
 | Critical | Red |
 
+### Fab & FabMenu
+
+A Material Design-style floating action button, plus an expanding multi-action menu that animates up from the main FAB.
+
+<!-- TODO: Add screenshots -->
+
+```xml
+<!-- Single Fab -->
+<shiny:Fab Icon="add.png"
+           Text="Add Item"
+           FabBackgroundColor="#4CAF50"
+           TextColor="White"
+           Command="{Binding AddCommand}"
+           HorizontalOptions="End"
+           VerticalOptions="End"
+           Margin="24" />
+
+<!-- FabMenu with child items -->
+<shiny:FabMenu IsOpen="{Binding IsMenuOpen}"
+               Icon="plus.png"
+               FabBackgroundColor="#2196F3"
+               HorizontalOptions="End"
+               VerticalOptions="End"
+               Margin="24">
+    <shiny:FabMenuItem Icon="share.png"  Text="Share"  Command="{Binding ShareCommand}" />
+    <shiny:FabMenuItem Icon="edit.png"   Text="Edit"   Command="{Binding EditCommand}" />
+    <shiny:FabMenuItem Icon="delete.png" Text="Delete" Command="{Binding DeleteCommand}" />
+</shiny:FabMenu>
+```
+
+**Fab** properties:
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| Icon | ImageSource? | null | Button icon |
+| Text | string? | null | Optional label; when null the Fab is a perfect circle |
+| Command | ICommand? | null | Invoked when the Fab is tapped |
+| CommandParameter | object? | null | Parameter passed to the Command |
+| FabBackgroundColor | Color | #2196F3 | Fill color |
+| BorderColor | Color? | null | Outline stroke color |
+| BorderThickness | double | 0 | Outline stroke thickness |
+| TextColor | Color | White | Label color |
+| FontSize | double | 14 | Label font size |
+| FontAttributes | FontAttributes | None | Label font attributes |
+| Size | double | 56 | Height of the Fab (diameter when circular) |
+| IconSize | double | 24 | Icon image size |
+| HasShadow | bool | true | Show drop shadow |
+
+Events: `Clicked`.
+
+**FabMenu** properties (plus all main-Fab pass-throughs above):
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| IsOpen | bool | false | Two-way bindable; opens/closes the menu with animation |
+| Items | `IList<FabMenuItem>` | empty | Menu items (content property — place items directly inside the FabMenu) |
+| HasBackdrop | bool | true | Show a dim backdrop while open |
+| BackdropColor | Color | Black | Backdrop color |
+| BackdropOpacity | double | 0.4 | Backdrop peak opacity |
+| CloseOnBackdropTap | bool | true | Close when backdrop is tapped |
+| CloseOnItemTap | bool | true | Close after any item is tapped |
+| AnimationDuration | uint | 200 | Open/close animation duration (ms) |
+
+Events: `ItemTapped` — fires the `FabMenuItem` that was tapped.
+
+Methods: `Open()`, `Close()`, `Toggle()`.
+
+**FabMenuItem** properties:
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| Icon | ImageSource? | null | Circular icon |
+| Text | string? | null | Side label next to the icon |
+| Command | ICommand? | null | Invoked when tapped |
+| CommandParameter | object? | null | Parameter for the Command |
+| FabBackgroundColor | Color | #2196F3 | Icon button fill |
+| BorderColor | Color? | null | Icon button outline |
+| BorderThickness | double | 0 | Icon button outline thickness |
+| TextColor | Color | Black | Side-label text color |
+| LabelBackgroundColor | Color | White | Side-label background |
+| FontSize | double | 13 | Side-label font size |
+| Size | double | 44 | Icon button diameter |
+| IconSize | double | 20 | Icon image size |
+
+**Placement tip**: `FabMenu` should live in a `Grid` that fills the page (the same placement pattern as `BottomSheetView` / `ImageViewer`) so the backdrop can cover the page content.
+
+### SecurityPin
+
+A PIN entry control with individually rendered cells that captures input through a hidden Entry. Digits remain visible by default and can optionally be masked with any character.
+
+<!-- TODO: Add screenshots -->
+
+```xml
+<shiny:SecurityPin Length="4"
+                   HideCharacter="*"
+                   Value="{Binding Pin}"
+                   Keyboard="Numeric"
+                   Completed="OnPinCompleted" />
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| Length | int | 4 | Number of PIN cells |
+| Value | string | "" | Current PIN value (TwoWay) |
+| Keyboard | Keyboard | Numeric | Keyboard type for input |
+| HideCharacter | string? | null | When set, masks entered characters; when null/empty, shows actual values |
+| CellSize | double | 50 | Width/height of each cell |
+| CellSpacing | double | 8 | Space between cells |
+| CellCornerRadius | double | 8 | Border corner radius |
+| CellBorderColor | Color? | null | Cell border color |
+| CellFocusedBorderColor | Color? | null | Border color for the active cell |
+| CellBackgroundColor | Color? | null | Cell fill color |
+| CellTextColor | Color? | null | Entered character color |
+| FontSize | double | 24 | Character font size |
+
+Events: `Completed` fires with a `SecurityPinCompletedEventArgs` once the entered value reaches `Length`.
+
+Methods: `Focus()`, `Unfocus()`, `Clear()`.
+
 ### TableView
 
 A settings-style table view with 14+ built-in cell types, section grouping, drag-to-reorder, and dynamic data binding.

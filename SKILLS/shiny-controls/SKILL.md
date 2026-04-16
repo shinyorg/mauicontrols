@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate .NET MAUI UI using Shiny.Maui.Controls - includes TableView with 14 cell types, BottomSheetView with detents, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, Scheduler views (calendar grid, agenda timeline, event list), and Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar)
+description: Generate .NET MAUI UI using Shiny.Maui.Controls - includes TableView with 14 cell types, BottomSheetView with detents, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), and Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar)
 auto_invoke: true
 triggers:
   - tableview
@@ -29,6 +29,21 @@ triggers:
   - markdown editor
   - markdown preview
   - rich text
+  - security pin
+  - securitypin
+  - pin code
+  - pin entry
+  - otp
+  - one time password
+  - pin control
+  - fab
+  - floating action button
+  - floating button
+  - fab menu
+  - fabmenu
+  - speed dial
+  - action menu
+  - action button
 ---
 
 # Shiny.Maui.Controls Skill
@@ -38,6 +53,9 @@ You are an expert in Shiny.Maui.Controls, a .NET MAUI controls library containin
 - **BottomSheetView**: A draggable bottom sheet overlay with configurable detents, backdrop, animations, and keyboard handling
 - **PillView**: A status badge/label control with 6 preset themes, custom colors, and WCAG-accessible contrast
 - **ImageViewer**: A full-screen image overlay with pinch-to-zoom, pan when zoomed, double-tap to toggle zoom, animated open/close, and a close button
+- **SecurityPin**: A PIN/OTP entry control with individual cells, configurable length, keyboard, and optional character masking
+- **Fab**: A Material-style floating action button with Icon, Text, Command, custom colors, border, and shadow
+- **FabMenu**: A floating action menu with an expanding, animated child `FabMenuItem` stack and two-way `IsOpen`
 - **SchedulerCalendarView**: Monthly calendar grid with swipe navigation, event display, and pinch-to-zoom
 - **SchedulerAgendaView**: Day/multi-day timeline with overlap detection, Apple Calendar-style date picker, and timezone support
 - **SchedulerCalendarListView**: Vertically scrolling event list grouped by day with infinite scroll
@@ -60,6 +78,10 @@ Invoke this skill when the user wants to:
 - Display categorized status indicators (success, warning, critical, etc.)
 - Add a zoomable image viewer / photo viewer overlay
 - Display full-screen images with pinch-to-zoom, pan, and double-tap zoom
+- Build a PIN entry / OTP / passcode input screen
+- Capture numeric or alphanumeric codes in individual cells with optional masking
+- Add a floating action button (FAB) to a page, or a speed-dial style multi-action menu
+- Expose primary/contextual actions in the bottom corner with animated reveal
 - Create scheduler/calendar views (monthly grid, day/week agenda, event list)
 - Implement event providers for calendar data
 - Customize event templates or day header templates for scheduler views
@@ -757,6 +779,266 @@ public partial class ImageViewerViewModel : ObservableObject
         SelectedImage = imageSource;
         IsViewerOpen = true;
     }
+}
+```
+
+---
+
+# SecurityPin
+
+A PIN/OTP entry control with individually rendered cells. Input is captured by a hidden `Entry` so the native keyboard appears when any cell is tapped. Digits are visible by default and can optionally be masked with any character for password-style entry.
+
+## Basic Usage
+
+```xml
+<!-- 4-digit visible numeric PIN -->
+<shiny:SecurityPin Length="4"
+                   Value="{Binding Pin}"
+                   Keyboard="Numeric" />
+
+<!-- 6-digit masked PIN -->
+<shiny:SecurityPin Length="6"
+                   HideCharacter="*"
+                   Value="{Binding Pin}"
+                   Keyboard="Numeric" />
+```
+
+## SecurityPin Properties
+
+| Property | Type | Default | Binding Mode | Description |
+|---|---|---|---|---|
+| `Length` | `int` | `4` | OneWay | Number of PIN cells |
+| `Value` | `string` | `""` | TwoWay | Current entered value |
+| `Keyboard` | `Keyboard` | `Numeric` | OneWay | Keyboard type applied to the hidden Entry |
+| `HideCharacter` | `string?` | `null` | OneWay | When set, masks entered characters; when null/empty, shows the actual value |
+| `CellSize` | `double` | `50` | OneWay | Width and height of each cell |
+| `CellSpacing` | `double` | `8` | OneWay | Horizontal spacing between cells |
+| `CellCornerRadius` | `double` | `8` | OneWay | Corner radius of the cell border |
+| `CellBorderColor` | `Color?` | `null` | OneWay | Border stroke color |
+| `CellFocusedBorderColor` | `Color?` | `null` | OneWay | Border stroke color for the currently active cell |
+| `CellBackgroundColor` | `Color?` | `null` | OneWay | Cell fill color |
+| `CellTextColor` | `Color?` | `null` | OneWay | Color for the rendered digit/character |
+| `FontSize` | `double` | `24` | OneWay | Font size for the rendered character |
+
+## Events
+
+| Event | Args | Description |
+|---|---|---|
+| `Completed` | `SecurityPinCompletedEventArgs(string Value)` | Fires when the entered value reaches `Length` |
+
+## Methods
+
+| Method | Description |
+|---|---|
+| `Focus()` | Focus the hidden Entry and show the keyboard |
+| `Unfocus()` | Dismiss the keyboard |
+| `Clear()` | Reset `Value` to an empty string |
+
+## Code Generation Guidance
+
+- When the user asks for a PIN/OTP/passcode entry field, use `SecurityPin` — do not stitch together multiple `Entry` controls
+- Default `Length` to 4 unless the user specifies otherwise (common alternatives: 6 for OTP codes)
+- Keep `Keyboard="Numeric"` for numeric PINs; only switch to `Default` when the user asks for alphanumeric entry
+- Set `HideCharacter="*"` (or `"●"`) only when the user wants masked/hidden entry — leave null for visible digits
+- Wire `Completed` when the caller wants to react automatically after the last digit is entered
+- Bind `Value` TwoWay to the ViewModel so the PIN is observable and `Clear()` / reassignment works as expected
+
+## SecurityPin ViewModel Pattern
+
+```csharp
+public partial class LoginViewModel : ObservableObject
+{
+    [ObservableProperty]
+    string pin = string.Empty;
+
+    [RelayCommand]
+    void ClearPin() => Pin = string.Empty;
+}
+```
+
+```xml
+<shiny:SecurityPin Length="4"
+                   HideCharacter="*"
+                   Value="{Binding Pin}"
+                   Completed="OnPinCompleted" />
+```
+
+```csharp
+void OnPinCompleted(object? sender, SecurityPinCompletedEventArgs e)
+{
+    // e.Value contains the full entered PIN
+    _ = ((LoginViewModel)BindingContext).VerifyAsync(e.Value);
+}
+```
+
+## Styled Example
+
+```xml
+<shiny:SecurityPin Length="5"
+                   HideCharacter="●"
+                   CellSize="48"
+                   CellSpacing="10"
+                   CellCornerRadius="12"
+                   CellBorderColor="LightGray"
+                   CellFocusedBorderColor="DodgerBlue"
+                   CellBackgroundColor="#F5F5F5"
+                   CellTextColor="Black"
+                   FontSize="22"
+                   Value="{Binding Pin}" />
+```
+
+## Behavior Notes
+
+- Tapping any cell focuses the hidden Entry; the native keyboard appears
+- The hidden Entry's `MaxLength` is synced with `Length`
+- Changing `Length` rebuilds the cells; a longer `Value` is truncated to fit
+- When `HideCharacter` is null or empty, the entered character is shown verbatim
+- `Completed` fires whenever the value length reaches `Length` — including via programmatic assignment
+
+---
+
+# Fab & FabMenu
+
+Material-style floating action button (`Fab`) and an expanding multi-action menu (`FabMenu`) that animates `FabMenuItem` children up from the main FAB with a staggered reveal.
+
+## Basic Usage
+
+```xml
+<!-- Single icon-only Fab pinned to bottom-right -->
+<shiny:Fab Icon="add.png"
+           FabBackgroundColor="#E91E63"
+           Command="{Binding AddCommand}"
+           HorizontalOptions="End"
+           VerticalOptions="End"
+           Margin="24" />
+
+<!-- Extended Fab (icon + text) -->
+<shiny:Fab Icon="add.png"
+           Text="Add Item"
+           FabBackgroundColor="#4CAF50"
+           TextColor="White"
+           Command="{Binding AddCommand}" />
+
+<!-- FabMenu (speed dial) -->
+<shiny:FabMenu IsOpen="{Binding IsMenuOpen}"
+               Icon="plus.png"
+               FabBackgroundColor="#2196F3"
+               HorizontalOptions="End"
+               VerticalOptions="End"
+               Margin="24">
+    <shiny:FabMenuItem Icon="share.png"  Text="Share"  Command="{Binding ShareCommand}" />
+    <shiny:FabMenuItem Icon="edit.png"   Text="Edit"   Command="{Binding EditCommand}" />
+    <shiny:FabMenuItem Icon="delete.png" Text="Delete" Command="{Binding DeleteCommand}" />
+</shiny:FabMenu>
+```
+
+## Placement (important)
+
+Place the `Fab` / `FabMenu` inside a `Grid` that fills the page — same pattern as `BottomSheetView` / `ImageViewer`:
+
+```xml
+<ContentPage>
+    <Grid>
+        <ScrollView>
+            <!-- page content -->
+        </ScrollView>
+
+        <shiny:FabMenu IsOpen="{Binding IsMenuOpen}"
+                       Icon="plus.png"
+                       HorizontalOptions="End"
+                       VerticalOptions="End"
+                       Margin="24">
+            <!-- items -->
+        </shiny:FabMenu>
+    </Grid>
+</ContentPage>
+```
+
+## Fab Properties
+
+| Property | Type | Default | Binding Mode | Description |
+|---|---|---|---|---|
+| `Icon` | `ImageSource?` | `null` | OneWay | Icon shown inside the button |
+| `Text` | `string?` | `null` | OneWay | Optional label; when null the Fab is a perfect circle |
+| `Command` | `ICommand?` | `null` | OneWay | Executed on tap |
+| `CommandParameter` | `object?` | `null` | OneWay | Parameter forwarded to the Command |
+| `FabBackgroundColor` | `Color` | `#2196F3` | OneWay | Fill color |
+| `BorderColor` | `Color?` | `null` | OneWay | Outline stroke color |
+| `BorderThickness` | `double` | `0` | OneWay | Outline stroke thickness |
+| `TextColor` | `Color` | `White` | OneWay | Label text color |
+| `FontSize` | `double` | `14` | OneWay | Label font size |
+| `FontAttributes` | `FontAttributes` | `None` | OneWay | Label font attributes |
+| `Size` | `double` | `56` | OneWay | Height (diameter when circular) |
+| `IconSize` | `double` | `24` | OneWay | Icon image size |
+| `HasShadow` | `bool` | `true` | OneWay | Drop shadow on/off |
+
+Events: `Clicked`.
+
+## FabMenu Properties
+
+In addition to the main-Fab pass-throughs (`Icon`, `Text`, `FabBackgroundColor`, `BorderColor`, `BorderThickness`, `TextColor`):
+
+| Property | Type | Default | Binding Mode | Description |
+|---|---|---|---|---|
+| `IsOpen` | `bool` | `false` | TwoWay | Opens/closes the menu with animation |
+| `Items` | `IList<FabMenuItem>` | empty | — | Content property; place items directly inside `<shiny:FabMenu>` |
+| `HasBackdrop` | `bool` | `true` | OneWay | Show dim backdrop while open |
+| `BackdropColor` | `Color` | `Black` | OneWay | Backdrop color |
+| `BackdropOpacity` | `double` | `0.4` | OneWay | Backdrop peak opacity |
+| `CloseOnBackdropTap` | `bool` | `true` | OneWay | Close when backdrop tapped |
+| `CloseOnItemTap` | `bool` | `true` | OneWay | Close after item tap |
+| `AnimationDuration` | `uint` | `200` | OneWay | Open/close animation duration (ms) |
+
+Events: `ItemTapped(FabMenuItem)`.
+Methods: `Open()`, `Close()`, `Toggle()`.
+
+## FabMenuItem Properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `Icon` | `ImageSource?` | `null` | Icon rendered inside the circular button |
+| `Text` | `string?` | `null` | Side label |
+| `Command` | `ICommand?` | `null` | Invoked on tap |
+| `CommandParameter` | `object?` | `null` | Parameter forwarded to the Command |
+| `FabBackgroundColor` | `Color` | `#2196F3` | Icon button fill |
+| `BorderColor` | `Color?` | `null` | Icon button outline |
+| `BorderThickness` | `double` | `0` | Icon button outline thickness |
+| `TextColor` | `Color` | `Black` | Side-label text color |
+| `LabelBackgroundColor` | `Color` | `White` | Side-label fill color |
+| `FontSize` | `double` | `13` | Side-label font size |
+| `Size` | `double` | `44` | Icon button diameter |
+| `IconSize` | `double` | `20` | Icon image size |
+
+Events: `Clicked`.
+
+## Behavior & Animation
+
+- Tapping the main Fab of a `FabMenu` toggles `IsOpen`
+- Opening the menu fades in the backdrop and animates each `FabMenuItem` up (fade + translate) with a small stagger; closing reverses it
+- `IsOpen` is fully two-way bindable — setting it from a ViewModel animates in/out
+- Child items' own animations never conflict with the main Fab — it stays fixed
+- Tapping a menu item executes its `Command`, raises `ItemTapped` on the menu, and closes the menu when `CloseOnItemTap` is true (default)
+
+## Code Generation Guidance
+
+- Use `Fab` for a single primary action (e.g., "Add") and `FabMenu` for multiple related actions (speed dial)
+- Always place `Fab` / `FabMenu` inside a Grid that fills the page so the FabMenu backdrop overlays everything
+- Default to `HorizontalOptions="End"` + `VerticalOptions="End"` + `Margin="24"` for the canonical Material bottom-right placement
+- Bind `IsOpen` TwoWay when the ViewModel needs to drive the menu state; otherwise omit it and let taps control it
+- Keep `FabMenuItem` icons monochrome/filled for best visual contrast against the colored circles
+- Use `Icon` on every item when possible; `Text` is optional but strongly recommended for accessibility
+
+## ViewModel Pattern
+
+```csharp
+public partial class HomeViewModel : ObservableObject
+{
+    [ObservableProperty] bool isMenuOpen;
+
+    [RelayCommand] void Add()    { /* ... */ }
+    [RelayCommand] void Share()  { /* ... */ }
+    [RelayCommand] void Edit()   { /* ... */ }
+    [RelayCommand] void Delete() { /* ... */ }
 }
 ```
 
