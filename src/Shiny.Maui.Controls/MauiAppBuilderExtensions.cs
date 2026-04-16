@@ -3,7 +3,7 @@ using Shiny.Maui.Controls;
 
 namespace Shiny;
 
-public static class TableViewMauiAppBuilderExtensions
+public static class ControlsMauiAppBuilderExtensions
 {
     public static MauiAppBuilder UseShinyControls(this MauiAppBuilder builder)
     {

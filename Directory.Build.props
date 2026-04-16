@@ -3,6 +3,7 @@
         <Authors>Allan Ritchie</Authors>
         <Owners>aritchie;shinylib</Owners>
         <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
         <BaseTargetFramework>net10.0</BaseTargetFramework>
