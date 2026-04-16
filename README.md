@@ -1,10 +1,13 @@
-# Shiny.Maui.Controls
+# Shiny Controls
 
-A .NET MAUI controls library providing rich, ready-to-use UI components for mobile and desktop applications.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, BottomSheet, Fab/FabMenu, PillView, SecurityPin, and ImageViewer. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
-[![NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg)](https://www.nuget.org/packages/Shiny.Maui.Controls)
+[![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
+[![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
 
 ## Getting Started
+
+### .NET MAUI
 
 ```bash
 dotnet add package Shiny.Maui.Controls
@@ -34,6 +37,53 @@ dotnet add package Shiny.Maui.Controls.Markdown
 ```xml
 xmlns:md="http://shiny.net/maui/markdown"
 ```
+
+For Mermaid Diagrams (separate package):
+
+```bash
+dotnet add package Shiny.Maui.Controls.MermaidDiagrams
+```
+
+```xml
+xmlns:diagram="http://shiny.net/maui/diagrams"
+```
+
+### Blazor
+
+```bash
+dotnet add package Shiny.Blazor.Controls
+dotnet add package Shiny.Blazor.Controls.Markdown       # optional
+dotnet add package Shiny.Blazor.Controls.MermaidDiagrams # optional
+```
+
+Add the `@using` directives — typically in `_Imports.razor`:
+
+```razor
+@using Shiny.Blazor.Controls
+@using Shiny.Blazor.Controls.Cells
+@using Shiny.Blazor.Controls.Sections
+@using Shiny.Blazor.Controls.Scheduler
+@using Shiny.Blazor.Controls.Markdown
+@using Shiny.Blazor.Controls.MermaidDiagrams
+```
+
+No DI registration is required — drop the components into any `.razor` page.
+
+#### MAUI → Blazor quick reference
+
+| MAUI (XAML) | Blazor (Razor) |
+|---|---|
+| `<shiny:TableView>` with `<shiny:TableRoot>` | `<TableView>` (no `TableRoot` wrapper) |
+| `<shiny:PillView>` | `<Pill>` |
+| `<shiny:BottomSheetView>` with `SheetContent` property | `<BottomSheetView>` with `<SheetContent>` child |
+| `Value="{Binding Pin}"` (TwoWay) | `@bind-Value="pin"` |
+| `IsOpen="{Binding IsOpen, Mode=TwoWay}"` | `@bind-IsOpen="isOpen"` |
+| `Command="{Binding DoCommand}"` | `OnClick="DoAsync"` / `Clicked="DoAsync"` |
+| `Color` type (e.g. `Colors.Blue`) | CSS color string (e.g. `"#2196F3"`) |
+| `Fab.Icon="add.png"` (ImageSource) | `<Fab Icon="+">` (inline text/SVG string) |
+| `ItemTemplate` as `DataTemplate` | `ItemTemplate` as `RenderFragment<object>` |
+
+`ISchedulerEventProvider` is identical across both hosts.
 
 ## Controls
 
@@ -355,9 +405,9 @@ A settings-style table view with 14+ built-in cell types, section grouping, drag
 
 ### Markdown Controls
 
-> Separate NuGet package: `Shiny.Maui.Controls.Markdown`
+> Separate NuGet packages: `Shiny.Maui.Controls.Markdown` / `Shiny.Blazor.Controls.Markdown`
 
-Render and edit markdown content using native MAUI controls — no WebView required. Auto-resolves Light/Dark theming.
+Render and edit markdown content using native MAUI controls — no WebView required on MAUI. Auto-resolves Light/Dark theming. Available for both MAUI and Blazor.
 
 | Viewer | Editor |
 |:---:|:---:|
@@ -405,9 +455,9 @@ Events: `LinkTapped` — fired when a link is tapped; set `Handled = true` to pr
 
 ### MermaidDiagramControl
 
-> Separate NuGet package: `Shiny.Maui.Controls.MermaidDiagrams`
+> Separate NuGet packages: `Shiny.Maui.Controls.MermaidDiagrams` / `Shiny.Blazor.Controls.MermaidDiagrams`
 
-Native .NET MAUI Mermaid flowchart renderer — no WebView, no SkiaSharp, AOT compatible. Parses Mermaid syntax and renders interactive diagrams with pan and zoom support.
+Native Mermaid flowchart renderer — no WebView, no SkiaSharp, AOT compatible on MAUI. Parses Mermaid syntax and renders interactive diagrams with pan and zoom support. Available for both MAUI and Blazor.
 
 | Flowchart | Editor | Themes | Subgraphs |
 |:---:|:---:|:---:|:---:|

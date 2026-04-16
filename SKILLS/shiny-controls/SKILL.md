@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate .NET MAUI UI using Shiny.Maui.Controls - includes TableView with 14 cell types, BottomSheetView with detents, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), and Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar)
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, BottomSheetView with detents, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), and Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar)
 auto_invoke: true
 triggers:
   - tableview
@@ -44,11 +44,27 @@ triggers:
   - speed dial
   - action menu
   - action button
+  - shiny blazor controls
+  - blazor tableview
+  - blazor bottomsheet
+  - blazor fab
+  - blazor pillview
+  - blazor imageviewer
+  - blazor securitypin
+  - blazor scheduler
+  - blazor markdown
+  - blazor mermaid
 ---
 
-# Shiny.Maui.Controls Skill
+# Shiny Controls Skill
 
-You are an expert in Shiny.Maui.Controls, a .NET MAUI controls library containing:
+You are an expert in the Shiny Controls library, which ships a single shared control surface across two hosts:
+- **.NET MAUI** — `Shiny.Maui.Controls` (plus `Shiny.Maui.Controls.Markdown`, `Shiny.Maui.Controls.MermaidDiagrams`)
+- **Blazor** — `Shiny.Blazor.Controls` (plus `Shiny.Blazor.Controls.Markdown`, `Shiny.Blazor.Controls.MermaidDiagrams`)
+
+Every control below is available on **both** MAUI and Blazor. The feature set (properties, events, behavior) is intentionally mirrored — the same concepts apply on either host; only the syntax differs (XAML + `BindableProperty` on MAUI, Razor markup + `[Parameter]` on Blazor).
+
+The library contains:
 - **TableView**: A pure MAUI settings-style TableView with 14 cell types, cascading styles, sections, drag-sort reordering, and full MVVM/binding support
 - **BottomSheetView**: A draggable bottom sheet overlay with configurable detents, backdrop, animations, and keyboard handling
 - **PillView**: A status badge/label control with 6 preset themes, custom colors, and WCAG-accessible contrast
@@ -94,29 +110,199 @@ Invoke this skill when the user wants to:
 
 ## Library Overview
 
+### .NET MAUI
+
+**NuGet**: `Shiny.Maui.Controls` (+ `Shiny.Maui.Controls.Markdown`, `Shiny.Maui.Controls.MermaidDiagrams`)
 **Namespace**: `Shiny.Maui.Controls`
 **XAML Namespace**: `http://shiny.net/maui/controls` (prefix: `shiny`)
 
+### Blazor
+
+**NuGet**: `Shiny.Blazor.Controls` (+ `Shiny.Blazor.Controls.Markdown`, `Shiny.Blazor.Controls.MermaidDiagrams`)
+**Namespaces**: `Shiny.Blazor.Controls`, `Shiny.Blazor.Controls.Cells`, `Shiny.Blazor.Controls.Sections`, `Shiny.Blazor.Controls.Scheduler`, `Shiny.Blazor.Controls.Markdown`, `Shiny.Blazor.Controls.MermaidDiagrams`
+
 ## Setup
 
-### 1. Install NuGet Package
-```bash
-dotnet add package Shiny.Maui.Controls
+### .NET MAUI
+
+1. Install the NuGet package
+   ```bash
+   dotnet add package Shiny.Maui.Controls
+   ```
+
+2. Configure in `MauiProgram.cs`
+   ```csharp
+   using Shiny;
+
+   var builder = MauiApp.CreateBuilder();
+   builder
+       .UseMauiApp<App>()
+       .UseShinyControls();
+   ```
+
+3. Add the XAML namespace to your pages
+   ```xml
+   xmlns:shiny="http://shiny.net/maui/controls"
+   ```
+
+### Blazor
+
+1. Install the NuGet package
+   ```bash
+   dotnet add package Shiny.Blazor.Controls
+   ```
+
+2. Add `@using` directives (typically in `_Imports.razor`)
+   ```razor
+   @using Shiny.Blazor.Controls
+   @using Shiny.Blazor.Controls.Cells
+   @using Shiny.Blazor.Controls.Sections
+   @using Shiny.Blazor.Controls.Scheduler
+   @using Shiny.Blazor.Controls.Markdown
+   @using Shiny.Blazor.Controls.MermaidDiagrams
+   ```
+
+No DI registration is required for Blazor — components are used directly in `.razor` pages.
+
+## MAUI → Blazor Translation Cheat Sheet
+
+All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not a 1:1 XAML port. When generating Blazor code, translate with these rules:
+
+### Component name differences
+
+| MAUI (XAML)             | Blazor (Razor)    | Notes                                           |
+|-------------------------|-------------------|-------------------------------------------------|
+| `shiny:TableView`       | `<TableView>`     | No prefix on Blazor; `TableRoot` is not needed  |
+| `shiny:TableRoot`       | *(omitted)*       | Sections go directly inside `<TableView>`       |
+| `shiny:TableSection`    | `<TableSection>`  |                                                 |
+| `shiny:PillView`        | `<Pill>`          | Renamed to just `Pill` on Blazor                |
+| `shiny:BottomSheetView` | `<BottomSheetView>` | Content goes in `<SheetContent>` named slot   |
+| `shiny:Fab`             | `<Fab>`           | `Icon` takes inline SVG/text string, not `ImageSource` |
+| `shiny:FabMenu`         | `<FabMenu>`       | Items passed via `Items` parameter (List<FabMenuItem>), not as children |
+| `shiny:ImageViewer`     | `<ImageViewer>`   | `Source` is a URL string                        |
+| `shiny:SecurityPin`     | `<SecurityPin>`   |                                                 |
+| `md:MarkdownView`       | `<MarkdownView>`  |                                                 |
+| `md:MarkdownEditor`     | `<MarkdownEditor>`|                                                 |
+| `diagram:MermaidDiagramControl` | `<MermaidDiagramControl>` |                                     |
+| Scheduler views        | `<SchedulerCalendarView>`, `<SchedulerAgendaView>`, `<SchedulerCalendarListView>` | Same names |
+
+### Binding, events, content
+
+| MAUI                                                 | Blazor                                           |
+|------------------------------------------------------|--------------------------------------------------|
+| `IsOpen="{Binding IsOpen, Mode=TwoWay}"`             | `@bind-IsOpen="isOpen"`                          |
+| `Value="{Binding Pin, Mode=TwoWay}"`                 | `@bind-Value="pin"`                              |
+| `Command="{Binding AddCommand}"`                     | `Clicked="OnAdd"` / `OnClick="OnAdd"` (event callback) |
+| `FontAttributes="Bold"` (PillView)                   | `Bold="true"`                                    |
+| `Color="DodgerBlue"` (MAUI `Color`)                  | `Color="#1E90FF"` (CSS color strings)            |
+| `ItemsSource` + `ItemTemplate` (DataTemplate)        | `ItemsSource` + `ItemTemplate` (`RenderFragment<object>`) |
+| `<shiny:BottomSheetView>` content goes in default slot | `<SheetContent>…</SheetContent>` named slot    |
+| `<shiny:FabMenu><shiny:FabMenuItem /></shiny:FabMenu>` | `Items="List<FabMenuItem>"` parameter         |
+
+### Blazor-specific notes
+
+- Use **CSS color strings** (`"#RRGGBB"`, `"rgb(...)"`, named colors) — there is no MAUI `Color` type on Blazor
+- `Icon` on `Fab`/`FabMenuItem` is a string — pass an inline SVG, emoji, or single character
+- `RenderFragment<object>` is the Blazor equivalent of `DataTemplate` for `ItemsSource`/`ItemTemplate`
+- Event handlers take the event arg directly (e.g. `Completed="OnCompleted"` where `OnCompleted(SecurityPinCompletedEventArgs e)`), not ICommand
+- Scheduler still uses `ISchedulerEventProvider` — the same interface and models work on both hosts
+
+### Blazor quick examples
+
+**TableView**
+```razor
+<TableView CellAccentColor="#10B981">
+    <TableSection Title="Profile">
+        <LabelCell Title="Name" ValueText="Allan Ritchie" />
+        <LabelCell Title="Plan" ValueText="Pro" />
+    </TableSection>
+    <TableSection Title="Danger zone">
+        <ButtonCell Title="Delete account"
+                    ButtonTextColor="#DC2626"
+                    OnClick="@(() => deleted = true)" />
+    </TableSection>
+</TableView>
 ```
 
-### 2. Configure in MauiProgram.cs
-```csharp
-using Shiny;
+**BottomSheet**
+```razor
+<button @onclick="() => isOpen = true">Open Sheet</button>
 
-var builder = MauiApp.CreateBuilder();
-builder
-    .UseMauiApp<App>()
-    .UseShinyControls();
+<BottomSheetView @bind-IsOpen="isOpen"
+                 Detents="detents"
+                 SheetCornerRadius="20">
+    <SheetContent>
+        <h2>Hello from a sheet</h2>
+        <button @onclick="() => isOpen = false">Close</button>
+    </SheetContent>
+</BottomSheetView>
+
+@code {
+    bool isOpen;
+    IList<DetentValue> detents = new List<DetentValue>
+    {
+        DetentValue.Quarter, DetentValue.Half, DetentValue.Full
+    };
+}
 ```
 
-### 3. Add XAML Namespace
-```xml
-xmlns:shiny="http://shiny.net/maui/controls"
+**Pill**
+```razor
+<Pill Text="Success" Type="PillType.Success" />
+<Pill Text="Brand" PillColor="#312E81" PillTextColor="#E0E7FF" />
+<Pill Text="Bold" Type="PillType.Info" Bold="true" />
+```
+
+**Fab / FabMenu**
+```razor
+<Fab Icon="+" FabBackgroundColor="#EC4899" Clicked="OnAdd" />
+
+<FabMenu Items="items"
+         Icon="+"
+         FabBackgroundColor="#7C3AED"
+         ItemTapped="OnItemTapped" />
+
+@code {
+    readonly List<FabMenuItem> items = new()
+    {
+        new FabMenuItem { Text = "New Note",  Icon = "📝", FabBackgroundColor = "#10B981", Tag = "note"  },
+        new FabMenuItem { Text = "New Photo", Icon = "📷", FabBackgroundColor = "#F59E0B", Tag = "photo" }
+    };
+    void OnItemTapped(FabMenuItem item) { /* ... */ }
+    void OnAdd() { /* ... */ }
+}
+```
+
+**ImageViewer**
+```razor
+<img src="@url" @onclick="() => Open(url)" />
+
+<ImageViewer Source="@current" @bind-IsOpen="isOpen" MaxZoom="6" />
+
+@code {
+    bool isOpen;
+    string? current;
+    void Open(string url) { current = url; isOpen = true; }
+}
+```
+
+**SecurityPin**
+```razor
+<SecurityPin @bind-Value="pin"
+             Length="6"
+             HideCharacter="●"
+             Completed="OnCompleted" />
+
+@code {
+    string pin = "";
+    void OnCompleted(SecurityPinCompletedEventArgs e) { /* verify e.Value */ }
+}
+```
+
+**Markdown**
+```razor
+<MarkdownView Markdown="@content" />
+<MarkdownEditor @bind-Markdown="content" Placeholder="Write markdown…" />
 ```
 
 ---
