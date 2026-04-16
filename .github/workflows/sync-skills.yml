@@ -33,9 +33,9 @@ jobs:
       - name: Sync skills directory
         run: |
           if [ -d "source/SKILLS/shiny-controls" ]; then
-            rm -rf skills-repo/skills/shiny-controls
-            mkdir -p skills-repo/skills
-            cp -r source/SKILLS/shiny-controls skills-repo/skills/
+            rm -rf skills-repo/plugins/shiny-maui/skills/shiny-controls
+            mkdir -p skills-repo/plugins/shiny-maui/skills
+            cp -r source/SKILLS/shiny-controls skills-repo/plugins/shiny-maui/skills/
           fi
 
       - name: Create Pull Request
@@ -46,13 +46,13 @@ jobs:
           commit-message: "Update shiny-controls skill from controls repository"
           title: "Update shiny-controls skill"
           body: |
-            This PR updates the shiny-controls skill from the [controls repository](https://github.com/shinyorg/bottomsheet).
+            This PR updates the shiny-controls skill from the [controls repository](https://github.com/shinyorg/mauicontrols).
 
             **Source commit:** ${{ github.sha }}
             **Triggered by:** @${{ github.actor }}
 
             ---
-            *This PR was automatically created by the [sync-skills workflow](https://github.com/shinyorg/bottomsheet/actions/workflows/sync-skills.yml).*
+            *This PR was automatically created by the [sync-skills workflow](https://github.com/shinyorg/mauicontrols/actions/workflows/sync-skills.yml).*
           branch: update-shiny-controls-skill
           delete-branch: true
           labels: |
