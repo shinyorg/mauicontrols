@@ -17,4 +17,7 @@ public partial class ImageViewerViewModel : ObservableObject
         SelectedImage = imageSource;
         IsViewerOpen = true;
     }
+
+    [RelayCommand]
+    void CloseViewer() => IsViewerOpen = false;
 }

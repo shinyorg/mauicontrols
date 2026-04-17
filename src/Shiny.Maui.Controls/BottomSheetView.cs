@@ -25,6 +25,7 @@ public class BottomSheetView : ContentView
     int currentDetentIndex;
     int detentIndexBeforeKeyboard = -1;
     bool isKeyboardVisible;
+    DetentValue? fitContentDetent;
 
     public BottomSheetView()
     {
@@ -246,6 +247,40 @@ public class BottomSheetView : ContentView
         set => SetValue(ExpandOnInputFocusProperty, value);
     }
 
+    public static readonly BindableProperty IsLockedProperty = BindableProperty.Create(
+        nameof(IsLocked),
+        typeof(bool),
+        typeof(BottomSheetView),
+        false,
+        propertyChanged: (b, _, n) => ((BottomSheetView)b).OnIsLockedChanged((bool)n));
+
+    public bool IsLocked
+    {
+        get => (bool)GetValue(IsLockedProperty);
+        set => SetValue(IsLockedProperty, value);
+    }
+
+    public static readonly BindableProperty FitContentProperty = BindableProperty.Create(
+        nameof(FitContent),
+        typeof(bool),
+        typeof(BottomSheetView),
+        false);
+
+    public bool FitContent
+    {
+        get => (bool)GetValue(FitContentProperty);
+        set => SetValue(FitContentProperty, value);
+    }
+
+    void OnIsLockedChanged(bool locked)
+    {
+        dragHandle.IsVisible = !locked;
+        if (locked)
+            sheetContainer.GestureRecognizers.Remove(panGesture);
+        else if (!sheetContainer.GestureRecognizers.Contains(panGesture))
+            sheetContainer.GestureRecognizers.Add(panGesture);
+    }
+
 
 
     public event EventHandler? Opened;
@@ -312,6 +347,19 @@ public class BottomSheetView : ContentView
         backdrop.Opacity = 0;
         backdrop.InputTransparent = !HasBackdrop;
 
+        // Compute detent from content size when FitContent is enabled
+        if (FitContent && contentHost.Content is View fitView)
+        {
+            var measured = fitView.Measure(rootGrid.Width, double.PositiveInfinity);
+            var contentHeight = measured.Height + DragHandleHeight + 20; // 20px padding buffer
+            var ratio = Math.Clamp(contentHeight / availableHeight, 0.1, 1.0);
+            fitContentDetent = new DetentValue(ratio);
+        }
+        else
+        {
+            fitContentDetent = null;
+        }
+
         // Animate to first detent
         currentDetentIndex = 0;
         var targetY = GetTranslationYForDetent(GetSortedDetents()[currentDetentIndex]);
@@ -357,7 +405,7 @@ public class BottomSheetView : ContentView
 
     void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
-        if (isAnimating) return;
+        if (isAnimating || IsLocked) return;
 
         switch (e.StatusType)
         {
@@ -597,6 +645,9 @@ public class BottomSheetView : ContentView
 
     List<DetentValue> GetSortedDetents()
     {
+        if (fitContentDetent.HasValue)
+            return new List<DetentValue> { fitContentDetent.Value };
+
         var list = Detents?.OrderBy(d => d.Ratio).ToList()
             ?? new List<DetentValue> { DetentValue.Half };
         return list;
@@ -640,6 +691,7 @@ public class BottomSheetView : ContentView
 
     void OnBackdropTapped(object? sender, TappedEventArgs e)
     {
+        if (IsLocked) return;
         if (CloseOnBackdropTap)
             IsOpen = false;
     }

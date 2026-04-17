@@ -13,7 +13,22 @@
              @ref="imgEl"
              src="@Source"
              alt="" />
-        <button type="button" class="shiny-imgviewer-close" @onclick="OnCloseClick">&#10005;</button>
+        @if (HeaderTemplate != null)
+        {
+            <div class="shiny-imgviewer-header">@HeaderTemplate</div>
+        }
+        @if (CloseButtonTemplate != null)
+        {
+            <div class="shiny-imgviewer-close" @onclick="OnCloseClick">@CloseButtonTemplate</div>
+        }
+        else
+        {
+            <button type="button" class="shiny-imgviewer-close" @onclick="OnCloseClick">&#10005;</button>
+        }
+        @if (FooterTemplate != null)
+        {
+            <div class="shiny-imgviewer-footer">@FooterTemplate</div>
+        }
     </div>
 }
 
@@ -30,6 +45,9 @@
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
     [Parameter] public double MaxZoom { get; set; } = 5.0;
+    [Parameter] public RenderFragment? CloseButtonTemplate { get; set; }
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
 
     protected override void OnInitialized() { rendered = true; wasOpen = IsOpen; }
 

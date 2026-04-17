@@ -9,7 +9,9 @@ public class ImageViewer : ContentView
     readonly Grid rootGrid;
     readonly BoxView backdrop;
     readonly Image image;
-    readonly Button closeButton;
+    View closeView;
+    View? headerView;
+    View? footerView;
     readonly TapGestureRecognizer doubleTapGesture;
     readonly PinchGestureRecognizer pinchGesture;
     readonly PanGestureRecognizer panGesture;
@@ -61,27 +63,13 @@ public class ImageViewer : ContentView
         // through to the page behind the overlay
         backdrop.GestureRecognizers.Add(new TapGestureRecognizer());
 
-        closeButton = new Button
-        {
-            Text = "\u2715",
-            FontSize = 20,
-            TextColor = Colors.White,
-            BackgroundColor = Color.FromRgba(0, 0, 0, 0.5),
-            CornerRadius = 20,
-            WidthRequest = 40,
-            HeightRequest = 40,
-            Padding = 0,
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 50, 16, 0)
-        };
-        closeButton.Clicked += (_, _) => IsOpen = false;
+        closeView = CreateDefaultCloseButton();
 
         rootGrid = new Grid
         {
             InputTransparent = false,
             CascadeInputTransparent = false,
-            Children = { backdrop, image, closeButton }
+            Children = { backdrop, image, closeView }
         };
 
         Content = rootGrid;
@@ -133,6 +121,132 @@ public class ImageViewer : ContentView
         set => SetValue(IsOpenProperty, value);
     }
 
+    public static readonly BindableProperty CloseButtonTemplateProperty = BindableProperty.Create(
+        nameof(CloseButtonTemplate),
+        typeof(DataTemplate),
+        typeof(ImageViewer),
+        null,
+        propertyChanged: (b, _, _) => ((ImageViewer)b).ApplyCloseButtonTemplate());
+
+    public DataTemplate? CloseButtonTemplate
+    {
+        get => (DataTemplate?)GetValue(CloseButtonTemplateProperty);
+        set => SetValue(CloseButtonTemplateProperty, value);
+    }
+
+    public static readonly BindableProperty HeaderTemplateProperty = BindableProperty.Create(
+        nameof(HeaderTemplate),
+        typeof(DataTemplate),
+        typeof(ImageViewer),
+        null,
+        propertyChanged: (b, _, _) => ((ImageViewer)b).ApplyHeaderTemplate());
+
+    public DataTemplate? HeaderTemplate
+    {
+        get => (DataTemplate?)GetValue(HeaderTemplateProperty);
+        set => SetValue(HeaderTemplateProperty, value);
+    }
+
+    public static readonly BindableProperty FooterTemplateProperty = BindableProperty.Create(
+        nameof(FooterTemplate),
+        typeof(DataTemplate),
+        typeof(ImageViewer),
+        null,
+        propertyChanged: (b, _, _) => ((ImageViewer)b).ApplyFooterTemplate());
+
+    public DataTemplate? FooterTemplate
+    {
+        get => (DataTemplate?)GetValue(FooterTemplateProperty);
+        set => SetValue(FooterTemplateProperty, value);
+    }
+
+    void ApplyCloseButtonTemplate()
+    {
+        rootGrid.Children.Remove(closeView);
+
+        if (CloseButtonTemplate != null)
+        {
+            var content = CloseButtonTemplate.CreateContent();
+            if (content is View view)
+            {
+                view.HorizontalOptions = LayoutOptions.End;
+                view.VerticalOptions = LayoutOptions.Start;
+                var tap = new TapGestureRecognizer();
+                tap.Tapped += (_, _) => IsOpen = false;
+                view.GestureRecognizers.Add(tap);
+                closeView = view;
+            }
+        }
+        else
+        {
+            closeView = CreateDefaultCloseButton();
+        }
+
+        rootGrid.Children.Add(closeView);
+    }
+
+    void ApplyHeaderTemplate()
+    {
+        if (headerView != null)
+            rootGrid.Children.Remove(headerView);
+
+        if (HeaderTemplate != null)
+        {
+            var content = HeaderTemplate.CreateContent();
+            if (content is View view)
+            {
+                view.VerticalOptions = LayoutOptions.Start;
+                headerView = view;
+                rootGrid.Children.Add(headerView);
+            }
+        }
+        else
+        {
+            headerView = null;
+        }
+    }
+
+    void ApplyFooterTemplate()
+    {
+        if (footerView != null)
+            rootGrid.Children.Remove(footerView);
+
+        if (FooterTemplate != null)
+        {
+            var content = FooterTemplate.CreateContent();
+            if (content is View view)
+            {
+                view.VerticalOptions = LayoutOptions.End;
+                footerView = view;
+                rootGrid.Children.Add(footerView);
+            }
+        }
+        else
+        {
+            footerView = null;
+        }
+    }
+
+    Button CreateDefaultCloseButton()
+    {
+        var btn = new Button
+        {
+            Text = "\u2715",
+            FontSize = 20,
+            TextColor = Colors.White,
+            BackgroundColor = Color.FromRgba(0, 0, 0, 0.5),
+            CornerRadius = 20,
+            WidthRequest = 40,
+            HeightRequest = 40,
+            Padding = 0,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 50, 16, 0)
+        };
+        btn.Clicked += (_, _) => IsOpen = false;
+        return btn;
+    }
+
     async Task OpenAsync()
     {
         if (isAnimating) return;
@@ -140,15 +254,13 @@ public class ImageViewer : ContentView
 
         ResetTransform();
         IsVisible = true;
-        backdrop.Opacity = 0;
-        image.Opacity = 0;
-        closeButton.Opacity = 0;
 
-        await Task.WhenAll(
-            backdrop.FadeTo(1, AnimationDuration),
-            image.FadeTo(1, AnimationDuration),
-            closeButton.FadeTo(1, AnimationDuration)
-        );
+        var fadeTargets = new List<VisualElement> { backdrop, image, closeView };
+        if (headerView != null) fadeTargets.Add(headerView);
+        if (footerView != null) fadeTargets.Add(footerView);
+
+        foreach (var v in fadeTargets) v.Opacity = 0;
+        await Task.WhenAll(fadeTargets.Select(v => v.FadeTo(1, AnimationDuration)));
 
         isAnimating = false;
     }
@@ -158,11 +270,11 @@ public class ImageViewer : ContentView
         if (isAnimating) return;
         isAnimating = true;
 
-        await Task.WhenAll(
-            backdrop.FadeTo(0, AnimationDuration),
-            image.FadeTo(0, AnimationDuration),
-            closeButton.FadeTo(0, AnimationDuration)
-        );
+        var fadeTargets = new List<VisualElement> { backdrop, image, closeView };
+        if (headerView != null) fadeTargets.Add(headerView);
+        if (footerView != null) fadeTargets.Add(footerView);
+
+        await Task.WhenAll(fadeTargets.Select(v => v.FadeTo(0, AnimationDuration)));
 
         IsVisible = false;
         ResetTransform();

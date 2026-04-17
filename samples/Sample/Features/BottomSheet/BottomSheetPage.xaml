@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Sample.Features.BottomSheet"
              xmlns:bs="clr-namespace:Shiny.Maui.Controls;assembly=Shiny.Maui.Controls"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="Sample.Features.BottomSheet.BottomSheetPage"
              x:DataType="local:BottomSheetViewModel">
   <Grid>
@@ -10,11 +11,6 @@
     <!-- Main page content -->
     <ScrollView>
         <VerticalStackLayout Padding="30,0" Spacing="25">
-            <Image
-                Source="dotnet_bot.png"
-                HeightRequest="185"
-                Aspect="AspectFit" />
-
             <Label
                 Text="Bottom Sheet Demo"
                 FontSize="28"
@@ -34,6 +30,39 @@
             <Button
                 Text="Toggle Sheet"
                 Command="{Binding ToggleSheetCommand}" />
+
+            <BoxView HeightRequest="1" Color="LightGray" Margin="0,10" />
+
+            <Label Text="Locked Sheets"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+
+            <Label Text="These sheets are locked — no swipe or backdrop dismiss. Only controls inside can close them."
+                   FontSize="14"
+                   HorizontalTextAlignment="Center"
+                   TextColor="Gray" />
+
+            <Button Text="Open Signature Sheet"
+                    Command="{Binding OpenSignatureCommand}" />
+
+            <Image Source="{Binding SignatureImage}"
+                   HeightRequest="150"
+                   Aspect="AspectFit"
+                   IsVisible="{Binding HasSignature}" />
+
+            <Label Text="No signature captured yet"
+                   IsVisible="{Binding HasSignature, Converter={toolkit:InvertedBoolConverter}}"
+                   HorizontalTextAlignment="Center"
+                   TextColor="Gray" />
+
+            <Button Text="Open Country Selector"
+                    Command="{Binding OpenSelectorCommand}" />
+
+            <Label Text="{Binding SelectedCountry, StringFormat='Selected: {0}'}"
+                   FontSize="16"
+                   HorizontalTextAlignment="Center"
+                   IsVisible="{Binding HasSelection}" />
         </VerticalStackLayout>
     </ScrollView>
 
@@ -80,6 +109,87 @@
             <Button Text="Close from inside"
                     Command="{Binding CloseSheetCommand}" />
         </VerticalStackLayout>
+    </bs:BottomSheetView>
+
+    <!-- Locked: Signature sheet -->
+    <bs:BottomSheetView IsOpen="{Binding IsSignatureOpen}"
+                        IsLocked="True"
+                        FitContent="True"
+                        HasBackdrop="True"
+                        SheetCornerRadius="20">
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="Draw your signature below"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+
+            <Border Stroke="LightGray"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 8"
+                    HeightRequest="200"
+                    BackgroundColor="White">
+                <toolkit:DrawingView x:Name="drawingView"
+                                     LineColor="Black"
+                                     LineWidth="3"
+                                     IsMultiLineModeEnabled="True"
+                                     BackgroundColor="White" />
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Text="Cancel"
+                        BackgroundColor="Gray"
+                        TextColor="White"
+                        Command="{Binding CancelSignatureCommand}" />
+
+                <Button Text="Done"
+                        Grid.Column="1"
+                        Command="{Binding DoneSignatureCommand}"
+                        CommandParameter="{x:Reference drawingView}" />
+            </Grid>
+        </VerticalStackLayout>
+    </bs:BottomSheetView>
+
+    <!-- Locked: Country selector sheet -->
+    <bs:BottomSheetView IsOpen="{Binding IsSelectorOpen}"
+                        IsLocked="True"
+                        HasBackdrop="True"
+                        SheetCornerRadius="20"
+                        Detents="{Binding SelectorDetents}">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="20" RowSpacing="10">
+            <Label Text="Select a Country"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+
+            <Label Grid.Row="1"
+                   Text="{Binding SelectedCountry, StringFormat='Selected: {0}'}"
+                   FontSize="14"
+                   HorizontalTextAlignment="Center"
+                   TextColor="Gray"
+                   IsVisible="{Binding HasSelection}" />
+
+            <CollectionView Grid.Row="2"
+                            ItemsSource="{Binding Countries}"
+                            SelectionMode="Single"
+                            SelectionChangedCommand="{Binding SelectCountryCommand}"
+                            SelectionChangedCommandParameter="{Binding SelectedItem, Source={RelativeSource Self}}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Grid Padding="12,14">
+                            <Label Text="{Binding .}"
+                                   FontSize="16"
+                                   VerticalTextAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Button Grid.Row="3"
+                    Text="Cancel"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    Command="{Binding CancelSelectorCommand}" />
+        </Grid>
     </bs:BottomSheetView>
 
   </Grid>

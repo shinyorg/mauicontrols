@@ -2,6 +2,13 @@ namespace Shiny.Maui.Controls;
 
 public class PillView : ContentView
 {
+    public const string NoneStyleKey = "ShinyPillNoneStyle";
+    public const string SuccessStyleKey = "ShinyPillSuccessStyle";
+    public const string InfoStyleKey = "ShinyPillInfoStyle";
+    public const string WarningStyleKey = "ShinyPillWarningStyle";
+    public const string CautionStyleKey = "ShinyPillCautionStyle";
+    public const string CriticalStyleKey = "ShinyPillCriticalStyle";
+
     readonly Border border;
     readonly Label label;
 
@@ -35,6 +42,26 @@ public class PillView : ContentView
         // Apply default (None) styling
         ApplyPillType(PillType.None);
     }
+
+    static readonly Dictionary<PillType, string> StyleKeys = new()
+    {
+        [PillType.None] = NoneStyleKey,
+        [PillType.Success] = SuccessStyleKey,
+        [PillType.Info] = InfoStyleKey,
+        [PillType.Warning] = WarningStyleKey,
+        [PillType.Caution] = CautionStyleKey,
+        [PillType.Critical] = CriticalStyleKey,
+    };
+
+    static readonly Dictionary<PillType, (string Bg, string Text, string Border)> DefaultColors = new()
+    {
+        [PillType.None] = ("#F3F4F6", "#374151", "#D1D5DB"),
+        [PillType.Success] = ("#DCFCE7", "#166534", "#86EFAC"),
+        [PillType.Info] = ("#DBEAFE", "#1E40AF", "#93C5FD"),
+        [PillType.Warning] = ("#FEF9C3", "#854D0E", "#FDE047"),
+        [PillType.Caution] = ("#FFEDD5", "#9A3412", "#FDBA74"),
+        [PillType.Critical] = ("#FEE2E2", "#991B1B", "#FCA5A5"),
+    };
 
 
     public static readonly BindableProperty TextProperty = BindableProperty.Create(
@@ -180,21 +207,35 @@ public class PillView : ContentView
 
     void ApplyPillType(PillType type)
     {
-        var (bg, text, borderColor) = type switch
+        // Try to find a user-defined style for this pill type.
+        // The style sets PillColor/PillTextColor/PillBorderColor which
+        // flow through the normal property-changed handlers to the visuals.
+        if (StyleKeys.TryGetValue(type, out var key) && TryFindStyle(key, out var style))
         {
-            PillType.Success => (Color.FromArgb("#DCFCE7"), Color.FromArgb("#166534"), Color.FromArgb("#86EFAC")),
-            PillType.Info => (Color.FromArgb("#DBEAFE"), Color.FromArgb("#1E40AF"), Color.FromArgb("#93C5FD")),
-            PillType.Warning => (Color.FromArgb("#FEF9C3"), Color.FromArgb("#854D0E"), Color.FromArgb("#FDE047")),
-            PillType.Caution => (Color.FromArgb("#FFEDD5"), Color.FromArgb("#9A3412"), Color.FromArgb("#FDBA74")),
-            PillType.Critical => (Color.FromArgb("#FEE2E2"), Color.FromArgb("#991B1B"), Color.FromArgb("#FCA5A5")),
-            _ => (Color.FromArgb("#F3F4F6"), Color.FromArgb("#374151"), Color.FromArgb("#D1D5DB")),
-        };
+            Style = style;
+            return;
+        }
+
+        // Fall back to built-in defaults — apply directly to visuals
+        Style = null;
+        var (bgHex, textHex, borderHex) = DefaultColors[type];
 
         isUpdatingFromType = true;
-        border.BackgroundColor = bg;
-        border.Stroke = PillBorderColor ?? borderColor;
-        label.TextColor = PillTextColor ?? text;
+        border.BackgroundColor = Color.FromArgb(bgHex);
+        border.Stroke = PillBorderColor ?? Color.FromArgb(borderHex);
+        label.TextColor = PillTextColor ?? Color.FromArgb(textHex);
         isUpdatingFromType = false;
+    }
+
+    bool TryFindStyle(string key, out Style style)
+    {
+        style = null!;
+        if (Application.Current?.Resources.TryGetValue(key, out var value) == true && value is Style s && s.TargetType == typeof(PillView))
+        {
+            style = s;
+            return true;
+        }
+        return false;
     }
 
     void ApplyBaseColor(Color baseColor)

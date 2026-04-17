@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui;
 using MauiDevFlow.Agent;
 using Microsoft.Extensions.Logging;
 using Sample.Features.BottomSheet;
@@ -22,6 +23,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .UseShinyControls()
             .UseShinyShell(x => x
                 .Add<HomePage, HomeViewModel>(registerRoute: false)

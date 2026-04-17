@@ -25,10 +25,59 @@
     </SheetContent>
 </BottomSheetView>
 
+
+<div class="demo-section">
+    <h2>Locked Sheet — Selector</h2>
+    <p>This sheet is locked — no swipe or backdrop dismiss. Only the controls inside can close it.</p>
+    <button @onclick="() => isSelectorOpen = true">Choose a Country</button>
+    @if (selectedCountry != null)
+    {
+        <div class="state">Selected: <code>@selectedCountry</code></div>
+    }
+</div>
+
+<BottomSheetView @bind-IsOpen="isSelectorOpen"
+                 IsLocked="true"
+                 SheetCornerRadius="20">
+    <SheetContent>
+        <h3 style="text-align:center;margin:0 0 12px;">Select a Country</h3>
+        <div style="max-height:400px;overflow-y:auto;">
+            @foreach (var item in countries)
+            {
+                <div class="selector-item" @onclick="() => SelectCountry(item)">@item</div>
+            }
+        </div>
+        <button style="margin-top:12px;width:100%;" @onclick="() => isSelectorOpen = false">Cancel</button>
+    </SheetContent>
+</BottomSheetView>
+
 @code {
     bool isOpen;
+    bool isSelectorOpen;
+    string? selectedCountry;
+
     IList<DetentValue> detents = new List<DetentValue>
     {
         DetentValue.Quarter, DetentValue.Half, DetentValue.Full
     };
+
+    static readonly string[] countries = new[]
+    {
+        "Argentina", "Australia", "Austria", "Belgium", "Brazil",
+        "Canada", "Chile", "China", "Colombia", "Czech Republic",
+        "Denmark", "Egypt", "Finland", "France", "Germany",
+        "Greece", "Hungary", "India", "Indonesia", "Ireland",
+        "Israel", "Italy", "Japan", "Kenya", "Malaysia",
+        "Mexico", "Netherlands", "New Zealand", "Nigeria", "Norway",
+        "Peru", "Philippines", "Poland", "Portugal", "Romania",
+        "Russia", "Saudi Arabia", "Singapore", "South Africa", "South Korea",
+        "Spain", "Sweden", "Switzerland", "Thailand", "Turkey",
+        "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Vietnam"
+    };
+
+    void SelectCountry(string item)
+    {
+        selectedCountry = item;
+        isSelectorOpen = false;
+    }
 }

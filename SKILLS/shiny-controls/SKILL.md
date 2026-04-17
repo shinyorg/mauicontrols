@@ -777,6 +777,8 @@ A draggable bottom sheet overlay that slides up from the bottom of the page. Sup
 | `CloseOnBackdropTap` | `bool` | `true` | Tapping the backdrop closes the sheet |
 | `AnimationDuration` | `double` | `250` | Animation duration in milliseconds |
 | `ExpandOnInputFocus` | `bool` | `true` | Auto-expands to highest detent when an input is focused |
+| `IsLocked` | `bool` | `false` | Prevents swipe, pan, and backdrop tap dismiss; sheet can only be controlled programmatically |
+| `FitContent` | `bool` | `false` | Measures content and auto-computes a single detent to fit it (ignores Detents when true) |
 
 ## DetentValue
 
@@ -811,6 +813,36 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
 - **Keyboard handling**: Automatically expands when an Entry/Editor is focused (Android AdjustResize), restores when keyboard dismissed
 - **ScrollView integration**: Scroll is enabled only at the highest detent; disabled at lower detents to allow pan gestures
 - **Backdrop**: Semi-transparent overlay that dims proportionally to sheet position
+- **Locked mode**: When `IsLocked="True"`, the drag handle is hidden, pan gestures are disabled, and backdrop tap is ignored — the sheet can only be opened/closed via code (ideal for signature capture, selectors, or confirmation dialogs)
+- **Fit content**: When `FitContent="True"`, the sheet measures its content and auto-computes a single detent to fit it, ignoring the Detents collection
+
+## BottomSheetView Locked Sheet Example
+
+```xml
+<!-- Signature capture: locked + auto-sized -->
+<shiny:BottomSheetView IsOpen="{Binding IsSignatureOpen}"
+                       IsLocked="True"
+                       FitContent="True"
+                       HasBackdrop="True"
+                       SheetCornerRadius="20">
+    <VerticalStackLayout Padding="20" Spacing="15">
+        <Label Text="Draw your signature" FontSize="18" FontAttributes="Bold" />
+        <!-- signature content -->
+        <Button Text="Done" Command="{Binding DoneCommand}" />
+    </VerticalStackLayout>
+</shiny:BottomSheetView>
+
+<!-- Selector: locked with explicit detent -->
+<shiny:BottomSheetView IsOpen="{Binding IsSelectorOpen}"
+                       IsLocked="True"
+                       HasBackdrop="True"
+                       SheetCornerRadius="20">
+    <shiny:BottomSheetView.Detents>
+        <shiny:DetentValue Ratio="0.5" />
+    </shiny:BottomSheetView.Detents>
+    <CollectionView ItemsSource="{Binding Items}" />
+</shiny:BottomSheetView>
+```
 
 ## BottomSheetView Example with Custom Detents
 
@@ -887,6 +919,31 @@ A status badge/label control with preset color themes and custom color support. 
 - Setting `PillBorderColor` overrides auto-calculated border color
 - Setting `Type` applies the preset theme; `PillTextColor`/`PillBorderColor` still override if set
 
+## PillView Style Overrides
+
+Each `PillType` maps to a well-known style key. If the application's `ResourceDictionary` contains a `Style` with the matching key and `TargetType="PillView"`, it is applied instead of the built-in defaults.
+
+| PillType | Style Key |
+|---|---|
+| `None` | `ShinyPillNoneStyle` |
+| `Success` | `ShinyPillSuccessStyle` |
+| `Info` | `ShinyPillInfoStyle` |
+| `Warning` | `ShinyPillWarningStyle` |
+| `Caution` | `ShinyPillCautionStyle` |
+| `Critical` | `ShinyPillCriticalStyle` |
+
+Example override in `App.xaml`:
+
+```xml
+<Application.Resources>
+    <Style x:Key="ShinyPillSuccessStyle" TargetType="shiny:PillView">
+        <Setter Property="PillColor" Value="#22C55E" />
+        <Setter Property="PillTextColor" Value="White" />
+        <Setter Property="PillBorderColor" Value="#16A34A" />
+    </Style>
+</Application.Resources>
+```
+
 ---
 
 # ImageViewer
@@ -922,6 +979,9 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 | `Source` | `ImageSource?` | `null` | OneWay | The image to display |
 | `IsOpen` | `bool` | `false` | TwoWay | Opens/closes the viewer with fade animation |
 | `MaxZoom` | `double` | `5.0` | OneWay | Maximum pinch zoom scale |
+| `CloseButtonTemplate` | `DataTemplate?` | `null` | OneWay | Custom close button template (tapping the templated view closes the viewer) |
+| `HeaderTemplate` | `DataTemplate?` | `null` | OneWay | Custom header overlay at the top of the viewer |
+| `FooterTemplate` | `DataTemplate?` | `null` | OneWay | Custom footer overlay at the bottom of the viewer |
 
 ## ImageViewer Features
 
@@ -929,7 +989,8 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 - **Pan when zoomed**: One-finger pan is enabled after zooming in, with translation clamped to image bounds
 - **Double-tap to zoom**: Double-tap zooms to 2.5x centered on the tap point; double-tap again resets to 1x
 - **Animated open/close**: Backdrop, image, and close button fade in/out together (250ms)
-- **Close button**: "✕" button in the top-right corner to close the viewer
+- **Close button**: "✕" button in the top-right corner (customizable via `CloseButtonTemplate`)
+- **Header/Footer templates**: Optional overlays at the top/bottom of the viewer for custom UI
 - **Backdrop**: Black overlay that swallows touches so nothing falls through to the page behind
 
 ## ImageViewer Placement

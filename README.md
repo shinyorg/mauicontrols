@@ -173,6 +173,8 @@ A bottom sheet overlay that slides up from the bottom of the screen with configu
 | SheetBackgroundColor | Color | Sheet background color |
 | AnimationDuration | double | Animation speed (ms) |
 | ExpandOnInputFocus | bool | Auto-expand when input focused |
+| IsLocked | bool | Prevents swipe/backdrop dismiss; code-only control |
+| FitContent | bool | Auto-computes detent from content size |
 
 ### ImageViewer
 
@@ -207,6 +209,9 @@ A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animat
 | Source | ImageSource? | The image to display |
 | IsOpen | bool | Show/hide the viewer (TwoWay) |
 | MaxZoom | double | Maximum zoom scale (default: 5.0) |
+| CloseButtonTemplate | DataTemplate? | Custom close button (tapping closes viewer) |
+| HeaderTemplate | DataTemplate? | Custom header overlay |
+| FooterTemplate | DataTemplate? | Custom footer overlay |
 
 **Features:**
 - Pinch-to-zoom with origin tracking
@@ -235,6 +240,8 @@ Pill/chip/tag elements for displaying categories, filters, or status indicators 
 | Warning | Yellow |
 | Caution | Orange |
 | Critical | Red |
+
+Each `PillType` maps to a well-known style key (e.g. `ShinyPillSuccessStyle`) that can be overridden in your app's `ResourceDictionary` to customize the preset themes.
 
 ### Fab & FabMenu
 

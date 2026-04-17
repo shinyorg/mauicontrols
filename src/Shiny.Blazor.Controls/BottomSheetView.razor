@@ -35,6 +35,7 @@
     DotNetObjectReference<BottomSheetView>? selfRef;
     bool rendered;
     bool isOpen;
+    bool wasLocked;
     double backdropOpacity;
 
     [Parameter] public bool IsOpen { get; set; }
@@ -49,6 +50,7 @@
     [Parameter] public int AnimationDurationMs { get; set; } = 250;
     [Parameter] public EventCallback Opened { get; set; }
     [Parameter] public EventCallback Closed { get; set; }
+    [Parameter] public bool IsLocked { get; set; }
     [Parameter] public EventCallback<DetentValue> DetentChanged { get; set; }
 
     IList<DetentValue> ResolveDetents()
@@ -85,6 +87,13 @@
                 else await module.InvokeVoidAsync("close", sheetEl);
             }
         }
+
+        if (IsLocked != wasLocked)
+        {
+            wasLocked = IsLocked;
+            if (module is not null)
+                await module.InvokeVoidAsync("setLocked", sheetEl, IsLocked);
+        }
     }
 
     double[] GetSortedRatios() => ResolveDetents().Select(d => d.Ratio).OrderBy(r => r).ToArray();
@@ -97,7 +106,7 @@
                 "import",
                 "./_content/Shiny.Blazor.Controls/bottom-sheet.js");
             selfRef = DotNetObjectReference.Create(this);
-            await module.InvokeVoidAsync("init", rootEl, sheetEl, handleEl, selfRef, GetSortedRatios(), AnimationDurationMs);
+            await module.InvokeVoidAsync("init", rootEl, sheetEl, handleEl, selfRef, GetSortedRatios(), AnimationDurationMs, IsLocked);
             if (isOpen)
                 await module.InvokeVoidAsync("open", sheetEl, GetSortedRatios());
         }
@@ -131,6 +140,7 @@
 
     Task OnBackdropClick()
     {
+        if (IsLocked) return Task.CompletedTask;
         if (CloseOnBackdropTap)
             return OnOpenChanged(false);
         return Task.CompletedTask;

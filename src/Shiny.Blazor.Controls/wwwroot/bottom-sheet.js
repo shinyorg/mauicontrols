@@ -21,12 +21,13 @@ function snapInternal(state, ratio, animate) {
     state.dotnet.invokeMethodAsync('OnDetentChanged', ratio);
 }
 
-export function init(root, sheet, handle, dotnetRef, ratios, duration) {
+export function init(root, sheet, handle, dotnetRef, ratios, duration, locked) {
     const state = {
         root, sheet, handle,
         dotnet: dotnetRef,
         ratios: [...ratios].sort((a, b) => a - b),
         duration,
+        locked: !!locked,
         height: root.clientHeight || window.innerHeight,
         currentY: 0,
         dragStartY: 0,
@@ -47,8 +48,10 @@ export function init(root, sheet, handle, dotnetRef, ratios, duration) {
     window.addEventListener('resize', onResize);
     state.onResize = onResize;
 
+    if (state.locked) handle.style.display = 'none';
+
     const onDown = (ev) => {
-        if (state.pointerId !== null) return;
+        if (state.locked || state.pointerId !== null) return;
         state.pointerId = ev.pointerId;
         state.dragging = true;
         state.dragStartY = ev.clientY;
@@ -122,6 +125,13 @@ export function snapTo(sheet, ratio) {
     const state = states.get(sheet);
     if (!state) return;
     snapInternal(state, ratio, true);
+}
+
+export function setLocked(sheet, locked) {
+    const state = states.get(sheet);
+    if (!state) return;
+    state.locked = locked;
+    state.handle.style.display = locked ? 'none' : '';
 }
 
 export function dispose(sheet) {

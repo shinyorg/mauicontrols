@@ -46,3 +46,21 @@
     cursor: pointer;
     z-index: 2;
 }
+
+.shiny-imgviewer-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    pointer-events: auto;
+}
+
+.shiny-imgviewer-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    pointer-events: auto;
+}

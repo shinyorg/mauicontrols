@@ -32,7 +32,19 @@
         </ScrollView>
 
         <shiny:ImageViewer Source="{Binding SelectedImage}"
-                           IsOpen="{Binding IsViewerOpen}" />
+                           IsOpen="{Binding IsViewerOpen}">
+            <shiny:ImageViewer.FooterTemplate>
+                <DataTemplate x:DataType="local:ImageViewerViewModel">
+                    <Button Text="Close"
+                            Command="{Binding CloseViewerCommand}"
+                            TextColor="White"
+                            BackgroundColor="{x:Static Colors.DimGray}"
+                            CornerRadius="20"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,40" />
+                </DataTemplate>
+            </shiny:ImageViewer.FooterTemplate>
+        </shiny:ImageViewer>
     </Grid>
 
 </ContentPage>
