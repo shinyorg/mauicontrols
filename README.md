@@ -136,36 +136,38 @@ public class MyEventProvider : ISchedulerEventProvider
 }
 ```
 
-### BottomSheetView
+### SheetView
 
-A bottom sheet overlay that slides up from the bottom of the screen with configurable snap positions (detents).
+A sheet overlay that slides in from the bottom or top of the screen with configurable snap positions (detents), optional header peek when minimized, and haptic feedback.
 
 | Closed | Open |
 |:---:|:---:|
 | ![Closed](assets/bottomsheet1.png) | ![Open](assets/bottomsheet2.png) |
 
 ```xml
-<shiny:BottomSheetView
+<shiny:SheetView
     IsOpen="{Binding IsSheetOpen}"
+    Direction="Bottom"
     HasBackdrop="True"
     CloseOnBackdropTap="True"
     SheetCornerRadius="16">
-    <shiny:BottomSheetView.Detents>
+    <shiny:SheetView.Detents>
         <shiny:DetentValue Value="Quarter" />
         <shiny:DetentValue Value="Half" />
         <shiny:DetentValue Value="Full" />
-    </shiny:BottomSheetView.Detents>
-    <shiny:BottomSheetView.SheetContent>
-        <!-- Your content here -->
-    </shiny:BottomSheetView.SheetContent>
-</shiny:BottomSheetView>
+    </shiny:SheetView.Detents>
+    <!-- Your content here -->
+</shiny:SheetView>
 ```
 
 | Property | Type | Description |
 |---|---|---|
 | IsOpen | bool | Show/hide the sheet (TwoWay) |
+| Direction | SheetDirection | `Bottom` or `Top` — which edge the sheet slides from |
 | Detents | ObservableCollection\<DetentValue\> | Snap positions (Quarter, Half, Full) |
 | SheetContent | View | Content displayed in the sheet |
+| HeaderTemplate | View | Optional header view shown inside the sheet (and as a peek bar when minimized) |
+| ShowHeaderWhenMinimized | bool | When true, the header peeks from the edge when the sheet is closed |
 | HasBackdrop | bool | Fade backdrop behind sheet |
 | CloseOnBackdropTap | bool | Close when backdrop tapped |
 | SheetCornerRadius | double | Top corner radius |
@@ -175,6 +177,7 @@ A bottom sheet overlay that slides up from the bottom of the screen with configu
 | ExpandOnInputFocus | bool | Auto-expand when input focused |
 | IsLocked | bool | Prevents swipe/backdrop dismiss; code-only control |
 | FitContent | bool | Auto-computes detent from content size |
+| UseHapticFeedback | bool | Enable/disable haptic feedback on open, close, and detent snap (default: true) |
 
 ### ImageViewer
 
@@ -212,6 +215,7 @@ A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animat
 | CloseButtonTemplate | DataTemplate? | Custom close button (tapping closes viewer) |
 | HeaderTemplate | DataTemplate? | Custom header overlay |
 | FooterTemplate | DataTemplate? | Custom footer overlay |
+| UseHapticFeedback | bool | Enable/disable haptic feedback on double-tap zoom (default: true) |
 
 **Features:**
 - Pinch-to-zoom with origin tracking
@@ -292,6 +296,7 @@ A Material Design-style floating action button, plus an expanding multi-action m
 | Size | double | 56 | Height of the Fab (diameter when circular) |
 | IconSize | double | 24 | Icon image size |
 | HasShadow | bool | true | Show drop shadow |
+| UseHapticFeedback | bool | true | Haptic feedback on tap |
 
 Events: `Clicked`.
 
@@ -307,6 +312,7 @@ Events: `Clicked`.
 | CloseOnBackdropTap | bool | true | Close when backdrop is tapped |
 | CloseOnItemTap | bool | true | Close after any item is tapped |
 | AnimationDuration | uint | 200 | Open/close animation duration (ms) |
+| UseHapticFeedback | bool | true | Haptic feedback on toggle |
 
 Events: `ItemTapped` — fires the `FabMenuItem` that was tapped.
 
@@ -328,6 +334,7 @@ Methods: `Open()`, `Close()`, `Toggle()`.
 | FontSize | double | 13 | Side-label font size |
 | Size | double | 44 | Icon button diameter |
 | IconSize | double | 20 | Icon image size |
+| UseHapticFeedback | bool | true | Haptic feedback on tap |
 
 **Placement tip**: `FabMenu` should live in a `Grid` that fills the page (the same placement pattern as `BottomSheetView` / `ImageViewer`) so the backdrop can cover the page content.
 
@@ -359,6 +366,8 @@ A PIN entry control with individually rendered cells that captures input through
 | CellBackgroundColor | Color? | null | Cell fill color |
 | CellTextColor | Color? | null | Entered character color |
 | FontSize | double | 24 | Character font size |
+
+| UseHapticFeedback | bool | Enable/disable haptic feedback on digit entry (click) and completion (long press) (default: true) |
 
 Events: `Completed` fires with a `SecurityPinCompletedEventArgs` once the entered value reaches `Length`.
 

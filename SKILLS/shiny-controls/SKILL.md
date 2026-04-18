@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, BottomSheetView with detents, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), and Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar)
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, SheetView (bottom/top) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), and haptic feedback support across all interactive controls
 auto_invoke: true
 triggers:
   - tableview
@@ -66,7 +66,7 @@ Every control below is available on **both** MAUI and Blazor. The feature set (p
 
 The library contains:
 - **TableView**: A pure MAUI settings-style TableView with 14 cell types, cascading styles, sections, drag-sort reordering, and full MVVM/binding support
-- **BottomSheetView**: A draggable bottom sheet overlay with configurable detents, backdrop, animations, and keyboard handling
+- **SheetView**: A draggable sheet overlay (bottom or top) with configurable detents, header peek when minimized, backdrop, animations, keyboard handling, and haptic feedback
 - **PillView**: A status badge/label control with 6 preset themes, custom colors, and WCAG-accessible contrast
 - **ImageViewer**: A full-screen image overlay with pinch-to-zoom, pan when zoomed, double-tap to toggle zoom, animated open/close, and a close button
 - **SecurityPin**: A PIN/OTP entry control with individual cells, configurable length, keyboard, and optional character masking
@@ -176,7 +176,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 | `shiny:TableRoot`       | *(omitted)*       | Sections go directly inside `<TableView>`       |
 | `shiny:TableSection`    | `<TableSection>`  |                                                 |
 | `shiny:PillView`        | `<Pill>`          | Renamed to just `Pill` on Blazor                |
-| `shiny:BottomSheetView` | `<BottomSheetView>` | Content goes in `<SheetContent>` named slot   |
+| `shiny:SheetView` | `<SheetView>` | Content goes in `<SheetContent>` named slot   |
 | `shiny:Fab`             | `<Fab>`           | `Icon` takes inline SVG/text string, not `ImageSource` |
 | `shiny:FabMenu`         | `<FabMenu>`       | Items passed via `Items` parameter (List<FabMenuItem>), not as children |
 | `shiny:ImageViewer`     | `<ImageViewer>`   | `Source` is a URL string                        |
@@ -196,7 +196,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 | `FontAttributes="Bold"` (PillView)                   | `Bold="true"`                                    |
 | `Color="DodgerBlue"` (MAUI `Color`)                  | `Color="#1E90FF"` (CSS color strings)            |
 | `ItemsSource` + `ItemTemplate` (DataTemplate)        | `ItemsSource` + `ItemTemplate` (`RenderFragment<object>`) |
-| `<shiny:BottomSheetView>` content goes in default slot | `<SheetContent>…</SheetContent>` named slot    |
+| `<shiny:SheetView>` content goes in default slot | `<SheetContent>…</SheetContent>` named slot    |
 | `<shiny:FabMenu><shiny:FabMenuItem /></shiny:FabMenu>` | `Items="List<FabMenuItem>"` parameter         |
 
 ### Blazor-specific notes
@@ -228,14 +228,14 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 ```razor
 <button @onclick="() => isOpen = true">Open Sheet</button>
 
-<BottomSheetView @bind-IsOpen="isOpen"
+<SheetView @bind-IsOpen="isOpen"
                  Detents="detents"
                  SheetCornerRadius="20">
     <SheetContent>
         <h2>Hello from a sheet</h2>
         <button @onclick="() => isOpen = false">Close</button>
     </SheetContent>
-</BottomSheetView>
+</SheetView>
 
 @code {
     bool isOpen;
@@ -584,6 +584,7 @@ All cells inherit these properties:
 | `BorderColor` | `Color?` | `null` | Border color |
 | `BorderWidth` | `double` | `-1` | Border width |
 | `BorderRadius` | `double` | `-1` | Border corner radius |
+| `UseHapticFeedback` | `bool` | `true` | Haptic feedback on cell tap |
 
 ## TableSection Properties
 
@@ -747,28 +748,31 @@ await tableView.ScrollToBottomAsync();
 
 ---
 
-# BottomSheetView
+# SheetView
 
-A draggable bottom sheet overlay that slides up from the bottom of the page. Supports multiple snap points (detents), backdrop dimming, pan gestures, and automatic keyboard handling.
+A draggable sheet overlay that slides in from the bottom or top edge of the page. Supports multiple snap points (detents), backdrop dimming, pan gestures, automatic keyboard handling, header peek when minimized, and haptic feedback.
 
 ## Basic Usage
 
 ```xml
-<shiny:BottomSheetView IsOpen="{Binding IsSheetOpen, Mode=TwoWay}">
+<shiny:SheetView IsOpen="{Binding IsSheetOpen, Mode=TwoWay}">
     <VerticalStackLayout Padding="20" Spacing="10">
         <Label Text="Sheet Content" FontSize="18" FontAttributes="Bold" />
         <Label Text="Drag the handle or tap the backdrop to close." />
         <Button Text="Close" Command="{Binding CloseSheetCommand}" />
     </VerticalStackLayout>
-</shiny:BottomSheetView>
+</shiny:SheetView>
 ```
 
-## BottomSheetView Properties
+## SheetView Properties
 
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `IsOpen` | `bool` | `false` | Opens/closes the sheet (two-way bindable) |
+| `Direction` | `SheetDirection` | `Bottom` | Which edge the sheet slides from (`Bottom` or `Top`) |
 | `SheetContent` | `View?` | `null` | The content displayed inside the sheet (ContentProperty) |
+| `HeaderTemplate` | `View?` | `null` | Optional header view; shown inside the sheet when open and as a peek bar when minimized |
+| `ShowHeaderWhenMinimized` | `bool` | `false` | When true, the header peeks from the edge when the sheet is closed |
 | `Detents` | `ObservableCollection<DetentValue>` | Quarter, Half, Full | Snap points as ratios of available height |
 | `SheetBackgroundColor` | `Color` | `White` | Background color of the sheet panel |
 | `HandleColor` | `Color` | `Grey` | Color of the drag handle indicator |
@@ -779,6 +783,7 @@ A draggable bottom sheet overlay that slides up from the bottom of the page. Sup
 | `ExpandOnInputFocus` | `bool` | `true` | Auto-expands to highest detent when an input is focused |
 | `IsLocked` | `bool` | `false` | Prevents swipe, pan, and backdrop tap dismiss; sheet can only be controlled programmatically |
 | `FitContent` | `bool` | `false` | Measures content and auto-computes a single detent to fit it (ignores Detents when true) |
+| `UseHapticFeedback` | `bool` | `true` | Haptic feedback on open, close, and detent snap |
 
 ## DetentValue
 
@@ -793,7 +798,7 @@ Predefined snap points (or create custom ones):
 
 Custom detent: `new DetentValue(0.33)` for 33% height.
 
-## BottomSheetView Events
+## SheetView Events
 
 | Event | Args | Description |
 |---|---|---|
@@ -807,7 +812,7 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
 |---|---|
 | `AnimateToDetentAsync(DetentValue)` | Programmatically animate to a specific detent |
 
-## BottomSheetView Features
+## SheetView Features
 
 - **Pan gesture**: Drag the sheet up/down between detents; swipe down past lowest detent to close
 - **Keyboard handling**: Automatically expands when an Entry/Editor is focused (Android AdjustResize), restores when keyboard dismissed
@@ -815,12 +820,15 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
 - **Backdrop**: Semi-transparent overlay that dims proportionally to sheet position
 - **Locked mode**: When `IsLocked="True"`, the drag handle is hidden, pan gestures are disabled, and backdrop tap is ignored — the sheet can only be opened/closed via code (ideal for signature capture, selectors, or confirmation dialogs)
 - **Fit content**: When `FitContent="True"`, the sheet measures its content and auto-computes a single detent to fit it, ignoring the Detents collection
+- **Direction**: Slides from bottom (`Direction="Bottom"`, default) or top (`Direction="Top"`)
+- **Header peek**: Set `ShowHeaderWhenMinimized="True"` with a `HeaderTemplate` to show a persistent header bar when the sheet is closed — tapping it opens the sheet
+- **Haptic feedback**: Subtle haptic on open, close, and detent snap; disable with `UseHapticFeedback="False"`
 
-## BottomSheetView Locked Sheet Example
+## SheetView Locked Sheet Example
 
 ```xml
 <!-- Signature capture: locked + auto-sized -->
-<shiny:BottomSheetView IsOpen="{Binding IsSignatureOpen}"
+<shiny:SheetView IsOpen="{Binding IsSignatureOpen}"
                        IsLocked="True"
                        FitContent="True"
                        HasBackdrop="True"
@@ -830,39 +838,39 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
         <!-- signature content -->
         <Button Text="Done" Command="{Binding DoneCommand}" />
     </VerticalStackLayout>
-</shiny:BottomSheetView>
+</shiny:SheetView>
 
 <!-- Selector: locked with explicit detent -->
-<shiny:BottomSheetView IsOpen="{Binding IsSelectorOpen}"
+<shiny:SheetView IsOpen="{Binding IsSelectorOpen}"
                        IsLocked="True"
                        HasBackdrop="True"
                        SheetCornerRadius="20">
-    <shiny:BottomSheetView.Detents>
+    <shiny:SheetView.Detents>
         <shiny:DetentValue Ratio="0.5" />
-    </shiny:BottomSheetView.Detents>
+    </shiny:SheetView.Detents>
     <CollectionView ItemsSource="{Binding Items}" />
-</shiny:BottomSheetView>
+</shiny:SheetView>
 ```
 
-## BottomSheetView Example with Custom Detents
+## SheetView Example with Custom Detents
 
 ```xml
-<shiny:BottomSheetView IsOpen="{Binding IsOpen, Mode=TwoWay}"
+<shiny:SheetView IsOpen="{Binding IsOpen, Mode=TwoWay}"
                        SheetBackgroundColor="#1E1E1E"
                        HandleColor="#888888"
                        SheetCornerRadius="24"
                        HasBackdrop="True"
                        CloseOnBackdropTap="True"
                        AnimationDuration="300">
-    <shiny:BottomSheetView.Detents>
+    <shiny:SheetView.Detents>
         <shiny:DetentValue Ratio="0.33" />
         <shiny:DetentValue Ratio="0.66" />
         <shiny:DetentValue Ratio="1.0" />
-    </shiny:BottomSheetView.Detents>
+    </shiny:SheetView.Detents>
     <VerticalStackLayout Padding="20">
         <Label Text="Custom Sheet" TextColor="White" />
     </VerticalStackLayout>
-</shiny:BottomSheetView>
+</shiny:SheetView>
 ```
 
 ---
@@ -948,7 +956,7 @@ Example override in `App.xaml`:
 
 # ImageViewer
 
-A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to toggle zoom, animated fade open/close, and a close button. Designed to overlay page content like BottomSheetView.
+A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to toggle zoom, animated fade open/close, and a close button. Designed to overlay page content like SheetView.
 
 ## Basic Usage
 
@@ -982,6 +990,7 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 | `CloseButtonTemplate` | `DataTemplate?` | `null` | OneWay | Custom close button template (tapping the templated view closes the viewer) |
 | `HeaderTemplate` | `DataTemplate?` | `null` | OneWay | Custom header overlay at the top of the viewer |
 | `FooterTemplate` | `DataTemplate?` | `null` | OneWay | Custom footer overlay at the bottom of the viewer |
+| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic feedback on double-tap zoom |
 
 ## ImageViewer Features
 
@@ -995,7 +1004,7 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 
 ## ImageViewer Placement
 
-Like BottomSheetView, ImageViewer must be placed inside a Grid that fills the page so it overlays correctly:
+Like SheetView, ImageViewer must be placed inside a Grid that fills the page so it overlays correctly:
 
 ```xml
 <ContentPage>
@@ -1066,6 +1075,7 @@ A PIN/OTP entry control with individually rendered cells. Input is captured by a
 | `CellBackgroundColor` | `Color?` | `null` | OneWay | Cell fill color |
 | `CellTextColor` | `Color?` | `null` | OneWay | Color for the rendered digit/character |
 | `FontSize` | `double` | `24` | OneWay | Font size for the rendered character |
+| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic click on digit entry, long press on completion |
 
 ## Events
 
@@ -1181,7 +1191,7 @@ Material-style floating action button (`Fab`) and an expanding multi-action menu
 
 ## Placement (important)
 
-Place the `Fab` / `FabMenu` inside a `Grid` that fills the page — same pattern as `BottomSheetView` / `ImageViewer`:
+Place the `Fab` / `FabMenu` inside a `Grid` that fills the page — same pattern as `SheetView` / `ImageViewer`:
 
 ```xml
 <ContentPage>
@@ -1218,6 +1228,7 @@ Place the `Fab` / `FabMenu` inside a `Grid` that fills the page — same pattern
 | `Size` | `double` | `56` | OneWay | Height (diameter when circular) |
 | `IconSize` | `double` | `24` | OneWay | Icon image size |
 | `HasShadow` | `bool` | `true` | OneWay | Drop shadow on/off |
+| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic feedback on tap |
 
 Events: `Clicked`.
 
@@ -1235,6 +1246,7 @@ In addition to the main-Fab pass-throughs (`Icon`, `Text`, `FabBackgroundColor`,
 | `CloseOnBackdropTap` | `bool` | `true` | OneWay | Close when backdrop tapped |
 | `CloseOnItemTap` | `bool` | `true` | OneWay | Close after item tap |
 | `AnimationDuration` | `uint` | `200` | OneWay | Open/close animation duration (ms) |
+| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic feedback on toggle |
 
 Events: `ItemTapped(FabMenuItem)`.
 Methods: `Open()`, `Close()`, `Toggle()`.
@@ -1255,6 +1267,7 @@ Methods: `Open()`, `Close()`, `Toggle()`.
 | `FontSize` | `double` | `13` | Side-label font size |
 | `Size` | `double` | `44` | Icon button diameter |
 | `IconSize` | `double` | `20` | Icon image size |
+| `UseHapticFeedback` | `bool` | `true` | Haptic feedback on tap |
 
 Events: `Clicked`.
 
@@ -1495,7 +1508,7 @@ When generating code with Shiny.Maui.Controls:
 - Always add `xmlns:shiny="http://shiny.net/maui/controls"` to the page
 - For Markdown controls: add `xmlns:md="http://shiny.net/maui/markdown"` to the page
 - For TableView: wrap content in `shiny:TableView > shiny:TableRoot > shiny:TableSection`
-- For BottomSheet: place `shiny:BottomSheetView` inside a Grid that fills the page (it overlays on top)
+- For BottomSheet: place `shiny:SheetView` inside a Grid that fills the page (it overlays on top)
 - For ImageViewer: place `shiny:ImageViewer` inside a Grid that fills the page (it overlays on top, same pattern as BottomSheet)
 - For PillView: use inline within any layout
 - For Scheduler views: use `shiny:SchedulerCalendarView`, `shiny:SchedulerAgendaView`, or `shiny:SchedulerCalendarListView` and bind `Provider` to an `ISchedulerEventProvider`
@@ -1525,7 +1538,7 @@ When generating code with Shiny.Maui.Controls:
 - RadioCell selection binds at section level: `shiny:RadioCell.SelectedValue="{Binding Prop, Mode=TwoWay}"`
 
 ### 4. BottomSheet Placement
-The BottomSheetView must be placed inside a Grid that fills the page so it can overlay correctly:
+The SheetView must be placed inside a Grid that fills the page so it can overlay correctly:
 
 ```xml
 <ContentPage>
@@ -1538,9 +1551,9 @@ The BottomSheetView must be placed inside a Grid that fills the page so it can o
         </ScrollView>
 
         <!-- Bottom sheet overlays on top -->
-        <shiny:BottomSheetView IsOpen="{Binding IsOpen, Mode=TwoWay}">
+        <shiny:SheetView IsOpen="{Binding IsOpen, Mode=TwoWay}">
             <Label Text="Sheet content" />
-        </shiny:BottomSheetView>
+        </shiny:SheetView>
     </Grid>
 </ContentPage>
 ```
@@ -1630,7 +1643,7 @@ The BottomSheetView must be placed inside a Grid that fills the page so it can o
             </VerticalStackLayout>
         </ScrollView>
 
-        <shiny:BottomSheetView IsOpen="{Binding IsDetailsOpen, Mode=TwoWay}"
+        <shiny:SheetView IsOpen="{Binding IsDetailsOpen, Mode=TwoWay}"
                                SheetCornerRadius="20">
             <VerticalStackLayout Padding="20" Spacing="12">
                 <Label Text="Service Details" FontSize="18" FontAttributes="Bold" />
@@ -1650,7 +1663,7 @@ The BottomSheetView must be placed inside a Grid that fills the page so it can o
                     <Label Text="Message Queue" VerticalOptions="Center" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
-        </shiny:BottomSheetView>
+        </shiny:SheetView>
     </Grid>
 </ContentPage>
 ```
@@ -1667,7 +1680,7 @@ The BottomSheetView must be placed inside a Grid that fills the page so it can o
 8. **Use RadioCell for exclusive choices** - Bind `SelectedValue` at the section level
 9. **Use PickerCell for long lists** - Full-page picker is better than inline for more than 4-5 items
 10. **Use ItemTemplate for dynamic content** - Bind `ItemsSource` on sections for data-driven cells
-11. **Place BottomSheetView and ImageViewer in a Grid** - They must overlay page content, so use a Grid as the page root
+11. **Place SheetView and ImageViewer in a Grid** - They must overlay page content, so use a Grid as the page root
 12. **Use PillView for status indicators** - Prefer preset types for consistency; use custom colors for brand-specific needs
 13. **Use AOT-safe bindings for scheduler templates** - Always use `static (T item) => item.Property` lambda bindings, never string-based
 14. **Leave MarkdownView/MarkdownEditor Theme as null** - It auto-resolves Light/Dark based on the app theme
@@ -1786,6 +1799,7 @@ Monthly calendar grid with swipe navigation, event display per cell, and pinch-t
 | `FirstDayOfWeek` | `DayOfWeek` | `Sunday` |
 | `AllowPan` | `bool` | `true` |
 | `AllowZoom` | `bool` | `false` |
+| `UseHapticFeedback` | `bool` | `true` |
 
 ## SchedulerAgendaView
 
@@ -1826,6 +1840,7 @@ Day/multi-day timeline with overlap detection, Apple Calendar-style date picker,
 | `AllowZoom` | `bool` | `false` |
 | `ShowAdditionalTimezones` | `bool` | `false` |
 | `AdditionalTimezones` | `IList<TimeZoneInfo>` | empty |
+| `UseHapticFeedback` | `bool` | `true` |
 
 ## SchedulerCalendarListView
 
