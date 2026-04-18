@@ -3,32 +3,55 @@ using System.Collections.ObjectModel;
 namespace Shiny.Maui.Controls;
 
 [ContentProperty(nameof(SheetContent))]
-public class BottomSheetView : ContentView
+public class SheetView : ContentView
 {
     const double DefaultAnimationDuration = 250;
     const double DragHandleHeight = 30;
     const double BackdropMaxOpacity = 0.5;
 
+    readonly Grid outerGrid;
     readonly Grid rootGrid;
     readonly BoxView backdrop;
     readonly Border sheetContainer;
     readonly Grid sheetInnerGrid;
+    readonly Grid dragHandleContainer;
     readonly BoxView dragHandle;
     readonly ScrollView scrollView;
     readonly ContentView contentHost;
-    readonly PanGestureRecognizer panGesture;
+    readonly ContentView headerHost;
     readonly ContentView minimizedHost;
+    readonly PanGestureRecognizer panGesture;
 
     double sheetStartTranslationY;
     double availableHeight;
     double previousAvailableHeight;
     bool isAnimating;
+    bool isMinimized;
     int currentDetentIndex;
     int detentIndexBeforeKeyboard = -1;
     bool isKeyboardVisible;
     DetentValue? fitContentDetent;
 
-    public BottomSheetView()
+    bool IsBottom => Direction == SheetDirection.Bottom;
+
+    double GetOffScreenY() => IsBottom ? availableHeight : -availableHeight;
+
+    double GetTranslationYForDetent(DetentValue detent)
+        => (IsBottom ? 1.0 : -1.0) * availableHeight * (1.0 - detent.Ratio);
+
+    double GetBackdropProgress(double translationY)
+        => 1.0 - (Math.Abs(translationY) / availableHeight);
+
+    double GetMinimizedY()
+    {
+        var headerHeight = headerHost.Height > 0 ? headerHost.Height : 0;
+        if (headerHeight <= 0) return GetOffScreenY();
+        return IsBottom
+            ? availableHeight - headerHeight
+            : -(availableHeight - headerHeight);
+    }
+
+    public SheetView()
     {
         IsVisible = false;
 
@@ -63,8 +86,21 @@ public class BottomSheetView : ContentView
             IsEnabled = false
         };
 
+        // Header host (lives inside the sheet when open)
+        headerHost = new ContentView();
+        headerHost.SizeChanged += OnHeaderHostSizeChanged;
+
+        // Minimized host (lives outside rootGrid — never blocked by InputTransparent)
+        minimizedHost = new ContentView
+        {
+            IsVisible = false
+        };
+        var minimizedTap = new TapGestureRecognizer();
+        minimizedTap.Tapped += (_, _) => { if (!IsOpen && isMinimized) IsOpen = true; };
+        minimizedHost.GestureRecognizers.Add(minimizedTap);
+
         // Drag handle container
-        var dragHandleContainer = new Grid
+        dragHandleContainer = new Grid
         {
             HeightRequest = DragHandleHeight,
             BackgroundColor = Colors.Transparent
@@ -75,19 +111,22 @@ public class BottomSheetView : ContentView
         panGesture = new PanGestureRecognizer();
         panGesture.PanUpdated += OnPanUpdated;
 
-        // Inner grid for layout
+        // Inner grid: header, handle, content (bottom) or content, handle, header (top)
         sheetInnerGrid = new Grid
         {
             RowDefinitions =
             {
                 new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Auto),
                 new RowDefinition(GridLength.Star)
             }
         };
+        sheetInnerGrid.Children.Add(headerHost);
+        Grid.SetRow(headerHost, 0);
         sheetInnerGrid.Children.Add(dragHandleContainer);
-        Grid.SetRow(dragHandleContainer, 0);
+        Grid.SetRow(dragHandleContainer, 1);
         sheetInnerGrid.Children.Add(scrollView);
-        Grid.SetRow(scrollView, 1);
+        Grid.SetRow(scrollView, 2);
 
         // Sheet container with rounded corners
         sheetContainer = new Border
@@ -104,27 +143,18 @@ public class BottomSheetView : ContentView
 
         sheetContainer.GestureRecognizers.Add(panGesture);
 
-        // Minimized content host (sits at bottom, visible when closed)
-        minimizedHost = new ContentView
-        {
-            VerticalOptions = LayoutOptions.End,
-            IsVisible = false
-        };
-        var minimizedTap = new TapGestureRecognizer();
-        minimizedTap.Tapped += (_, _) => { if (!IsOpen) IsOpen = true; };
-        minimizedHost.GestureRecognizers.Add(minimizedTap);
-        var minimizedPan = new PanGestureRecognizer();
-        minimizedPan.PanUpdated += OnMinimizedPanUpdated;
-        minimizedHost.GestureRecognizers.Add(minimizedPan);
-
-        // Root grid stacks backdrop + sheet + minimized
-        rootGrid = new Grid();
+        // Root grid stacks backdrop + sheet (full-page overlay when open)
+        rootGrid = new Grid { IsVisible = false };
         rootGrid.Children.Add(backdrop);
         rootGrid.Children.Add(sheetContainer);
-        rootGrid.Children.Add(minimizedHost);
         rootGrid.SizeChanged += OnRootGridSizeChanged;
 
-        Content = rootGrid;
+        // Outer grid: rootGrid (full sheet) + minimizedHost (small edge peek)
+        outerGrid = new Grid();
+        outerGrid.Children.Add(rootGrid);
+        outerGrid.Children.Add(minimizedHost);
+
+        Content = outerGrid;
 
         // Default detents
         Detents = new ObservableCollection<DetentValue>
@@ -136,10 +166,23 @@ public class BottomSheetView : ContentView
     }
 
 
+    public static readonly BindableProperty DirectionProperty = BindableProperty.Create(
+        nameof(Direction),
+        typeof(SheetDirection),
+        typeof(SheetView),
+        SheetDirection.Bottom,
+        propertyChanged: OnDirectionChanged);
+
+    public SheetDirection Direction
+    {
+        get => (SheetDirection)GetValue(DirectionProperty);
+        set => SetValue(DirectionProperty, value);
+    }
+
     public static readonly BindableProperty IsOpenProperty = BindableProperty.Create(
         nameof(IsOpen),
         typeof(bool),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         false,
         BindingMode.TwoWay,
         propertyChanged: OnIsOpenChanged);
@@ -153,7 +196,7 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty SheetContentProperty = BindableProperty.Create(
         nameof(SheetContent),
         typeof(View),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         null,
         propertyChanged: OnSheetContentChanged);
 
@@ -163,10 +206,36 @@ public class BottomSheetView : ContentView
         set => SetValue(SheetContentProperty, value);
     }
 
+    public static readonly BindableProperty HeaderTemplateProperty = BindableProperty.Create(
+        nameof(HeaderTemplate),
+        typeof(View),
+        typeof(SheetView),
+        null,
+        propertyChanged: OnHeaderTemplateChanged);
+
+    public View? HeaderTemplate
+    {
+        get => (View?)GetValue(HeaderTemplateProperty);
+        set => SetValue(HeaderTemplateProperty, value);
+    }
+
+    public static readonly BindableProperty ShowHeaderWhenMinimizedProperty = BindableProperty.Create(
+        nameof(ShowHeaderWhenMinimized),
+        typeof(bool),
+        typeof(SheetView),
+        false,
+        propertyChanged: OnShowHeaderWhenMinimizedChanged);
+
+    public bool ShowHeaderWhenMinimized
+    {
+        get => (bool)GetValue(ShowHeaderWhenMinimizedProperty);
+        set => SetValue(ShowHeaderWhenMinimizedProperty, value);
+    }
+
     public static readonly BindableProperty DetentsProperty = BindableProperty.Create(
         nameof(Detents),
         typeof(ObservableCollection<DetentValue>),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         null);
 
     public ObservableCollection<DetentValue> Detents
@@ -178,9 +247,9 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty SheetBackgroundColorProperty = BindableProperty.Create(
         nameof(SheetBackgroundColor),
         typeof(Color),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         Colors.White,
-        propertyChanged: (b, _, n) => ((BottomSheetView)b).sheetContainer.BackgroundColor = (Color)n);
+        propertyChanged: (b, _, n) => ((SheetView)b).sheetContainer.BackgroundColor = (Color)n);
 
     public Color SheetBackgroundColor
     {
@@ -191,9 +260,9 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty HandleColorProperty = BindableProperty.Create(
         nameof(HandleColor),
         typeof(Color),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         Colors.Grey,
-        propertyChanged: (b, _, n) => ((BottomSheetView)b).dragHandle.Color = (Color)n);
+        propertyChanged: (b, _, n) => ((SheetView)b).dragHandle.Color = (Color)n);
 
     public Color HandleColor
     {
@@ -204,9 +273,9 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
         nameof(SheetCornerRadius),
         typeof(double),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         16.0,
-        propertyChanged: OnCornerRadiusChanged);
+        propertyChanged: (b, _, n) => ((SheetView)b).UpdateCornerRadius((double)n));
 
     public double SheetCornerRadius
     {
@@ -217,7 +286,7 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty HasBackdropProperty = BindableProperty.Create(
         nameof(HasBackdrop),
         typeof(bool),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         true);
 
     public bool HasBackdrop
@@ -229,7 +298,7 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty CloseOnBackdropTapProperty = BindableProperty.Create(
         nameof(CloseOnBackdropTap),
         typeof(bool),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         true);
 
     public bool CloseOnBackdropTap
@@ -241,7 +310,7 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty AnimationDurationProperty = BindableProperty.Create(
         nameof(AnimationDuration),
         typeof(double),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         DefaultAnimationDuration);
 
     public double AnimationDuration
@@ -253,7 +322,7 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty ExpandOnInputFocusProperty = BindableProperty.Create(
         nameof(ExpandOnInputFocus),
         typeof(bool),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         true);
 
     public bool ExpandOnInputFocus
@@ -265,9 +334,9 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty IsLockedProperty = BindableProperty.Create(
         nameof(IsLocked),
         typeof(bool),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         false,
-        propertyChanged: (b, _, n) => ((BottomSheetView)b).OnIsLockedChanged((bool)n));
+        propertyChanged: (b, _, n) => ((SheetView)b).OnIsLockedChanged((bool)n));
 
     public bool IsLocked
     {
@@ -278,7 +347,7 @@ public class BottomSheetView : ContentView
     public static readonly BindableProperty FitContentProperty = BindableProperty.Create(
         nameof(FitContent),
         typeof(bool),
-        typeof(BottomSheetView),
+        typeof(SheetView),
         false);
 
     public bool FitContent
@@ -287,43 +356,86 @@ public class BottomSheetView : ContentView
         set => SetValue(FitContentProperty, value);
     }
 
-    public static readonly BindableProperty MinimizedTemplateProperty = BindableProperty.Create(
-        nameof(MinimizedTemplate),
-        typeof(View),
-        typeof(BottomSheetView),
-        null,
-        propertyChanged: OnMinimizedTemplateChanged);
-
-    public View? MinimizedTemplate
+    static void OnDirectionChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        get => (View?)GetValue(MinimizedTemplateProperty);
-        set => SetValue(MinimizedTemplateProperty, value);
+        var sheet = (SheetView)bindable;
+        sheet.UpdateLayoutForDirection();
     }
 
-    static void OnMinimizedTemplateChanged(BindableObject bindable, object oldValue, object newValue)
+    static void OnHeaderTemplateChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        var sheet = (BottomSheetView)bindable;
-        sheet.minimizedHost.Content = newValue as View;
+        var sheet = (SheetView)bindable;
 
-        if (newValue != null && !sheet.IsOpen)
+        // Clear old parent references
+        sheet.headerHost.Content = null;
+        sheet.minimizedHost.Content = null;
+
+        // UpdateMinimizedVisibility will place the view in the correct host
+        sheet.UpdateMinimizedVisibility();
+
+        // If not minimized, the header belongs in the sheet's headerHost
+        if (!sheet.isMinimized && newValue is View view)
+            sheet.headerHost.Content = view;
+    }
+
+    static void OnShowHeaderWhenMinimizedChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        ((SheetView)bindable).UpdateMinimizedVisibility();
+    }
+
+    void UpdateMinimizedVisibility()
+    {
+        if (ShowHeaderWhenMinimized && HeaderTemplate != null && !IsOpen)
         {
-            sheet.IsVisible = true;
-            sheet.minimizedHost.IsVisible = true;
+            ShowMinimized();
         }
-        else
+        else if (!IsOpen)
         {
-            sheet.minimizedHost.IsVisible = false;
-            if (!sheet.IsOpen)
-                sheet.IsVisible = newValue != null;
+            HideMinimized();
+            IsVisible = false;
         }
     }
 
-    void OnMinimizedPanUpdated(object? sender, PanUpdatedEventArgs e)
+    void ShowMinimized()
     {
-        if (IsOpen || isAnimating) return;
+        isMinimized = true;
+        rootGrid.IsVisible = false;
 
-        if (e.StatusType == GestureStatus.Completed && e.TotalY < -30)
-            IsOpen = true;
+        // Move header content from inside the sheet to the standalone minimized host
+        var headerView = HeaderTemplate;
+        if (headerView != null)
+        {
+            headerHost.Content = null;
+            minimizedHost.Content = headerView;
+        }
+        minimizedHost.IsVisible = true;
+
+        // Shrink the SheetView to only the header area at the edge.
+        // This way the SheetView doesn't cover the page and can't block touches.
+        VerticalOptions = IsBottom ? LayoutOptions.End : LayoutOptions.Start;
+        IsVisible = true;
+    }
+
+    void HideMinimized()
+    {
+        isMinimized = false;
+        minimizedHost.IsVisible = false;
+
+        // Restore full-page layout so the sheet can overlay the screen
+        VerticalOptions = LayoutOptions.Fill;
+
+        // Move header content back into the sheet
+        var headerView = HeaderTemplate;
+        if (headerView != null)
+        {
+            minimizedHost.Content = null;
+            headerHost.Content = headerView;
+        }
+    }
+
+    void OnHeaderHostSizeChanged(object? sender, EventArgs e)
+    {
+        // no-op: kept for future use
     }
 
     void OnIsLockedChanged(bool locked)
@@ -335,6 +447,41 @@ public class BottomSheetView : ContentView
             sheetContainer.GestureRecognizers.Add(panGesture);
     }
 
+    void UpdateLayoutForDirection()
+    {
+        if (IsBottom)
+        {
+            // Header at top (leading edge), handle, content
+            sheetInnerGrid.RowDefinitions[0] = new RowDefinition(GridLength.Auto);
+            sheetInnerGrid.RowDefinitions[1] = new RowDefinition(GridLength.Auto);
+            sheetInnerGrid.RowDefinitions[2] = new RowDefinition(GridLength.Star);
+            Grid.SetRow(headerHost, 0);
+            Grid.SetRow(dragHandleContainer, 1);
+            Grid.SetRow(scrollView, 2);
+        }
+        else
+        {
+            // Content, handle, header at bottom (leading edge for top sheet)
+            sheetInnerGrid.RowDefinitions[0] = new RowDefinition(GridLength.Star);
+            sheetInnerGrid.RowDefinitions[1] = new RowDefinition(GridLength.Auto);
+            sheetInnerGrid.RowDefinitions[2] = new RowDefinition(GridLength.Auto);
+            Grid.SetRow(scrollView, 0);
+            Grid.SetRow(dragHandleContainer, 1);
+            Grid.SetRow(headerHost, 2);
+        }
+        UpdateCornerRadius(SheetCornerRadius);
+    }
+
+    void UpdateCornerRadius(double radius)
+    {
+        var corners = IsBottom
+            ? new CornerRadius(radius, radius, 0, 0)
+            : new CornerRadius(0, 0, radius, radius);
+        sheetContainer.StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
+        {
+            CornerRadius = corners
+        };
+    }
 
 
     public event EventHandler? Opened;
@@ -345,7 +492,7 @@ public class BottomSheetView : ContentView
 
     static void OnIsOpenChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        var sheet = (BottomSheetView)bindable;
+        var sheet = (SheetView)bindable;
         if ((bool)newValue)
             _ = sheet.OpenAsync();
         else
@@ -354,7 +501,7 @@ public class BottomSheetView : ContentView
 
     static void OnSheetContentChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        var sheet = (BottomSheetView)bindable;
+        var sheet = (SheetView)bindable;
 
         // Unhook old content's input views
         if (oldValue is View oldView)
@@ -367,17 +514,6 @@ public class BottomSheetView : ContentView
             sheet.HookInputViews(newView);
     }
 
-    static void OnCornerRadiusChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        var sheet = (BottomSheetView)bindable;
-        var radius = (double)newValue;
-        var corners = new CornerRadius(radius, radius, 0, 0);
-        sheet.sheetContainer.StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
-        {
-            CornerRadius = corners
-        };
-    }
-
 
 
     async Task OpenAsync()
@@ -385,8 +521,12 @@ public class BottomSheetView : ContentView
         if (isAnimating) return;
         isAnimating = true;
 
-        minimizedHost.IsVisible = false;
+        // Move header back into the sheet if coming from minimized
+        if (isMinimized)
+            HideMinimized();
+
         IsVisible = true;
+        rootGrid.IsVisible = true;
 
         // Wait for layout pass so rootGrid has a valid height
         if (rootGrid.Height <= 0)
@@ -398,7 +538,8 @@ public class BottomSheetView : ContentView
         previousAvailableHeight = availableHeight;
 
         // Start off-screen
-        sheetContainer.TranslationY = availableHeight;
+        sheetContainer.TranslationY = GetOffScreenY();
+
         backdrop.Opacity = 0;
         backdrop.InputTransparent = !HasBackdrop;
 
@@ -407,6 +548,8 @@ public class BottomSheetView : ContentView
         {
             var measured = fitView.Measure(rootGrid.Width, double.PositiveInfinity);
             var contentHeight = measured.Height + DragHandleHeight + 20; // 20px padding buffer
+            if (headerHost.Content is View headerView)
+                contentHeight += headerView.Measure(rootGrid.Width, double.PositiveInfinity).Height;
             var ratio = Math.Clamp(contentHeight / availableHeight, 0.1, 1.0);
             fitContentDetent = new DetentValue(ratio);
         }
@@ -438,29 +581,41 @@ public class BottomSheetView : ContentView
         if (isAnimating) return;
         isAnimating = true;
 
-        detentIndexBeforeKeyboard = -1;
-        isKeyboardVisible = false;
-
-        var animTasks = new List<Task>
+        try
         {
-            sheetContainer.TranslateToAsync(0, availableHeight, (uint)AnimationDuration, Easing.CubicIn)
-        };
+            detentIndexBeforeKeyboard = -1;
+            isKeyboardVisible = false;
 
-        if (HasBackdrop)
-            animTasks.Add(backdrop.FadeToAsync(0, (uint)AnimationDuration));
+            var shouldMinimize = ShowHeaderWhenMinimized && HeaderTemplate != null;
+            var targetY = shouldMinimize ? GetMinimizedY() : GetOffScreenY();
 
-        await Task.WhenAll(animTasks);
+            var animTasks = new List<Task>
+            {
+                sheetContainer.TranslateToAsync(0, targetY, (uint)AnimationDuration, Easing.CubicIn)
+            };
 
-        if (MinimizedTemplate != null)
-        {
-            minimizedHost.IsVisible = true;
-            // Keep control visible so minimized content shows
-        }
-        else
-        {
+            if (HasBackdrop)
+                animTasks.Add(backdrop.FadeToAsync(0, (uint)AnimationDuration));
+
+            await Task.WhenAll(animTasks);
+
+            // Fully hide first to get a clean slate, then set up minimized if needed
+            rootGrid.IsVisible = false;
             IsVisible = false;
+
+            if (shouldMinimize)
+            {
+                ShowMinimized();
+            }
+            else
+            {
+                isMinimized = false;
+            }
         }
-        isAnimating = false;
+        finally
+        {
+            isAnimating = false;
+        }
         Closed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -469,6 +624,8 @@ public class BottomSheetView : ContentView
     void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
         if (isAnimating || IsLocked) return;
+
+        if (!IsOpen) return;
 
         switch (e.StatusType)
         {
@@ -480,13 +637,18 @@ public class BottomSheetView : ContentView
             case GestureStatus.Running:
                 var newY = sheetStartTranslationY + e.TotalY;
                 var highestDetentY = GetTranslationYForDetent(GetSortedDetents().Last());
-                var lowestY = availableHeight;
-                newY = Math.Clamp(newY, highestDetentY - 20, lowestY);
+                var offScreen = GetOffScreenY();
+
+                if (IsBottom)
+                    newY = Math.Clamp(newY, highestDetentY - 20, offScreen);
+                else
+                    newY = Math.Clamp(newY, offScreen, highestDetentY + 20);
+
                 sheetContainer.TranslationY = newY;
 
                 if (HasBackdrop)
                 {
-                    var progress = 1.0 - (newY / availableHeight);
+                    var progress = GetBackdropProgress(newY);
                     backdrop.Opacity = Math.Clamp(progress * BackdropMaxOpacity, 0, BackdropMaxOpacity);
                 }
                 break;
@@ -504,12 +666,26 @@ public class BottomSheetView : ContentView
         var currentY = sheetContainer.TranslationY;
         var sortedDetents = GetSortedDetents();
 
-        var swipeDown = totalPanY > 50;
-        var swipeUp = totalPanY < -50;
+        // Dismiss = swiping away from the content; Expand = swiping toward content
+        bool swipeDismiss, swipeExpand;
+        if (IsBottom)
+        {
+            swipeDismiss = totalPanY > 50;
+            swipeExpand = totalPanY < -50;
+        }
+        else
+        {
+            swipeDismiss = totalPanY < -50;
+            swipeExpand = totalPanY > 50;
+        }
 
-        // If swiped down past the lowest detent threshold, close
+        // If swiped past the lowest detent threshold, close
         var lowestDetentY = GetTranslationYForDetent(sortedDetents.First());
-        if (swipeDown && currentY > lowestDetentY + (availableHeight * 0.1))
+        bool pastDismissThreshold = IsBottom
+            ? currentY > lowestDetentY + (availableHeight * 0.1)
+            : currentY < lowestDetentY - (availableHeight * 0.1);
+
+        if (swipeDismiss && pastDismissThreshold)
         {
             SetValue(IsOpenProperty, false);
             return;
@@ -525,9 +701,12 @@ public class BottomSheetView : ContentView
             var detentY = GetTranslationYForDetent(sortedDetents[i]);
             var distance = Math.Abs(currentY - detentY);
 
-            if (swipeUp && detentY < currentY)
+            var detentMoreExpanded = Math.Abs(detentY) < Math.Abs(currentY);
+            var detentMoreCollapsed = Math.Abs(detentY) > Math.Abs(currentY);
+
+            if (swipeExpand && detentMoreExpanded)
                 distance *= 0.5;
-            else if (swipeDown && detentY > currentY)
+            else if (swipeDismiss && detentMoreCollapsed)
                 distance *= 0.5;
 
             if (distance < bestDistance)
@@ -548,7 +727,7 @@ public class BottomSheetView : ContentView
 
         if (HasBackdrop)
         {
-            var progress = 1.0 - (targetY / availableHeight);
+            var progress = GetBackdropProgress(targetY);
             var targetOpacity = Math.Clamp(progress * BackdropMaxOpacity, 0, BackdropMaxOpacity);
             animTasks.Add(backdrop.FadeToAsync(targetOpacity, (uint)(AnimationDuration * 0.75)));
         }
@@ -568,14 +747,12 @@ public class BottomSheetView : ContentView
         var newHeight = rootGrid.Height;
         if (newHeight <= 0 || Math.Abs(newHeight - availableHeight) < 10) return;
 
-        // Significant height decrease = keyboard appeared (Android AdjustResize)
         if (newHeight < previousAvailableHeight - 50)
         {
             isKeyboardVisible = true;
             availableHeight = newHeight;
             _ = RepositionForKeyboardAsync();
         }
-        // Height restored = keyboard dismissed
         else if (newHeight > availableHeight + 50 && isKeyboardVisible)
         {
             isKeyboardVisible = false;
@@ -589,7 +766,6 @@ public class BottomSheetView : ContentView
     {
         if (isAnimating) return;
 
-        // Move sheet to the highest detent within the new (smaller) available height
         var sortedDetents = GetSortedDetents();
         var highestDetent = sortedDetents.Last();
         var targetY = GetTranslationYForDetent(highestDetent);
@@ -604,7 +780,6 @@ public class BottomSheetView : ContentView
     {
         if (isAnimating) return;
 
-        // Restore to pre-keyboard detent
         var sortedDetents = GetSortedDetents();
         var targetIndex = detentIndexBeforeKeyboard >= 0 && detentIndexBeforeKeyboard < sortedDetents.Count
             ? detentIndexBeforeKeyboard
@@ -679,12 +854,9 @@ public class BottomSheetView : ContentView
     {
         if (!IsOpen || !ExpandOnInputFocus) return;
 
-        // Remember current detent so we can restore later
         if (detentIndexBeforeKeyboard < 0)
             detentIndexBeforeKeyboard = currentDetentIndex;
 
-        // Expand to highest detent and enable scrolling so the ScrollView
-        // can keep the focused input visible
         var sortedDetents = GetSortedDetents();
         var highestDetent = sortedDetents.Last();
         _ = AnimateToDetentAsync(highestDetent);
@@ -694,7 +866,6 @@ public class BottomSheetView : ContentView
     {
         if (!IsOpen || !ExpandOnInputFocus || isKeyboardVisible) return;
 
-        // Restore previous detent if keyboard isn't still showing
         if (detentIndexBeforeKeyboard >= 0)
         {
             var sortedDetents = GetSortedDetents();
@@ -714,11 +885,6 @@ public class BottomSheetView : ContentView
         var list = Detents?.OrderBy(d => d.Ratio).ToList()
             ?? new List<DetentValue> { DetentValue.Half };
         return list;
-    }
-
-    double GetTranslationYForDetent(DetentValue detent)
-    {
-        return availableHeight * (1.0 - detent.Ratio);
     }
 
     void UpdateScrollEnabled()
@@ -742,7 +908,6 @@ public class BottomSheetView : ContentView
         }
         rootGrid.SizeChanged += handler;
 
-        // Safety timeout so we never hang
         _ = Task.Delay(500).ContinueWith(_ =>
         {
             rootGrid.SizeChanged -= handler;
@@ -751,6 +916,7 @@ public class BottomSheetView : ContentView
 
         return tcs.Task;
     }
+
 
     void OnBackdropTapped(object? sender, TappedEventArgs e)
     {
@@ -778,7 +944,7 @@ public class BottomSheetView : ContentView
 
         if (HasBackdrop)
         {
-            var progress = 1.0 - (targetY / availableHeight);
+            var progress = GetBackdropProgress(targetY);
             var targetOpacity = Math.Clamp(progress * BackdropMaxOpacity, 0, BackdropMaxOpacity);
             animTasks.Add(backdrop.FadeToAsync(targetOpacity, (uint)AnimationDuration));
         }

@@ -16,13 +16,26 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
     height: 100%;
-    transform: translateY(100%);
     box-shadow: 0 -10px 30px rgba(0,0,0,0.18);
     display: flex;
     flex-direction: column;
     will-change: transform;
+}
+
+.is-bottom .shiny-sheet-container {
+    bottom: 0;
+    transform: translateY(100%);
+}
+
+.is-top .shiny-sheet-container {
+    top: 0;
+    transform: translateY(-100%);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+
+.shiny-sheet-header {
+    flex: 0 0 auto;
 }
 
 .shiny-sheet-handle-host {
@@ -48,13 +61,4 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 0 16px 16px;
-}
-
-.shiny-sheet-minimized {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1001;
-    cursor: pointer;
 }

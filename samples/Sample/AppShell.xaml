@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:shiny="clr-namespace:Shiny;assembly=Shiny.Maui.Shell"
     xmlns:home="clr-namespace:Sample.Features.Home"
-    xmlns:bottomsheet="clr-namespace:Sample.Features.BottomSheet"
+    xmlns:sheet="clr-namespace:Sample.Features.Sheet"
     xmlns:pills="clr-namespace:Sample.Features.Pills"
     xmlns:tv="clr-namespace:Sample.Features.TableView"
     xmlns:scheduler="clr-namespace:Sample.Features.Scheduler"
@@ -20,12 +20,16 @@
         <ShellContent ContentTemplate="{DataTemplate home:HomePage}" Route="home" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Bottom Sheet">
-        <ShellContent ContentTemplate="{DataTemplate bottomsheet:BottomSheetPage}" Route="bottomsheet" />
+    <FlyoutItem Title="Sheet">
+        <ShellContent ContentTemplate="{DataTemplate sheet:SheetPage}" Route="sheet" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Bottom Sheet - Minimized">
-        <ShellContent ContentTemplate="{DataTemplate bottomsheet:MinimizedSheetPage}" Route="minimizedsheet" />
+    <FlyoutItem Title="Sheet - Minimized">
+        <ShellContent ContentTemplate="{DataTemplate sheet:MinimizedSheetPage}" Route="minimizedsheet" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Sheet - Top Weather">
+        <ShellContent ContentTemplate="{DataTemplate sheet:TopSheetPage}" Route="topsheet" />
     </FlyoutItem>
 
     <FlyoutItem Title="Pills">

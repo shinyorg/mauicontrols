@@ -5,9 +5,9 @@
 
 @if (rendered)
 {
-    <div class="shiny-sheet-root @(isOpen ? "is-open" : "") @(HasMinimized ? "has-minimized" : "")"
+    <div class="shiny-sheet-root @(isOpen ? "is-open" : "") @DirectionClass"
          @ref="rootEl"
-         style="@(isOpen || HasMinimized ? "" : "pointer-events:none;")">
+         style="@(isOpen || isMinimized ? "" : "pointer-events:none;")">
         @if (HasBackdrop)
         {
             <div class="shiny-sheet-backdrop"
@@ -17,19 +17,37 @@
         <div class="shiny-sheet-container"
              @ref="sheetEl"
              style="@SheetStyle">
-            <div class="shiny-sheet-handle-host" @ref="handleEl">
-                <div class="shiny-sheet-handle" style="@HandleStyle"></div>
-            </div>
-            <div class="shiny-sheet-scroll">
-                @SheetContent
-            </div>
+            @if (Direction == SheetDirection.Bottom)
+            {
+                @if (HeaderTemplate != null)
+                {
+                    <div class="shiny-sheet-header" @ref="headerEl" @onclick="OnHeaderClick">
+                        @HeaderTemplate
+                    </div>
+                }
+                <div class="shiny-sheet-handle-host" @ref="handleEl">
+                    <div class="shiny-sheet-handle" style="@HandleStyle"></div>
+                </div>
+                <div class="shiny-sheet-scroll">
+                    @SheetContent
+                </div>
+            }
+            else
+            {
+                <div class="shiny-sheet-scroll">
+                    @SheetContent
+                </div>
+                <div class="shiny-sheet-handle-host" @ref="handleEl">
+                    <div class="shiny-sheet-handle" style="@HandleStyle"></div>
+                </div>
+                @if (HeaderTemplate != null)
+                {
+                    <div class="shiny-sheet-header" @ref="headerEl" @onclick="OnHeaderClick">
+                        @HeaderTemplate
+                    </div>
+                }
+            }
         </div>
-        @if (HasMinimized && !isOpen)
-        {
-            <div class="shiny-sheet-minimized" @onclick="OnMinimizedClick">
-                @MinimizedTemplate
-            </div>
-        }
     </div>
 }
 
@@ -37,17 +55,22 @@
     Microsoft.AspNetCore.Components.ElementReference rootEl;
     Microsoft.AspNetCore.Components.ElementReference sheetEl;
     Microsoft.AspNetCore.Components.ElementReference handleEl;
+    Microsoft.AspNetCore.Components.ElementReference headerEl;
     IJSObjectReference? module;
-    DotNetObjectReference<BottomSheetView>? selfRef;
+    DotNetObjectReference<SheetView>? selfRef;
     bool rendered;
     bool isOpen;
+    bool isMinimized;
     bool wasLocked;
+    SheetDirection lastDirection;
     double backdropOpacity;
 
+    [Parameter] public SheetDirection Direction { get; set; } = SheetDirection.Bottom;
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
     [Parameter] public RenderFragment? SheetContent { get; set; }
-    [Parameter] public RenderFragment? MinimizedTemplate { get; set; }
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public bool ShowHeaderWhenMinimized { get; set; }
     [Parameter] public IList<DetentValue>? Detents { get; set; }
     [Parameter] public string SheetBackgroundColor { get; set; } = "#FFFFFF";
     [Parameter] public string HandleColor { get; set; } = "#9CA3AF";
@@ -60,6 +83,10 @@
     [Parameter] public bool IsLocked { get; set; }
     [Parameter] public EventCallback<DetentValue> DetentChanged { get; set; }
 
+    bool IsBottom => Direction == SheetDirection.Bottom;
+    string DirectionClass => IsBottom ? "is-bottom" : "is-top";
+    bool CanMinimize => ShowHeaderWhenMinimized && HeaderTemplate != null;
+
     IList<DetentValue> ResolveDetents()
         => (Detents != null && Detents.Count > 0)
             ? Detents
@@ -70,7 +97,10 @@
         get
         {
             var radius = SheetCornerRadius.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            return $"background:{SheetBackgroundColor};border-top-left-radius:{radius}px;border-top-right-radius:{radius}px;transition:transform {AnimationDurationMs}ms cubic-bezier(.2,.8,.2,1);";
+            var corners = IsBottom
+                ? $"border-top-left-radius:{radius}px;border-top-right-radius:{radius}px;"
+                : $"border-bottom-left-radius:{radius}px;border-bottom-right-radius:{radius}px;";
+            return $"background:{SheetBackgroundColor};{corners}transition:transform {AnimationDurationMs}ms cubic-bezier(.2,.8,.2,1);";
         }
     }
 
@@ -79,6 +109,7 @@
     protected override void OnInitialized()
     {
         isOpen = IsOpen;
+        lastDirection = Direction;
         backdropOpacity = IsOpen ? 0.5 : 0;
         rendered = true;
     }
@@ -90,8 +121,16 @@
             isOpen = IsOpen;
             if (module is not null)
             {
-                if (isOpen) await module.InvokeVoidAsync("open", sheetEl, GetSortedRatios());
-                else await module.InvokeVoidAsync("close", sheetEl);
+                if (isOpen)
+                {
+                    isMinimized = false;
+                    await module.InvokeVoidAsync("open", sheetEl, GetSortedRatios(), IsBottom);
+                }
+                else
+                {
+                    await module.InvokeVoidAsync("close", sheetEl, CanMinimize);
+                    isMinimized = CanMinimize;
+                }
             }
         }
 
@@ -100,6 +139,13 @@
             wasLocked = IsLocked;
             if (module is not null)
                 await module.InvokeVoidAsync("setLocked", sheetEl, IsLocked);
+        }
+
+        if (Direction != lastDirection)
+        {
+            lastDirection = Direction;
+            if (module is not null)
+                await module.InvokeVoidAsync("setDirection", sheetEl, IsBottom);
         }
     }
 
@@ -111,11 +157,17 @@
         {
             module = await JS.InvokeAsync<IJSObjectReference>(
                 "import",
-                "./_content/Shiny.Blazor.Controls/bottom-sheet.js");
+                "./_content/Shiny.Blazor.Controls/sheet.js");
             selfRef = DotNetObjectReference.Create(this);
-            await module.InvokeVoidAsync("init", rootEl, sheetEl, handleEl, selfRef, GetSortedRatios(), AnimationDurationMs, IsLocked);
+            await module.InvokeVoidAsync("init", rootEl, sheetEl, handleEl, selfRef, GetSortedRatios(), AnimationDurationMs, IsLocked, IsBottom, CanMinimize ? headerEl : default);
             if (isOpen)
-                await module.InvokeVoidAsync("open", sheetEl, GetSortedRatios());
+                await module.InvokeVoidAsync("open", sheetEl, GetSortedRatios(), IsBottom);
+            else if (CanMinimize)
+            {
+                await module.InvokeVoidAsync("minimize", sheetEl);
+                isMinimized = true;
+                StateHasChanged();
+            }
         }
     }
 
@@ -125,6 +177,8 @@
         if (isOpen == value) return;
         isOpen = value;
         IsOpen = value;
+        if (!value) isMinimized = CanMinimize;
+        else isMinimized = false;
         await IsOpenChanged.InvokeAsync(value);
         if (value) await Opened.InvokeAsync();
         else await Closed.InvokeAsync();
@@ -145,9 +199,12 @@
         return DetentChanged.InvokeAsync(new DetentValue(ratio));
     }
 
-    bool HasMinimized => MinimizedTemplate != null;
-
-    Task OnMinimizedClick() => OnOpenChanged(true);
+    Task OnHeaderClick()
+    {
+        if (!isOpen && isMinimized)
+            return OnOpenChanged(true);
+        return Task.CompletedTask;
+    }
 
     Task OnBackdropClick()
     {

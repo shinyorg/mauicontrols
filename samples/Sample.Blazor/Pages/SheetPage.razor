@@ -1,8 +1,8 @@
-@page "/bottomsheet"
+@page "/sheet"
 
-<PageTitle>Bottom Sheet</PageTitle>
+<PageTitle>Sheet</PageTitle>
 
-<h1>Bottom Sheet</h1>
+<h1>Sheet</h1>
 
 <div class="demo-section">
     <h2>Detents</h2>
@@ -15,15 +15,15 @@
     <div class="state">IsOpen: <code>@isOpen</code></div>
 </div>
 
-<BottomSheetView @bind-IsOpen="isOpen"
-                 Detents="detents"
-                 SheetCornerRadius="20">
+<SheetView @bind-IsOpen="isOpen"
+           Detents="detents"
+           SheetCornerRadius="20">
     <SheetContent>
         <h2>Hello from a sheet</h2>
         <p>Drag the handle, tap the backdrop, or press the button to dismiss.</p>
         <button @onclick="() => isOpen = false">Close</button>
     </SheetContent>
-</BottomSheetView>
+</SheetView>
 
 
 <div class="demo-section">
@@ -36,9 +36,9 @@
     }
 </div>
 
-<BottomSheetView @bind-IsOpen="isSelectorOpen"
-                 IsLocked="true"
-                 SheetCornerRadius="20">
+<SheetView @bind-IsOpen="isSelectorOpen"
+           IsLocked="true"
+           SheetCornerRadius="20">
     <SheetContent>
         <h3 style="text-align:center;margin:0 0 12px;">Select a Country</h3>
         <div style="max-height:400px;overflow-y:auto;">
@@ -49,7 +49,7 @@
         </div>
         <button style="margin-top:12px;width:100%;" @onclick="() => isSelectorOpen = false">Cancel</button>
     </SheetContent>
-</BottomSheetView>
+</SheetView>
 
 @code {
     bool isOpen;

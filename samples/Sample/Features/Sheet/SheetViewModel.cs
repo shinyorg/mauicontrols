@@ -4,9 +4,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Shiny.Maui.Controls;
 
-namespace Sample.Features.BottomSheet;
+namespace Sample.Features.Sheet;
 
-public partial class BottomSheetViewModel : ObservableObject
+public partial class SheetViewModel : ObservableObject
 {
     [ObservableProperty]
     bool isSheetOpen;
@@ -33,6 +33,17 @@ public partial class BottomSheetViewModel : ObservableObject
     {
         StatusMessage = value ? "Sheet is open" : "Sheet is closed";
     }
+
+    // -- Top Sheet --
+
+    [ObservableProperty]
+    bool isTopSheetOpen;
+
+    [RelayCommand]
+    void OpenTopSheet() => IsTopSheetOpen = true;
+
+    [RelayCommand]
+    void CloseTopSheet() => IsTopSheetOpen = false;
 
     // -- Locked: Signature --
 

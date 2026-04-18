@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui;
 using MauiDevFlow.Agent;
 using Microsoft.Extensions.Logging;
-using Sample.Features.BottomSheet;
+using Sample.Features.Sheet;
 using Sample.Features.Diagrams;
 using Sample.Features.Fab;
 using Sample.Features.Home;
@@ -27,8 +27,9 @@ public static class MauiProgram
             .UseShinyControls()
             .UseShinyShell(x => x
                 .Add<HomePage, HomeViewModel>(registerRoute: false)
-                .Add<BottomSheetPage, BottomSheetViewModel>(registerRoute: false)
+                .Add<SheetPage, SheetViewModel>(registerRoute: false)
                 .Add<MinimizedSheetPage, MinimizedSheetViewModel>(registerRoute: false)
+                .Add<TopSheetPage, TopSheetViewModel>(registerRoute: false)
                 .Add<PillPage, PillViewModel>(registerRoute: false)
                 .Add<SecurityPinPage, SecurityPinViewModel>(registerRoute: false)
                 .Add<FabPage, FabViewModel>(registerRoute: false)

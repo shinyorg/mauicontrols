@@ -1,4 +1,4 @@
-namespace Sample.Features.BottomSheet;
+namespace Sample.Features.Sheet;
 
 public partial class MinimizedSheetPage : ContentPage
 {

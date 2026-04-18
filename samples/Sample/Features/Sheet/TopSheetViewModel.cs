@@ -1,15 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace Sample.Features.BottomSheet;
+namespace Sample.Features.Sheet;
 
-public partial class MinimizedSheetViewModel : ObservableObject
+public partial class TopSheetViewModel : ObservableObject
 {
     [ObservableProperty]
     bool isSheetOpen;
 
     [ObservableProperty]
-    string statusMessage = "Sheet is closed — minimized bar visible at bottom";
+    string statusMessage = "Weather header peeks from the top";
 
     [RelayCommand]
     void OpenSheet() => IsSheetOpen = true;
@@ -19,8 +19,6 @@ public partial class MinimizedSheetViewModel : ObservableObject
 
     partial void OnIsSheetOpenChanged(bool value)
     {
-        StatusMessage = value
-            ? "Sheet is open"
-            : "Sheet is closed — minimized bar visible at bottom";
+        StatusMessage = value ? "Weather details are open" : "Weather header peeks from the top";
     }
 }

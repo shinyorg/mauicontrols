@@ -1,4 +1,4 @@
-// Bottom sheet drag/snap controller. One instance per sheet element.
+// Sheet drag/snap controller. One instance per sheet element.
 const states = new WeakMap();
 
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
@@ -7,13 +7,30 @@ function applyTransform(sheet, y) {
     sheet.style.transform = `translateY(${y}px)`;
 }
 
+function offScreenY(state) {
+    return state.isBottom ? state.height : -state.height;
+}
+
+function detentY(state, ratio) {
+    return (state.isBottom ? 1 : -1) * state.height * (1 - ratio);
+}
+
+function minimizedY(state) {
+    if (!state.headerEl) return offScreenY(state);
+    const headerHeight = state.headerEl.offsetHeight || 0;
+    if (headerHeight <= 0) return offScreenY(state);
+    return state.isBottom
+        ? state.height - headerHeight
+        : -(state.height - headerHeight);
+}
+
 function backdropOpacityFor(y, height) {
-    const progress = 1 - (y / height);
+    const progress = 1 - (Math.abs(y) / height);
     return clamp(progress * 0.5, 0, 0.5);
 }
 
 function snapInternal(state, ratio, animate) {
-    const targetY = state.height * (1 - ratio);
+    const targetY = detentY(state, ratio);
     state.currentY = targetY;
     state.sheet.style.transition = animate ? `transform ${state.duration}ms cubic-bezier(.2,.8,.2,1)` : 'none';
     applyTransform(state.sheet, targetY);
@@ -21,13 +38,15 @@ function snapInternal(state, ratio, animate) {
     state.dotnet.invokeMethodAsync('OnDetentChanged', ratio);
 }
 
-export function init(root, sheet, handle, dotnetRef, ratios, duration, locked) {
+export function init(root, sheet, handle, dotnetRef, ratios, duration, locked, isBottom, headerEl) {
     const state = {
         root, sheet, handle,
         dotnet: dotnetRef,
         ratios: [...ratios].sort((a, b) => a - b),
         duration,
         locked: !!locked,
+        isBottom: isBottom !== false,
+        headerEl: headerEl && headerEl.nodeType ? headerEl : null,
         height: root.clientHeight || window.innerHeight,
         currentY: 0,
         dragStartY: 0,
@@ -39,8 +58,8 @@ export function init(root, sheet, handle, dotnetRef, ratios, duration, locked) {
 
     state.height = root.clientHeight || window.innerHeight;
     // Start hidden
-    applyTransform(sheet, state.height);
-    state.currentY = state.height;
+    applyTransform(sheet, offScreenY(state));
+    state.currentY = offScreenY(state);
 
     const onResize = () => {
         state.height = root.clientHeight || window.innerHeight;
@@ -62,8 +81,14 @@ export function init(root, sheet, handle, dotnetRef, ratios, duration, locked) {
     const onMove = (ev) => {
         if (!state.dragging || ev.pointerId !== state.pointerId) return;
         const delta = ev.clientY - state.dragStartY;
-        const highest = state.height * (1 - state.ratios[state.ratios.length - 1]);
-        const newY = clamp(state.dragStartTransform + delta, highest - 20, state.height);
+        const highest = detentY(state, state.ratios[state.ratios.length - 1]);
+        const off = offScreenY(state);
+        let newY;
+        if (state.isBottom) {
+            newY = clamp(state.dragStartTransform + delta, highest - 20, off);
+        } else {
+            newY = clamp(state.dragStartTransform + delta, off, highest + 20);
+        }
         state.currentY = newY;
         applyTransform(sheet, newY);
         state.dotnet.invokeMethodAsync('OnBackdropOpacity', backdropOpacityFor(newY, state.height));
@@ -75,8 +100,15 @@ export function init(root, sheet, handle, dotnetRef, ratios, duration, locked) {
         try { handle.releasePointerCapture(ev.pointerId); } catch {}
 
         const totalDelta = ev.clientY - state.dragStartY;
-        const lowest = state.height * (1 - state.ratios[0]);
-        if (totalDelta > 50 && state.currentY > lowest + state.height * 0.1) {
+        const lowest = detentY(state, state.ratios[0]);
+
+        // Dismiss check
+        const swipeDismiss = state.isBottom ? totalDelta > 50 : totalDelta < -50;
+        const pastThreshold = state.isBottom
+            ? state.currentY > lowest + state.height * 0.1
+            : state.currentY < lowest - state.height * 0.1;
+
+        if (swipeDismiss && pastThreshold) {
             state.dotnet.invokeMethodAsync('OnOpenChanged', false);
             return;
         }
@@ -85,7 +117,7 @@ export function init(root, sheet, handle, dotnetRef, ratios, duration, locked) {
         let bestRatio = state.ratios[0];
         let bestDist = Infinity;
         for (const r of state.ratios) {
-            const targetY = state.height * (1 - r);
+            const targetY = detentY(state, r);
             const dist = Math.abs(state.currentY - targetY);
             if (dist < bestDist) { bestDist = dist; bestRatio = r; }
         }
@@ -99,26 +131,44 @@ export function init(root, sheet, handle, dotnetRef, ratios, duration, locked) {
     state.onDown = onDown; state.onMove = onMove; state.onUp = onUp;
 }
 
-export function open(sheet, ratios) {
+export function open(sheet, ratios, isBottom) {
     const state = states.get(sheet);
     if (!state) return;
     state.ratios = [...ratios].sort((a, b) => a - b);
+    if (isBottom !== undefined) state.isBottom = isBottom;
     state.height = state.root.clientHeight || window.innerHeight;
-    // Start off-screen if not already, then animate to first detent
-    sheet.style.transition = 'none';
-    applyTransform(sheet, state.height);
-    state.currentY = state.height;
-    void sheet.offsetHeight; // force reflow
+
+    // If not already showing (minimized), start off-screen
+    const minY = minimizedY(state);
+    const isCurrentlyMinimized = Math.abs(state.currentY - minY) < 5;
+    if (!isCurrentlyMinimized) {
+        sheet.style.transition = 'none';
+        applyTransform(sheet, offScreenY(state));
+        state.currentY = offScreenY(state);
+        void sheet.offsetHeight; // force reflow
+    }
     requestAnimationFrame(() => snapInternal(state, state.ratios[0], true));
 }
 
-export function close(sheet) {
+export function close(sheet, shouldMinimize) {
     const state = states.get(sheet);
     if (!state) return;
+
+    const targetY = shouldMinimize ? minimizedY(state) : offScreenY(state);
     state.sheet.style.transition = `transform ${state.duration}ms cubic-bezier(.4,.0,.2,1)`;
-    applyTransform(sheet, state.height);
-    state.currentY = state.height;
+    applyTransform(sheet, targetY);
+    state.currentY = targetY;
     state.dotnet.invokeMethodAsync('OnBackdropOpacity', 0);
+}
+
+export function minimize(sheet) {
+    const state = states.get(sheet);
+    if (!state) return;
+    state.height = state.root.clientHeight || window.innerHeight;
+    const targetY = minimizedY(state);
+    sheet.style.transition = 'none';
+    applyTransform(sheet, targetY);
+    state.currentY = targetY;
 }
 
 export function snapTo(sheet, ratio) {
@@ -132,6 +182,12 @@ export function setLocked(sheet, locked) {
     if (!state) return;
     state.locked = locked;
     state.handle.style.display = locked ? 'none' : '';
+}
+
+export function setDirection(sheet, isBottom) {
+    const state = states.get(sheet);
+    if (!state) return;
+    state.isBottom = isBottom;
 }
 
 export function dispose(sheet) {
