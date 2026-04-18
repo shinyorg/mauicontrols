@@ -312,10 +312,6 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 
 # TableView
 
-| Basic | Dynamic | Drag & Sort | Pickers | Styling |
-|:---:|:---:|:---:|:---:|:---:|
-| ![Basic](../../assets/tableview-basic.png) | ![Dynamic](../../assets/tableview-dynamic.png) | ![Drag & Sort](../../assets/tableview-dragsort.png) | ![Pickers](../../assets/tableview-picker.png) | ![Styling](../../assets/tableview-styling.png) |
-
 ## Architecture
 
 The control hierarchy is:
@@ -757,10 +753,6 @@ await tableView.ScrollToBottomAsync();
 
 # SheetView
 
-| Closed | Open | Header (Minimized) | Header (Open) | Top (Minimized) | Top (Open) |
-|:---:|:---:|:---:|:---:|:---:|:---:|
-| ![Closed](../../assets/sheet1.png) | ![Open](../../assets/sheet2.png) | ![Header Minimized](../../assets/sheet3.png) | ![Header Open](../../assets/sheet4.png) | ![Top Minimized](../../assets/sheet5.png) | ![Top Open](../../assets/sheet6.png) |
-
 A draggable sheet overlay that slides in from the bottom or top edge of the page. Supports multiple snap points (detents), backdrop dimming, pan gestures, automatic keyboard handling, header peek when minimized, and haptic feedback.
 
 ## Basic Usage
@@ -888,8 +880,6 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
 
 # PillView
 
-![Pills](../../assets/pills.png)
-
 A status badge/label control with preset color themes and custom color support. Uses WCAG luminance calculations for accessible text contrast.
 
 ## Basic Usage
@@ -968,10 +958,6 @@ Example override in `App.xaml`:
 ---
 
 # ImageViewer
-
-| Gallery | Viewer |
-|:---:|:---:|
-| ![Gallery](../../assets/imageviewer1.png) | ![Viewer](../../assets/imageviewer2.png) |
 
 A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to toggle zoom, animated fade open/close, and a close button. Designed to overlay page content like SheetView.
 
@@ -1058,8 +1044,6 @@ public partial class ImageViewerViewModel : ObservableObject
 ---
 
 # SecurityPin
-
-![SecurityPin](../../assets/securitypin.png)
 
 A PIN/OTP entry control with individually rendered cells. Input is captured by a hidden `Entry` so the native keyboard appears when any cell is tapped. Digits are visible by default and can optionally be masked with any character for password-style entry.
 
@@ -1174,10 +1158,6 @@ void OnPinCompleted(object? sender, SecurityPinCompletedEventArgs e)
 ---
 
 # Fab & FabMenu
-
-| Closed | Menu Open |
-|:---:|:---:|
-| ![FAB Closed](../../assets/fab-closed.png) | ![FAB Menu Open](../../assets/fab-open.png) |
 
 Material-style floating action button (`Fab`) and an expanding multi-action menu (`FabMenu`) that animates `FabMenuItem` children up from the main FAB with a staggered reveal.
 
@@ -1328,10 +1308,6 @@ public partial class HomeViewModel : ObservableObject
 ---
 
 # Markdown Controls
-
-| Viewer | Editor |
-|:---:|:---:|
-| ![Viewer](../../assets/markdown-view.png) | ![Editor](../../assets/markdown-editor.png) |
 
 Two controls for rendering and editing markdown content. Uses Markdig for parsing. Separate NuGet package from the main controls library.
 
@@ -1719,10 +1695,6 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
 ---
 
 # Scheduler Views
-
-| Calendar | Agenda | Event List |
-|:---:|:---:|:---:|
-| ![Calendar](../../assets/scheduler1.png) | ![Agenda](../../assets/scheduler2.png) | ![Event List](../../assets/scheduler3.png) |
 
 Three views for calendar/scheduling UI, all sharing a common `ISchedulerEventProvider` interface. Built programmatically (no XAML internals), using AOT-safe lambda bindings, with custom DataTemplate support.
 
