@@ -8,6 +8,7 @@ public class SchedulerAgendaView : ContentView
     readonly Grid rootGrid;
     readonly AllDayEventsSection allDaySection;
     readonly DateCarouselPicker datePicker;
+    readonly CalendarSheetPicker calendarSheetPicker;
     readonly Grid dayHeadersGrid;
     readonly ScrollView scrollView;
     readonly Grid columnsGrid;
@@ -37,7 +38,12 @@ public class SchedulerAgendaView : ContentView
 
     public static readonly BindableProperty ShowCarouselDatePickerProperty = BindableProperty.Create(
         nameof(ShowCarouselDatePicker), typeof(bool), typeof(SchedulerAgendaView), true,
-        propertyChanged: (b, _, n) => ((SchedulerAgendaView)b).datePicker.IsVisible = (bool)n);
+        propertyChanged: (b, _, n) => ((SchedulerAgendaView)b).UpdateDatePickerVisibility());
+
+    public static readonly BindableProperty DatePickerModeProperty = BindableProperty.Create(
+        nameof(DatePickerMode), typeof(AgendaDatePickerMode), typeof(SchedulerAgendaView),
+        AgendaDatePickerMode.Carousel,
+        propertyChanged: (b, _, _) => ((SchedulerAgendaView)b).UpdateDatePickerVisibility());
 
     public static readonly BindableProperty ShowCurrentTimeMarkerProperty = BindableProperty.Create(
         nameof(ShowCurrentTimeMarker), typeof(bool), typeof(SchedulerAgendaView), true);
@@ -117,6 +123,12 @@ public class SchedulerAgendaView : ContentView
     {
         get => (bool)GetValue(ShowCarouselDatePickerProperty);
         set => SetValue(ShowCarouselDatePickerProperty, value);
+    }
+
+    public AgendaDatePickerMode DatePickerMode
+    {
+        get => (AgendaDatePickerMode)GetValue(DatePickerModeProperty);
+        set => SetValue(DatePickerModeProperty, value);
     }
 
     public bool ShowCurrentTimeMarker
@@ -233,6 +245,15 @@ public class SchedulerAgendaView : ContentView
             SelectedDate = date;
         };
 
+        calendarSheetPicker = new CalendarSheetPicker();
+        calendarSheetPicker.IsVisible = false;
+        calendarSheetPicker.DateSelected = date =>
+        {
+            if (MinDate.HasValue && date < MinDate.Value) return;
+            if (MaxDate.HasValue && date > MaxDate.Value) return;
+            SelectedDate = date;
+        };
+
         timeIndicator = new CurrentTimeIndicator();
         dayHeadersGrid = new Grid();
 
@@ -263,6 +284,7 @@ public class SchedulerAgendaView : ContentView
 
         rootGrid.Add(allDaySection, 0, 0);
         rootGrid.Add(datePicker, 0, 1);
+        rootGrid.Add(calendarSheetPicker, 0, 1);
         rootGrid.Add(dayHeadersGrid, 0, 2);
 
         var contentGrid = new Grid();
@@ -337,6 +359,7 @@ public class SchedulerAgendaView : ContentView
     void OnSelectedDateChanged()
     {
         datePicker.SelectedDate = SelectedDate;
+        calendarSheetPicker.SelectedDate = SelectedDate;
         Rebuild();
     }
 
@@ -344,6 +367,7 @@ public class SchedulerAgendaView : ContentView
     {
         datePicker.SelectedDate = SelectedDate;
         datePicker.DaysToShow = DaysToShow;
+        calendarSheetPicker.SelectedDate = SelectedDate;
         BuildDayHeaders();
         BuildColumns();
         LoadEvents();
@@ -601,5 +625,15 @@ public class SchedulerAgendaView : ContentView
         if (UseHapticFeedback)
             HapticHelper.PerformClick();
         Provider.OnAgendaTimeSelected(time);
+    }
+
+    void UpdateDatePickerVisibility()
+    {
+        var show = ShowCarouselDatePicker;
+        var mode = DatePickerMode;
+
+        datePicker.IsVisible = show && mode == AgendaDatePickerMode.Carousel;
+        calendarSheetPicker.IsVisible = show && mode == AgendaDatePickerMode.Calendar;
+        // None hides both — user controls date externally
     }
 }

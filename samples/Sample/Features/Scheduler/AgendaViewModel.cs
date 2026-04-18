@@ -10,6 +10,7 @@ public class AgendaViewModel(ISchedulerEventProvider provider) : INotifyProperty
     DateOnly selectedDate = DateOnly.FromDateTime(DateTime.Today);
     int daysToShow = 1;
     bool showAdditionalTimezones;
+    AgendaDatePickerMode datePickerMode = AgendaDatePickerMode.Carousel;
 
     public ISchedulerEventProvider Provider => provider;
 
@@ -31,11 +32,22 @@ public class AgendaViewModel(ISchedulerEventProvider provider) : INotifyProperty
         set { showAdditionalTimezones = value; OnPropertyChanged(); OnPropertyChanged(nameof(TimezoneToggleText)); }
     }
 
+    public AgendaDatePickerMode DatePickerMode
+    {
+        get => datePickerMode;
+        set { datePickerMode = value; OnPropertyChanged(); OnPropertyChanged(nameof(DatePickerToggleText)); }
+    }
+
     public string DaysToggleText => DaysToShow == 1 ? "3-Day" : "1-Day";
     public string TimezoneToggleText => ShowAdditionalTimezones ? "Hide TZ" : "Show TZ";
+    public string DatePickerToggleText => DatePickerMode == AgendaDatePickerMode.Carousel ? "Calendar" : "Carousel";
 
     public ICommand ToggleDaysCommand => new Command(() => DaysToShow = DaysToShow == 1 ? 3 : 1);
     public ICommand ToggleTimezonesCommand => new Command(() => ShowAdditionalTimezones = !ShowAdditionalTimezones);
+    public ICommand ToggleDatePickerModeCommand => new Command(() =>
+        DatePickerMode = DatePickerMode == AgendaDatePickerMode.Carousel
+            ? AgendaDatePickerMode.Calendar
+            : AgendaDatePickerMode.Carousel);
 
     public event PropertyChangedEventHandler? PropertyChanged;
     void OnPropertyChanged([CallerMemberName] string? name = null) =>

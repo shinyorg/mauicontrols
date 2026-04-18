@@ -1742,6 +1742,18 @@ public class CalendarListDayGroup : List<SchedulerEvent>
 }
 ```
 
+### AgendaDatePickerMode
+Controls which date picker is shown on the `SchedulerAgendaView`:
+
+```csharp
+public enum AgendaDatePickerMode
+{
+    None,      // No picker — control date externally
+    Carousel,  // Horizontal day picker (Apple Calendar-style, default)
+    Calendar   // Collapsible month calendar sheet with pull-to-expand
+}
+```
+
 ### DatePickerItemContext
 Used for custom `DayPickerItemTemplate` bindings in `SchedulerAgendaView`:
 
@@ -1828,6 +1840,7 @@ Day/multi-day timeline with overlap detection, Apple Calendar-style date picker,
 | `MaxDate` | `DateOnly?` | `null` |
 | `DaysToShow` | `int` | `1` (clamped 1-7) |
 | `ShowCarouselDatePicker` | `bool` | `true` |
+| `DatePickerMode` | `AgendaDatePickerMode` | `Carousel` |
 | `ShowCurrentTimeMarker` | `bool` | `true` |
 | `Use24HourTime` | `bool` | `true` |
 | `EventItemTemplate` | `DataTemplate?` | `null` |
@@ -1971,6 +1984,24 @@ public partial class MyCalendarPage : ContentPage
 }
 ```
 
+## Agenda with Calendar Picker Example
+
+```xml
+<shiny:SchedulerAgendaView
+    Provider="{Binding Provider}"
+    SelectedDate="{Binding SelectedDate}"
+    DaysToShow="{Binding DaysToShow}"
+    DatePickerMode="Calendar"
+    ShowCarouselDatePicker="True"
+    ShowCurrentTimeMarker="True"
+    CurrentTimeMarkerColor="Red"
+    DefaultEventColor="CornflowerBlue"
+    TimeSlotHeight="60"
+    Use24HourTime="False" />
+```
+
+The calendar picker starts collapsed showing only the week of the selected date. Pull the handle down or tap it to expand to a full month view with navigation arrows. Tapping a date selects it and updates the agenda. The picker auto-navigates months when a date outside the current display month is selected.
+
 ## Custom Template Example (AOT-Safe)
 
 ```csharp
@@ -2009,7 +2040,8 @@ var myEventTemplate = new DataTemplate(() =>
 - The provider's `GetEvents()` may be called with any date range — implement it to handle arbitrary ranges
 - Multi-day events should span the full range (the views handle per-day duplication internally)
 - `SchedulerCalendarListView` skips empty days (only days with events are shown)
-- `SchedulerAgendaView` uses an Apple Calendar-style day picker by default; override with `DayPickerItemTemplate` using `DatePickerItemContext`
+- `SchedulerAgendaView` supports three date picker modes via `DatePickerMode`: `Carousel` (Apple Calendar-style day picker, default), `Calendar` (collapsible month calendar sheet with pull-to-expand), or `None` (hides both pickers for external date control)
+- When using `DatePickerMode="Carousel"`, override with `DayPickerItemTemplate` using `DatePickerItemContext`
 - `SchedulerAgendaView` supports 24-hour and 12-hour (AM/PM) time via `Use24HourTime`
 - `SchedulerAgendaView` supports multiple timezone columns via `AdditionalTimezones` + `ShowAdditionalTimezones`
 - All-day events always sort to top within their day group

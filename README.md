@@ -104,15 +104,18 @@ Calendar and agenda views for displaying events and appointments, powered by `IS
     DisplayMonth="{Binding DisplayMonth}" />
 ```
 
-**SchedulerAgendaView** - Day/multi-day timeline with time slots, overlapping event layout, current time marker, and optional timezone columns.
+**SchedulerAgendaView** - Day/multi-day timeline with time slots, overlapping event layout, current time marker, optional timezone columns, and switchable date picker modes (carousel, calendar sheet, or none).
 
 ```xml
 <shiny:SchedulerAgendaView
     Provider="{Binding Provider}"
     SelectedDate="{Binding SelectedDate}"
     DaysToShow="{Binding DaysToShow}"
+    DatePickerMode="Calendar"
     ShowAdditionalTimezones="{Binding ShowAdditionalTimezones}" />
 ```
+
+**DatePickerMode** options: `Carousel` (default horizontal day picker), `Calendar` (collapsible month calendar with pull-to-expand), `None` (no picker).
 
 **SchedulerCalendarListView** - Scrollable event list grouped by day with infinite scroll loading.
 

@@ -72,6 +72,10 @@
         <ShellContent ContentTemplate="{DataTemplate scheduler:AgendaPage}" Route="agenda" />
     </FlyoutItem>
 
+    <FlyoutItem Title="Scheduler - Agenda Calendar Picker">
+        <ShellContent ContentTemplate="{DataTemplate scheduler:AgendaCalendarPickerPage}" Route="agendacalendarpicker" />
+    </FlyoutItem>
+
     <FlyoutItem Title="Scheduler - Event List">
         <ShellContent ContentTemplate="{DataTemplate scheduler:CalendarListPage}" Route="calendarlist" />
     </FlyoutItem>

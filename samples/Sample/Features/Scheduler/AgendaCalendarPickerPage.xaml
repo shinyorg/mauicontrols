@@ -3,24 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:shiny="http://shiny.net/maui/controls"
              xmlns:local="clr-namespace:Sample.Features.Scheduler"
-             x:Class="Sample.Features.Scheduler.AgendaPage"
-             x:DataType="local:AgendaViewModel"
-             Title="Agenda">
+             x:Class="Sample.Features.Scheduler.AgendaCalendarPickerPage"
+             x:DataType="local:AgendaCalendarPickerViewModel"
+             Title="Agenda - Calendar Picker">
 
     <Grid RowDefinitions="Auto,*">
         <HorizontalStackLayout HorizontalOptions="End" Spacing="8" Margin="8">
-            <Button Text="{Binding DatePickerToggleText}"
-                    Command="{Binding ToggleDatePickerModeCommand}"
-                    BackgroundColor="MediumPurple"
-                    TextColor="White"
-                    CornerRadius="8"
-                    FontSize="12" />
-            <Button Text="{Binding TimezoneToggleText}"
-                    Command="{Binding ToggleTimezonesCommand}"
-                    BackgroundColor="SlateGray"
-                    TextColor="White"
-                    CornerRadius="8"
-                    FontSize="12" />
             <Button Text="{Binding DaysToggleText}"
                     Command="{Binding ToggleDaysCommand}"
                     BackgroundColor="DodgerBlue"
@@ -30,12 +18,10 @@
         </HorizontalStackLayout>
 
         <shiny:SchedulerAgendaView Grid.Row="1"
-            x:Name="AgendaView"
             Provider="{Binding Provider}"
             SelectedDate="{Binding SelectedDate}"
             DaysToShow="{Binding DaysToShow}"
-            DatePickerMode="{Binding DatePickerMode}"
-            ShowAdditionalTimezones="{Binding ShowAdditionalTimezones}"
+            DatePickerMode="Calendar"
             ShowCarouselDatePicker="True"
             ShowCurrentTimeMarker="True"
             CurrentTimeMarkerColor="Red"
