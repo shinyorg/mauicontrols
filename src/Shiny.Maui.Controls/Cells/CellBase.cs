@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Shiny.Maui.Controls.Infrastructure;
 using TvTableView = Shiny.Maui.Controls.TableView;
 using TvTableSection = Shiny.Maui.Controls.Sections.TableSection;
 
@@ -127,6 +128,14 @@ public abstract class CellBase : ContentView
         nameof(BorderRadius), typeof(double), typeof(CellBase), -1d,
         propertyChanged: (b, o, n) => ((CellBase)b).UpdateBorder());
 
+    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
+        nameof(UseHapticFeedback), typeof(bool), typeof(CellBase), true);
+
+    public bool UseHapticFeedback
+    {
+        get => (bool)GetValue(UseHapticFeedbackProperty);
+        set => SetValue(UseHapticFeedbackProperty, value);
+    }
 
 
     public ImageSource? IconSource
@@ -588,6 +597,9 @@ public abstract class CellBase : ContentView
     {
         if (!IsEnabled || !IsSelectable)
             return;
+
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
 
         ShowTapFeedback();
         Tapped?.Invoke(this, EventArgs.Empty);

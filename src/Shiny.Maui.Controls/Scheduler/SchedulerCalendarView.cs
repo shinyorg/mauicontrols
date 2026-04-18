@@ -1,3 +1,4 @@
+using Shiny.Maui.Controls.Infrastructure;
 using Shiny.Maui.Controls.Scheduler.Internal;
 
 namespace Shiny.Maui.Controls.Scheduler;
@@ -176,6 +177,15 @@ public class SchedulerCalendarView : ContentView
     {
         get => (bool)GetValue(AllowZoomProperty);
         set => SetValue(AllowZoomProperty, value);
+    }
+
+    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
+        nameof(UseHapticFeedback), typeof(bool), typeof(SchedulerCalendarView), true);
+
+    public bool UseHapticFeedback
+    {
+        get => (bool)GetValue(UseHapticFeedbackProperty);
+        set => SetValue(UseHapticFeedbackProperty, value);
     }
 
 
@@ -490,6 +500,9 @@ public class SchedulerCalendarView : ContentView
         if (Provider != null && !Provider.CanCalendarSelect(date))
             return;
 
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
+
         SelectedDate = date;
 
         if (date.Month != DisplayMonth.Month || date.Year != DisplayMonth.Year)
@@ -500,6 +513,8 @@ public class SchedulerCalendarView : ContentView
 
     void OnEventTapped(SchedulerEvent evt)
     {
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
         Provider?.OnEventSelected(evt);
     }
 }

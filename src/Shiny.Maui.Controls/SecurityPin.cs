@@ -1,3 +1,5 @@
+using Shiny.Maui.Controls.Infrastructure;
+
 namespace Shiny.Maui.Controls;
 
 public class SecurityPin : ContentView
@@ -232,6 +234,18 @@ public class SecurityPin : ContentView
     }
 
 
+    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
+        nameof(UseHapticFeedback),
+        typeof(bool),
+        typeof(SecurityPin),
+        true);
+    public bool UseHapticFeedback
+    {
+        get => (bool)GetValue(UseHapticFeedbackProperty);
+        set => SetValue(UseHapticFeedbackProperty, value);
+    }
+
+
     public new void Focus() => hiddenEntry.Focus();
     public new void Unfocus() => hiddenEntry.Unfocus();
     public void Clear() => UpdateValue(string.Empty);
@@ -343,7 +357,17 @@ public class SecurityPin : ContentView
         UpdateValue(newText);
 
         if (newText.Length >= max)
+        {
+            if (UseHapticFeedback)
+                HapticHelper.PerformLongPress();
+
             Completed?.Invoke(this, new SecurityPinCompletedEventArgs(newText));
+        }
+        else if (newText.Length > (e.OldTextValue?.Length ?? 0))
+        {
+            if (UseHapticFeedback)
+                HapticHelper.PerformClick();
+        }
     }
 
     void OnHiddenEntryCompleted(object? sender, EventArgs e)

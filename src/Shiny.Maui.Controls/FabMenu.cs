@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using Shiny.Maui.Controls.Infrastructure;
 
 namespace Shiny.Maui.Controls;
 
@@ -265,6 +266,18 @@ public class FabMenu : ContentView
     }
 
 
+    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
+        nameof(UseHapticFeedback),
+        typeof(bool),
+        typeof(FabMenu),
+        true);
+    public bool UseHapticFeedback
+    {
+        get => (bool)GetValue(UseHapticFeedbackProperty);
+        set => SetValue(UseHapticFeedbackProperty, value);
+    }
+
+
     public event EventHandler<FabMenuItem>? ItemTapped;
 
 
@@ -275,7 +288,12 @@ public class FabMenu : ContentView
 
     // ------- Internals -------
 
-    void OnMainFabClicked(object? sender, EventArgs e) => Toggle();
+    void OnMainFabClicked(object? sender, EventArgs e)
+    {
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
+        Toggle();
+    }
 
     void OnBackdropTapped(object? sender, TappedEventArgs e)
     {

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Shiny.Maui.Controls.Infrastructure;
 
 namespace Shiny.Maui.Controls;
 
@@ -356,6 +357,18 @@ public class SheetView : ContentView
         set => SetValue(FitContentProperty, value);
     }
 
+    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
+        nameof(UseHapticFeedback),
+        typeof(bool),
+        typeof(SheetView),
+        true);
+
+    public bool UseHapticFeedback
+    {
+        get => (bool)GetValue(UseHapticFeedbackProperty);
+        set => SetValue(UseHapticFeedbackProperty, value);
+    }
+
     static void OnDirectionChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var sheet = (SheetView)bindable;
@@ -573,6 +586,10 @@ public class SheetView : ContentView
         await Task.WhenAll(animTasks);
         UpdateScrollEnabled();
         isAnimating = false;
+
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
+
         Opened?.Invoke(this, EventArgs.Empty);
     }
 
@@ -616,6 +633,10 @@ public class SheetView : ContentView
         {
             isAnimating = false;
         }
+
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
+
         Closed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -735,6 +756,10 @@ public class SheetView : ContentView
         await Task.WhenAll(animTasks);
         UpdateScrollEnabled();
         isAnimating = false;
+
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
+
         DetentChanged?.Invoke(this, bestDetent);
     }
 

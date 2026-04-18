@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using Shiny.Maui.Controls.Infrastructure;
 
 namespace Shiny.Maui.Controls;
 
@@ -281,11 +282,26 @@ public class Fab : ContentView
     }
 
 
+    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
+        nameof(UseHapticFeedback),
+        typeof(bool),
+        typeof(Fab),
+        true);
+    public bool UseHapticFeedback
+    {
+        get => (bool)GetValue(UseHapticFeedbackProperty);
+        set => SetValue(UseHapticFeedbackProperty, value);
+    }
+
+
     public event EventHandler? Clicked;
 
 
     void OnTapped(object? sender, TappedEventArgs e)
     {
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
+
         Clicked?.Invoke(this, EventArgs.Empty);
         if (Command?.CanExecute(CommandParameter) == true)
             Command.Execute(CommandParameter);

@@ -1,3 +1,4 @@
+using Shiny.Maui.Controls.Infrastructure;
 using Shiny.Maui.Controls.Scheduler.Internal;
 
 namespace Shiny.Maui.Controls.Scheduler;
@@ -206,6 +207,15 @@ public class SchedulerAgendaView : ContentView
     {
         get => (bool)GetValue(ShowAdditionalTimezonesProperty);
         set => SetValue(ShowAdditionalTimezonesProperty, value);
+    }
+
+    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
+        nameof(UseHapticFeedback), typeof(bool), typeof(SchedulerAgendaView), true);
+
+    public bool UseHapticFeedback
+    {
+        get => (bool)GetValue(UseHapticFeedbackProperty);
+        set => SetValue(UseHapticFeedbackProperty, value);
     }
 
     public IList<TimeZoneInfo> AdditionalTimezones { get; } = new List<TimeZoneInfo>();
@@ -576,12 +586,20 @@ public class SchedulerAgendaView : ContentView
         loaderOverlay.IsVisible = show;
     }
 
-    void OnEventTapped(SchedulerEvent evt) => Provider?.OnEventSelected(evt);
+    void OnEventTapped(SchedulerEvent evt)
+    {
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
+        Provider?.OnEventSelected(evt);
+    }
 
     void OnTimeSlotTapped(DateTimeOffset time)
     {
         if (Provider == null) return;
         if (!Provider.CanSelectAgendaTime(time)) return;
+
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
         Provider.OnAgendaTimeSelected(time);
     }
 }

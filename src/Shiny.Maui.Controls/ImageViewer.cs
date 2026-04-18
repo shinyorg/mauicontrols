@@ -1,3 +1,5 @@
+using Shiny.Maui.Controls.Infrastructure;
+
 namespace Shiny.Maui.Controls;
 
 public class ImageViewer : ContentView
@@ -158,6 +160,18 @@ public class ImageViewer : ContentView
     {
         get => (DataTemplate?)GetValue(FooterTemplateProperty);
         set => SetValue(FooterTemplateProperty, value);
+    }
+
+    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
+        nameof(UseHapticFeedback),
+        typeof(bool),
+        typeof(ImageViewer),
+        true);
+
+    public bool UseHapticFeedback
+    {
+        get => (bool)GetValue(UseHapticFeedbackProperty);
+        set => SetValue(UseHapticFeedbackProperty, value);
     }
 
     void ApplyCloseButtonTemplate()
@@ -359,6 +373,9 @@ public class ImageViewer : ContentView
     void OnDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (isAnimating) return;
+
+        if (UseHapticFeedback)
+            HapticHelper.PerformClick();
 
         if (currentScale > MinScale)
             _ = AnimateResetAsync();
