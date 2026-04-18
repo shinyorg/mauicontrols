@@ -24,6 +24,10 @@
         <ShellContent ContentTemplate="{DataTemplate bottomsheet:BottomSheetPage}" Route="bottomsheet" />
     </FlyoutItem>
 
+    <FlyoutItem Title="Bottom Sheet - Minimized">
+        <ShellContent ContentTemplate="{DataTemplate bottomsheet:MinimizedSheetPage}" Route="minimizedsheet" />
+    </FlyoutItem>
+
     <FlyoutItem Title="Pills">
         <ShellContent ContentTemplate="{DataTemplate pills:PillPage}" Route="pills" />
     </FlyoutItem>

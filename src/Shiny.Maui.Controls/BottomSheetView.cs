@@ -17,6 +17,7 @@ public class BottomSheetView : ContentView
     readonly ScrollView scrollView;
     readonly ContentView contentHost;
     readonly PanGestureRecognizer panGesture;
+    readonly ContentView minimizedHost;
 
     double sheetStartTranslationY;
     double availableHeight;
@@ -103,10 +104,24 @@ public class BottomSheetView : ContentView
 
         sheetContainer.GestureRecognizers.Add(panGesture);
 
-        // Root grid stacks backdrop + sheet
+        // Minimized content host (sits at bottom, visible when closed)
+        minimizedHost = new ContentView
+        {
+            VerticalOptions = LayoutOptions.End,
+            IsVisible = false
+        };
+        var minimizedTap = new TapGestureRecognizer();
+        minimizedTap.Tapped += (_, _) => { if (!IsOpen) IsOpen = true; };
+        minimizedHost.GestureRecognizers.Add(minimizedTap);
+        var minimizedPan = new PanGestureRecognizer();
+        minimizedPan.PanUpdated += OnMinimizedPanUpdated;
+        minimizedHost.GestureRecognizers.Add(minimizedPan);
+
+        // Root grid stacks backdrop + sheet + minimized
         rootGrid = new Grid();
         rootGrid.Children.Add(backdrop);
         rootGrid.Children.Add(sheetContainer);
+        rootGrid.Children.Add(minimizedHost);
         rootGrid.SizeChanged += OnRootGridSizeChanged;
 
         Content = rootGrid;
@@ -272,6 +287,45 @@ public class BottomSheetView : ContentView
         set => SetValue(FitContentProperty, value);
     }
 
+    public static readonly BindableProperty MinimizedTemplateProperty = BindableProperty.Create(
+        nameof(MinimizedTemplate),
+        typeof(View),
+        typeof(BottomSheetView),
+        null,
+        propertyChanged: OnMinimizedTemplateChanged);
+
+    public View? MinimizedTemplate
+    {
+        get => (View?)GetValue(MinimizedTemplateProperty);
+        set => SetValue(MinimizedTemplateProperty, value);
+    }
+
+    static void OnMinimizedTemplateChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        var sheet = (BottomSheetView)bindable;
+        sheet.minimizedHost.Content = newValue as View;
+
+        if (newValue != null && !sheet.IsOpen)
+        {
+            sheet.IsVisible = true;
+            sheet.minimizedHost.IsVisible = true;
+        }
+        else
+        {
+            sheet.minimizedHost.IsVisible = false;
+            if (!sheet.IsOpen)
+                sheet.IsVisible = newValue != null;
+        }
+    }
+
+    void OnMinimizedPanUpdated(object? sender, PanUpdatedEventArgs e)
+    {
+        if (IsOpen || isAnimating) return;
+
+        if (e.StatusType == GestureStatus.Completed && e.TotalY < -30)
+            IsOpen = true;
+    }
+
     void OnIsLockedChanged(bool locked)
     {
         dragHandle.IsVisible = !locked;
@@ -331,6 +385,7 @@ public class BottomSheetView : ContentView
         if (isAnimating) return;
         isAnimating = true;
 
+        minimizedHost.IsVisible = false;
         IsVisible = true;
 
         // Wait for layout pass so rootGrid has a valid height
@@ -396,7 +451,15 @@ public class BottomSheetView : ContentView
 
         await Task.WhenAll(animTasks);
 
-        IsVisible = false;
+        if (MinimizedTemplate != null)
+        {
+            minimizedHost.IsVisible = true;
+            // Keep control visible so minimized content shows
+        }
+        else
+        {
+            IsVisible = false;
+        }
         isAnimating = false;
         Closed?.Invoke(this, EventArgs.Empty);
     }

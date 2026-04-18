@@ -49,3 +49,12 @@
     -webkit-overflow-scrolling: touch;
     padding: 0 16px 16px;
 }
+
+.shiny-sheet-minimized {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1001;
+    cursor: pointer;
+}

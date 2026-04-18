@@ -28,6 +28,7 @@ public static class MauiProgram
             .UseShinyShell(x => x
                 .Add<HomePage, HomeViewModel>(registerRoute: false)
                 .Add<BottomSheetPage, BottomSheetViewModel>(registerRoute: false)
+                .Add<MinimizedSheetPage, MinimizedSheetViewModel>(registerRoute: false)
                 .Add<PillPage, PillViewModel>(registerRoute: false)
                 .Add<SecurityPinPage, SecurityPinViewModel>(registerRoute: false)
                 .Add<FabPage, FabViewModel>(registerRoute: false)

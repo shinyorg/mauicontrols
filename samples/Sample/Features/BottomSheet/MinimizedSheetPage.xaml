@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Features.BottomSheet"
+             xmlns:bs="clr-namespace:Shiny.Maui.Controls;assembly=Shiny.Maui.Controls"
+             x:Class="Sample.Features.BottomSheet.MinimizedSheetPage"
+             x:DataType="local:MinimizedSheetViewModel">
+  <Grid>
+
+    <!-- Main page content -->
+    <ScrollView>
+        <VerticalStackLayout Padding="30,0" Spacing="25">
+            <Label
+                Text="Minimized Sheet Demo"
+                FontSize="28"
+                FontAttributes="Bold"
+                HorizontalTextAlignment="Center"
+                Margin="0,20,0,0" />
+
+            <Label
+                Text="The bottom sheet has a minimized bar pinned to the bottom of the screen. Tap or swipe up on it to expand the full sheet."
+                FontSize="14"
+                HorizontalTextAlignment="Center"
+                TextColor="Gray" />
+
+            <Label
+                Text="{Binding StatusMessage}"
+                FontSize="16"
+                HorizontalTextAlignment="Center"
+                TextColor="Gray" />
+
+            <Button
+                Text="Open Sheet"
+                Command="{Binding OpenSheetCommand}" />
+
+            <Button
+                Text="Close Sheet"
+                Command="{Binding CloseSheetCommand}" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+    <!-- Bottom sheet with minimized template -->
+    <bs:BottomSheetView IsOpen="{Binding IsSheetOpen}"
+                        HasBackdrop="True"
+                        CloseOnBackdropTap="True"
+                        HandleColor="Gray"
+                        SheetBackgroundColor="White"
+                        SheetCornerRadius="20">
+        <bs:BottomSheetView.MinimizedTemplate>
+            <Border BackgroundColor="#1E1E2E"
+                    Padding="16,12"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 16,16,0,0">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,-4" Radius="10" Opacity="0.2" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Border BackgroundColor="#6C63FF"
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 8">
+                        <Label Text="♫"
+                               FontSize="20"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               TextColor="White" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Now Playing"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label Text="Swipe up for full player"
+                               FontSize="12"
+                               TextColor="#9CA3AF" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2"
+                           Text="▶"
+                           FontSize="22"
+                           TextColor="White"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+        </bs:BottomSheetView.MinimizedTemplate>
+
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="Full Player"
+                   FontSize="22"
+                   FontAttributes="Bold" />
+
+            <Border BackgroundColor="#6C63FF"
+                    WidthRequest="200"
+                    HeightRequest="200"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 16"
+                    HorizontalOptions="Center">
+                <Label Text="♫"
+                       FontSize="80"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="White" />
+            </Border>
+
+            <Label Text="Song Title"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+
+            <Label Text="Artist Name"
+                   FontSize="16"
+                   TextColor="Gray"
+                   HorizontalTextAlignment="Center" />
+
+            <BoxView HeightRequest="4"
+                     CornerRadius="2"
+                     Color="#6C63FF"
+                     Margin="20,10" />
+
+            <Grid ColumnDefinitions="*,*,*" HorizontalOptions="Center" WidthRequest="200">
+                <Label Text="⏮" FontSize="28" HorizontalOptions="Center" />
+                <Label Text="⏸" FontSize="28" HorizontalOptions="Center" Grid.Column="1" />
+                <Label Text="⏭" FontSize="28" HorizontalOptions="Center" Grid.Column="2" />
+            </Grid>
+
+            <Button Text="Close"
+                    Command="{Binding CloseSheetCommand}"
+                    Margin="0,20,0,0" />
+        </VerticalStackLayout>
+    </bs:BottomSheetView>
+
+  </Grid>
+</ContentPage>

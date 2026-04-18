@@ -5,9 +5,9 @@
 
 @if (rendered)
 {
-    <div class="shiny-sheet-root @(isOpen ? "is-open" : "")"
+    <div class="shiny-sheet-root @(isOpen ? "is-open" : "") @(HasMinimized ? "has-minimized" : "")"
          @ref="rootEl"
-         style="@(isOpen ? "" : "pointer-events:none;")">
+         style="@(isOpen || HasMinimized ? "" : "pointer-events:none;")">
         @if (HasBackdrop)
         {
             <div class="shiny-sheet-backdrop"
@@ -24,6 +24,12 @@
                 @SheetContent
             </div>
         </div>
+        @if (HasMinimized && !isOpen)
+        {
+            <div class="shiny-sheet-minimized" @onclick="OnMinimizedClick">
+                @MinimizedTemplate
+            </div>
+        }
     </div>
 }
 
@@ -41,6 +47,7 @@
     [Parameter] public bool IsOpen { get; set; }
     [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
     [Parameter] public RenderFragment? SheetContent { get; set; }
+    [Parameter] public RenderFragment? MinimizedTemplate { get; set; }
     [Parameter] public IList<DetentValue>? Detents { get; set; }
     [Parameter] public string SheetBackgroundColor { get; set; } = "#FFFFFF";
     [Parameter] public string HandleColor { get; set; } = "#9CA3AF";
@@ -137,6 +144,10 @@
     {
         return DetentChanged.InvokeAsync(new DetentValue(ratio));
     }
+
+    bool HasMinimized => MinimizedTemplate != null;
+
+    Task OnMinimizedClick() => OnOpenChanged(true);
 
     Task OnBackdropClick()
     {
