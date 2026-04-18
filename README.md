@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, BottomSheet, Fab/FabMenu, PillView, SecurityPin, and ImageViewer. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, SheetView, Fab/FabMenu, PillView, SecurityPin, and ImageViewer. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -75,7 +75,7 @@ No DI registration is required — drop the components into any `.razor` page.
 |---|---|
 | `<shiny:TableView>` with `<shiny:TableRoot>` | `<TableView>` (no `TableRoot` wrapper) |
 | `<shiny:PillView>` | `<Pill>` |
-| `<shiny:BottomSheetView>` with `SheetContent` property | `<BottomSheetView>` with `<SheetContent>` child |
+| `<shiny:SheetView>` with `SheetContent` property | `<SheetView>` with `<SheetContent>` child |
 | `Value="{Binding Pin}"` (TwoWay) | `@bind-Value="pin"` |
 | `IsOpen="{Binding IsOpen, Mode=TwoWay}"` | `@bind-IsOpen="isOpen"` |
 | `Command="{Binding DoCommand}"` | `OnClick="DoAsync"` / `Clicked="DoAsync"` |
@@ -140,9 +140,9 @@ public class MyEventProvider : ISchedulerEventProvider
 
 A sheet overlay that slides in from the bottom or top of the screen with configurable snap positions (detents), optional header peek when minimized, and haptic feedback.
 
-| Closed | Open |
-|:---:|:---:|
-| ![Closed](assets/bottomsheet1.png) | ![Open](assets/bottomsheet2.png) |
+| Closed | Open | Header (Minimized) | Header (Open) | Top (Minimized) | Top (Open) |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| ![Closed](assets/sheet1.png) | ![Open](assets/sheet2.png) | ![Header Minimized](assets/sheet3.png) | ![Header Open](assets/sheet4.png) | ![Top Minimized](assets/sheet5.png) | ![Top Open](assets/sheet6.png) |
 
 ```xml
 <shiny:SheetView
@@ -336,7 +336,7 @@ Methods: `Open()`, `Close()`, `Toggle()`.
 | IconSize | double | 20 | Icon image size |
 | UseHapticFeedback | bool | true | Haptic feedback on tap |
 
-**Placement tip**: `FabMenu` should live in a `Grid` that fills the page (the same placement pattern as `BottomSheetView` / `ImageViewer`) so the backdrop can cover the page content.
+**Placement tip**: `FabMenu` should live in a `Grid` that fills the page (the same placement pattern as `SheetView` / `ImageViewer`) so the backdrop can cover the page content.
 
 ### SecurityPin
 

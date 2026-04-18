@@ -8,6 +8,8 @@ triggers:
   - settings page
   - settings view
   - settingsview
+  - sheet view
+  - sheetview
   - bottom sheet
   - bottomsheet
   - pill
@@ -46,6 +48,7 @@ triggers:
   - action button
   - shiny blazor controls
   - blazor tableview
+  - blazor sheetview
   - blazor bottomsheet
   - blazor fab
   - blazor pillview
@@ -224,7 +227,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 </TableView>
 ```
 
-**BottomSheet**
+**SheetView**
 ```razor
 <button @onclick="() => isOpen = true">Open Sheet</button>
 
@@ -1508,8 +1511,8 @@ When generating code with Shiny.Maui.Controls:
 - Always add `xmlns:shiny="http://shiny.net/maui/controls"` to the page
 - For Markdown controls: add `xmlns:md="http://shiny.net/maui/markdown"` to the page
 - For TableView: wrap content in `shiny:TableView > shiny:TableRoot > shiny:TableSection`
-- For BottomSheet: place `shiny:SheetView` inside a Grid that fills the page (it overlays on top)
-- For ImageViewer: place `shiny:ImageViewer` inside a Grid that fills the page (it overlays on top, same pattern as BottomSheet)
+- For SheetView: place `shiny:SheetView` inside a Grid that fills the page (it overlays on top); supports `Direction="Bottom"` (default) or `Direction="Top"`
+- For ImageViewer: place `shiny:ImageViewer` inside a Grid that fills the page (it overlays on top, same pattern as SheetView)
 - For PillView: use inline within any layout
 - For Scheduler views: use `shiny:SchedulerCalendarView`, `shiny:SchedulerAgendaView`, or `shiny:SchedulerCalendarListView` and bind `Provider` to an `ISchedulerEventProvider`
 - For MarkdownView: use `md:MarkdownView` anywhere you need to render markdown content
@@ -1537,7 +1540,7 @@ When generating code with Shiny.Maui.Controls:
 - Commands use default `Mode=OneWay`
 - RadioCell selection binds at section level: `shiny:RadioCell.SelectedValue="{Binding Prop, Mode=TwoWay}"`
 
-### 4. BottomSheet Placement
+### 4. SheetView Placement
 The SheetView must be placed inside a Grid that fills the page so it can overlay correctly:
 
 ```xml
@@ -1550,7 +1553,7 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Bottom sheet overlays on top -->
+        <!-- Sheet overlays on top -->
         <shiny:SheetView IsOpen="{Binding IsOpen, Mode=TwoWay}">
             <Label Text="Sheet content" />
         </shiny:SheetView>
@@ -1619,7 +1622,7 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
 </ContentPage>
 ```
 
-## Complete BottomSheet + PillView Example
+## Complete SheetView + PillView Example
 
 ```xml
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -1686,9 +1689,8 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
 14. **Leave MarkdownView/MarkdownEditor Theme as null** - It auto-resolves Light/Dark based on the app theme
 15. **Use MarkdownView for read-only content** - Documentation, notes, changelogs; use MarkdownEditor only when the user needs to edit
 16. **ImageViewer Source is set before IsOpen** - Always set the image source before opening the viewer
-14. **Register scheduler pages and ViewModels in DI** - Use `AddTransient` for pages and ViewModels, `AddSingleton` for the event provider
-15. **Use `SelectedDate` with TwoWay binding** - All scheduler views share this property for coordination
-16. **Implement all `ISchedulerEventProvider` methods** - Even if some are no-ops, all must be implemented
+17. **Use `SelectedDate` with TwoWay binding** - All scheduler views share this property for coordination
+18. **Implement all `ISchedulerEventProvider` methods** - Even if some are no-ops, all must be implemented
 
 ---
 
@@ -1938,8 +1940,6 @@ public class MySchedulerViewModel : INotifyPropertyChanged
 Register in DI:
 ```csharp
 builder.Services.AddSingleton<ISchedulerEventProvider, MyEventProvider>();
-builder.Services.AddTransient<MySchedulerViewModel>();
-builder.Services.AddTransient<MyCalendarPage>();
 ```
 
 ## Scheduler Page Pattern
