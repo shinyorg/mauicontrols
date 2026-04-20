@@ -214,6 +214,7 @@ A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animat
 |---|---|---|
 | Source | ImageSource? | The image to display |
 | IsOpen | bool | Show/hide the viewer (TwoWay) |
+| Aspect | Aspect | Image aspect ratio mode (default: AspectFit) |
 | MaxZoom | double | Maximum zoom scale (default: 5.0) |
 | CloseButtonTemplate | DataTemplate? | Custom close button (tapping closes viewer) |
 | HeaderTemplate | DataTemplate? | Custom header overlay |

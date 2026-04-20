@@ -989,6 +989,7 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 |---|---|---|---|---|
 | `Source` | `ImageSource?` | `null` | OneWay | The image to display |
 | `IsOpen` | `bool` | `false` | TwoWay | Opens/closes the viewer with fade animation |
+| `Aspect` | `Aspect` | `AspectFit` | OneWay | Image aspect ratio mode (MAUI only) |
 | `MaxZoom` | `double` | `5.0` | OneWay | Maximum pinch zoom scale |
 | `CloseButtonTemplate` | `DataTemplate?` | `null` | OneWay | Custom close button template (tapping the templated view closes the viewer) |
 | `HeaderTemplate` | `DataTemplate?` | `null` | OneWay | Custom header overlay at the top of the viewer |

@@ -90,6 +90,19 @@ public class ImageViewer : ContentView
         set => SetValue(SourceProperty, value);
     }
 
+    public static readonly BindableProperty AspectProperty = BindableProperty.Create(
+        nameof(Aspect),
+        typeof(Aspect),
+        typeof(ImageViewer),
+        Aspect.AspectFit,
+        propertyChanged: (b, _, n) => ((ImageViewer)b).image.Aspect = (Aspect)n);
+
+    public Aspect Aspect
+    {
+        get => (Aspect)GetValue(AspectProperty);
+        set => SetValue(AspectProperty, value);
+    }
+
     public static readonly BindableProperty MaxZoomProperty = BindableProperty.Create(
         nameof(MaxZoom),
         typeof(double),
