@@ -150,7 +150,7 @@ A sheet overlay that slides in from the bottom or top of the screen with configu
 ```xml
 <shiny:SheetView
     IsOpen="{Binding IsSheetOpen}"
-    Direction="Bottom"
+    Location="Bottom"
     HasBackdrop="True"
     CloseOnBackdropTap="True"
     SheetCornerRadius="16">
@@ -166,7 +166,7 @@ A sheet overlay that slides in from the bottom or top of the screen with configu
 | Property | Type | Description |
 |---|---|---|
 | IsOpen | bool | Show/hide the sheet (TwoWay) |
-| Direction | SheetDirection | `Bottom` or `Top` — which edge the sheet slides from |
+| Location | SheetLocation | `Bottom`, `BottomTabs`, or `Top` — which edge the sheet slides from. Use `BottomTabs` when inside a Shell TabBar to clip the sheet above the tab bar |
 | Detents | ObservableCollection\<DetentValue\> | Snap positions (Quarter, Half, Full) |
 | SheetContent | View | Content displayed in the sheet |
 | HeaderTemplate | View | Optional header view shown inside the sheet (and as a peek bar when minimized) |

@@ -772,7 +772,7 @@ A draggable sheet overlay that slides in from the bottom or top edge of the page
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `IsOpen` | `bool` | `false` | Opens/closes the sheet (two-way bindable) |
-| `Direction` | `SheetDirection` | `Bottom` | Which edge the sheet slides from (`Bottom` or `Top`) |
+| `Location` | `SheetLocation` | `Bottom` | Where the sheet slides from (`Bottom`, `BottomTabs`, or `Top`). Use `BottomTabs` when inside a Shell TabBar to clip the sheet above the tab bar |
 | `SheetContent` | `View?` | `null` | The content displayed inside the sheet (ContentProperty) |
 | `HeaderTemplate` | `View?` | `null` | Optional header view; shown inside the sheet when open and as a peek bar when minimized |
 | `ShowHeaderWhenMinimized` | `bool` | `false` | When true, the header peeks from the edge when the sheet is closed |
@@ -823,7 +823,7 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
 - **Backdrop**: Semi-transparent overlay that dims proportionally to sheet position
 - **Locked mode**: When `IsLocked="True"`, the drag handle is hidden, pan gestures are disabled, and backdrop tap is ignored — the sheet can only be opened/closed via code (ideal for signature capture, selectors, or confirmation dialogs)
 - **Fit content**: When `FitContent="True"`, the sheet measures its content and auto-computes a single detent to fit it, ignoring the Detents collection
-- **Direction**: Slides from bottom (`Direction="Bottom"`, default) or top (`Direction="Top"`)
+- **Location**: Slides from bottom (`Location="Bottom"`, default), top (`Location="Top"`), or bottom with tabs (`Location="BottomTabs"` — clips the sheet above the tab bar on iOS)
 - **Header peek**: Set `ShowHeaderWhenMinimized="True"` with a `HeaderTemplate` to show a persistent header bar when the sheet is closed — tapping it opens the sheet
 - **Haptic feedback**: Subtle haptic on open, close, and detent snap; disable with `UseHapticFeedback="False"`
 
@@ -1512,7 +1512,7 @@ When generating code with Shiny.Maui.Controls:
 - Always add `xmlns:shiny="http://shiny.net/maui/controls"` to the page
 - For Markdown controls: add `xmlns:md="http://shiny.net/maui/markdown"` to the page
 - For TableView: wrap content in `shiny:TableView > shiny:TableRoot > shiny:TableSection`
-- For SheetView: place `shiny:SheetView` inside a Grid that fills the page (it overlays on top); supports `Direction="Bottom"` (default) or `Direction="Top"`
+- For SheetView: place `shiny:SheetView` inside a Grid that fills the page (it overlays on top); supports `Location="Bottom"` (default), `Location="Top"`, or `Location="BottomTabs"` (for use inside Shell TabBar)
 - For ImageViewer: place `shiny:ImageViewer` inside a Grid that fills the page (it overlays on top, same pattern as SheetView)
 - For PillView: use inline within any layout
 - For Scheduler views: use `shiny:SchedulerCalendarView`, `shiny:SchedulerAgendaView`, or `shiny:SchedulerCalendarListView` and bind `Provider` to an `ISchedulerEventProvider`

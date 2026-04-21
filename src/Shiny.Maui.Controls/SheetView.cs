@@ -33,7 +33,7 @@ public class SheetView : ContentView
     bool isKeyboardVisible;
     DetentValue? fitContentDetent;
 
-    bool IsBottom => Direction == SheetDirection.Bottom;
+    bool IsBottom => Location is SheetLocation.Bottom or SheetLocation.BottomTabs;
 
     double GetOffScreenY() => IsBottom ? availableHeight : -availableHeight;
 
@@ -42,6 +42,20 @@ public class SheetView : ContentView
 
     double GetBackdropProgress(double translationY)
         => 1.0 - (Math.Abs(translationY) / availableHeight);
+
+    double GetBottomSafeAreaInset()
+    {
+#if IOS || MACCATALYST
+        var window = Window?.Handler?.PlatformView as UIKit.UIWindow
+            ?? UIKit.UIApplication.SharedApplication.ConnectedScenes
+                .OfType<UIKit.UIWindowScene>()
+                .SelectMany(s => s.Windows)
+                .FirstOrDefault(w => w.IsKeyWindow);
+        return window?.SafeAreaInsets.Bottom ?? 0;
+#else
+        return 0;
+#endif
+    }
 
     double GetMinimizedY()
     {
@@ -167,17 +181,17 @@ public class SheetView : ContentView
     }
 
 
-    public static readonly BindableProperty DirectionProperty = BindableProperty.Create(
-        nameof(Direction),
-        typeof(SheetDirection),
+    public static readonly BindableProperty LocationProperty = BindableProperty.Create(
+        nameof(Location),
+        typeof(SheetLocation),
         typeof(SheetView),
-        SheetDirection.Bottom,
-        propertyChanged: OnDirectionChanged);
+        SheetLocation.Bottom,
+        propertyChanged: OnLocationChanged);
 
-    public SheetDirection Direction
+    public SheetLocation Location
     {
-        get => (SheetDirection)GetValue(DirectionProperty);
-        set => SetValue(DirectionProperty, value);
+        get => (SheetLocation)GetValue(LocationProperty);
+        set => SetValue(LocationProperty, value);
     }
 
     public static readonly BindableProperty IsOpenProperty = BindableProperty.Create(
@@ -369,10 +383,11 @@ public class SheetView : ContentView
         set => SetValue(UseHapticFeedbackProperty, value);
     }
 
-    static void OnDirectionChanged(BindableObject bindable, object oldValue, object newValue)
+    static void OnLocationChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var sheet = (SheetView)bindable;
         sheet.UpdateLayoutForDirection();
+        sheet.outerGrid.IsClippedToBounds = sheet.Location == SheetLocation.BottomTabs;
     }
 
     static void OnHeaderTemplateChanged(BindableObject bindable, object oldValue, object newValue)
@@ -426,6 +441,15 @@ public class SheetView : ContentView
         // Shrink the SheetView to only the header area at the edge.
         // This way the SheetView doesn't cover the page and can't block touches.
         VerticalOptions = IsBottom ? LayoutOptions.End : LayoutOptions.Start;
+
+        // For Bottom (no tabs), extend into the safe area so the header fills to the screen edge.
+        // For BottomTabs, the tabs handle the bottom — no margin adjustment needed.
+        if (Location == SheetLocation.Bottom)
+        {
+            var bottomInset = GetBottomSafeAreaInset();
+            Margin = bottomInset > 0 ? new Thickness(0, 0, 0, -bottomInset) : new Thickness(0);
+        }
+
         IsVisible = true;
     }
 
@@ -436,6 +460,7 @@ public class SheetView : ContentView
 
         // Restore full-page layout so the sheet can overlay the screen
         VerticalOptions = LayoutOptions.Fill;
+        Margin = new Thickness(0);
 
         // Move header content back into the sheet
         var headerView = HeaderTemplate;

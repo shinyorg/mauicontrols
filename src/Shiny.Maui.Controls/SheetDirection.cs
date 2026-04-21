@@ -1,7 +1,8 @@
 namespace Shiny.Maui.Controls;
 
-public enum SheetDirection
+public enum SheetLocation
 {
     Bottom,
+    BottomTabs,
     Top
 }

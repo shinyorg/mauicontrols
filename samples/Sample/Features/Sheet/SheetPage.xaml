@@ -166,7 +166,7 @@
 
     <!-- Top sheet -->
     <bs:SheetView IsOpen="{Binding IsTopSheetOpen}"
-                  Direction="Top"
+                  Location="Top"
                   HasBackdrop="True"
                   CloseOnBackdropTap="True"
                   HandleColor="Gray"

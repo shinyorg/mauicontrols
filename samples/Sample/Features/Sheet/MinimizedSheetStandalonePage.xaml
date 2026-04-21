@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Sample.Features.Sheet"
              xmlns:bs="clr-namespace:Shiny.Maui.Controls;assembly=Shiny.Maui.Controls"
-             x:Class="Sample.Features.Sheet.MinimizedSheetPage"
+             x:Class="Sample.Features.Sheet.MinimizedSheetStandalonePage"
              x:DataType="local:MinimizedSheetViewModel"
-             Title="Now Playing">
+             Title="Music Player (No Tabs)">
   <Grid>
 
     <!-- Main page content -->
@@ -49,8 +49,7 @@
                   HandleColor="Gray"
                   SheetBackgroundColor="#1E1E2E"
                   SheetCornerRadius="20"
-                  ShowHeaderWhenMinimized="True"
-                  Location="BottomTabs">
+                  ShowHeaderWhenMinimized="True">
         <bs:SheetView.HeaderTemplate>
             <Border BackgroundColor="#1E1E2E"
                     Padding="16,12"

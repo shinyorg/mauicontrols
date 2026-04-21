@@ -13,6 +13,10 @@ using Sample.Features.SecurityPin;
 using Sample.Features.TableView;
 using Shiny;
 using Shiny.Maui.Controls.Scheduler;
+#if IOS
+using Sample.Platforms.iOS;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+#endif
 
 namespace Sample;
 
@@ -29,6 +33,7 @@ public static class MauiProgram
                 .Add<HomePage, HomeViewModel>(registerRoute: false)
                 .Add<SheetPage, SheetViewModel>(registerRoute: false)
                 .Add<MinimizedSheetPage, MinimizedSheetViewModel>(registerRoute: false)
+                .Add<MinimizedSheetStandalonePage, MinimizedSheetViewModel>(registerRoute: false)
                 .Add<TopSheetPage, TopSheetViewModel>(registerRoute: false)
                 .Add<PillPage, PillViewModel>(registerRoute: false)
                 .Add<SecurityPinPage, SecurityPinViewModel>(registerRoute: false)
@@ -51,6 +56,15 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
+        builder.ConfigureMauiHandlers(handlers =>
+        {
+#if IOS
+            handlers.AddHandler<Shell, SolidTabBarRenderer>();
+#endif
+        });
+
+        builder.Services.AddTransient<MusicBrowsePage>();
+        builder.Services.AddTransient<MusicLibraryPage>();
         builder.Services.AddTransient<StylingPage>();
         builder.Services.AddTransient<BasicFlowchartPage>();
         builder.Services.AddTransient<DirectionsPage>();

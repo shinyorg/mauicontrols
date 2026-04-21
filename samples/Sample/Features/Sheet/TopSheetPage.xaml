@@ -43,7 +43,7 @@
 
     <!-- Top: Weather Widget -->
     <bs:SheetView IsOpen="{Binding IsSheetOpen}"
-                  Direction="Top"
+                  Location="Top"
                   HasBackdrop="True"
                   CloseOnBackdropTap="True"
                   HandleColor="#CBD5E1"
