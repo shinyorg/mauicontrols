@@ -1,0 +1,51 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="shiny-imgeditor" @ref="rootEl">
+    <canvas class="shiny-imgeditor-canvas" @ref="canvasEl"></canvas>
+
+    @if (ToolbarTemplate != null)
+    {
+        <div class="shiny-imgeditor-toolbar">
+            @ToolbarTemplate
+        </div>
+    }
+    else
+    {
+        <div class="shiny-imgeditor-toolbar" style="@(ToolbarPosition == "top" ? "top:0;bottom:auto;" : "")">
+            @if (AllowCrop)
+            {
+                <button class="shiny-imgeditor-btn @(currentMode == "crop" ? "active" : "")"
+                        @onclick="ToggleCrop" title="Crop">&#9986;</button>
+            }
+            @if (AllowRotate)
+            {
+                <button class="shiny-imgeditor-btn" @onclick="() => RotateAsync(90)" title="Rotate">&#8635;</button>
+            }
+            @if (AllowDraw)
+            {
+                <button class="shiny-imgeditor-btn @(currentMode == "draw" ? "active" : "")"
+                        @onclick="ToggleDraw" title="Draw">&#9999;</button>
+            }
+            @if (AllowTextAnnotation)
+            {
+                <button class="shiny-imgeditor-btn @(currentMode == "text" ? "active" : "")"
+                        @onclick="ToggleText" title="Text">T</button>
+            }
+
+            <span class="shiny-imgeditor-separator"></span>
+
+            <button class="shiny-imgeditor-btn" @onclick="async () => await UndoAsync()" disabled="@(!canUndo)" title="Undo">&#8630;</button>
+            <button class="shiny-imgeditor-btn" @onclick="async () => await RedoAsync()" disabled="@(!canRedo)" title="Redo">&#8631;</button>
+            <button class="shiny-imgeditor-btn" @onclick="async () => await ResetAsync()" title="Reset">&#8634;</button>
+
+            @if (currentMode == "crop")
+            {
+                <span class="shiny-imgeditor-separator"></span>
+                <button class="shiny-imgeditor-btn" @onclick="async () => await ApplyCropAsync()" title="Apply Crop">&#10003;</button>
+                <button class="shiny-imgeditor-btn" @onclick="CancelCrop" title="Cancel">&#10007;</button>
+            }
+        </div>
+    }
+</div>

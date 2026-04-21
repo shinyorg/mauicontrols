@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, SheetView, Fab/FabMenu, PillView, SecurityPin, and ImageViewer. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, SheetView, Fab/FabMenu, PillView, SecurityPin, ImageViewer, and ImageEditor. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -227,6 +227,54 @@ A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animat
 - Double-tap to zoom in (2.5x) / reset
 - Animated fade open/close with backdrop
 - Close button overlay
+
+### ImageEditor
+
+An inline image editor with cropping, rotation, freehand drawing, text annotations, and zoom. Includes a built-in undo/redo stack, reset-to-original, and export to PNG/JPEG/WEBP at configurable resolutions. Every feature can be toggled on/off, and the default toolbar can be replaced with a custom template.
+
+```xml
+<shiny:ImageEditor Source="{Binding ImageData}"
+                   CurrentToolMode="{Binding ToolMode}"
+                   AllowCrop="True"
+                   AllowRotate="True"
+                   AllowDraw="True"
+                   AllowTextAnnotation="True"
+                   DrawStrokeColor="Red"
+                   DrawStrokeWidth="3" />
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| Source | byte[]? | null | Image data to edit |
+| CurrentToolMode | ImageEditorToolMode | None | Active tool (None, Crop, Draw, Text) — TwoWay |
+| AllowCrop | bool | true | Enable/disable crop tool |
+| AllowRotate | bool | true | Enable/disable rotate action |
+| AllowDraw | bool | true | Enable/disable freehand drawing |
+| AllowTextAnnotation | bool | true | Enable/disable text annotation |
+| AllowZoom | bool | true | Enable/disable pinch-to-zoom |
+| CanUndo | bool | false | Whether undo is available (OneWayToSource) |
+| CanRedo | bool | false | Whether redo is available (OneWayToSource) |
+| DrawStrokeColor | Color | Red | Drawing stroke color |
+| DrawStrokeWidth | double | 3 | Drawing stroke width |
+| TextFontSize | double | 16 | Text annotation font size |
+| AnnotationTextColor | Color | White | Text annotation color |
+| ToolbarTemplate | DataTemplate? | null | Custom toolbar (replaces default) |
+| ToolbarPosition | ToolbarPosition | Bottom | Toolbar placement (Top or Bottom) |
+| UseHapticFeedback | bool | true | Haptic feedback on actions |
+
+**Features:**
+- Crop with drag handles and dimmed overlay outside the selection
+- 90° rotation (or arbitrary angles)
+- Freehand drawing with configurable color and stroke width
+- Text annotations placed by tapping the image
+- Pinch-to-zoom for viewing (separate from edit actions)
+- Undo/redo for every edit action
+- Reset to original image
+- Export as PNG, JPEG, or WEBP at custom resolutions
+
+**Commands:** `UndoCommand`, `RedoCommand`, `RotateCommand`, `ResetCommand`, `CropCommand`, `DrawCommand`, `TextCommand`
+
+**Methods:** `Undo()`, `Redo()`, `Rotate(float)`, `Reset()`, `ApplyCrop()`, `ExportAsync(ImageExportOptions?)`
 
 ### PillView
 

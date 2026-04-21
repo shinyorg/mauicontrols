@@ -1,0 +1,67 @@
+.shiny-imgeditor {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    user-select: none;
+    touch-action: none;
+}
+
+.shiny-imgeditor-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.shiny-imgeditor-toolbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10;
+}
+
+.shiny-imgeditor-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 22px;
+    background: transparent;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.15s;
+}
+
+.shiny-imgeditor-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.shiny-imgeditor-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.shiny-imgeditor-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.shiny-imgeditor-separator {
+    width: 1px;
+    height: 30px;
+    background: #666;
+    margin: 0 4px;
+}

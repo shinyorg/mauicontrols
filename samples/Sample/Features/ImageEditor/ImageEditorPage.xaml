@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:shiny="http://shiny.net/maui/controls"
+             xmlns:local="clr-namespace:Sample.Features.ImageEditor"
+             x:Class="Sample.Features.ImageEditor.ImageEditorPage"
+             x:DataType="local:ImageEditorViewModel"
+             Title="Image Editor">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Header: load image + color picker -->
+        <HorizontalStackLayout Grid.Row="0"
+                               Spacing="8"
+                               Padding="12"
+                               HorizontalOptions="Center">
+
+            <Button Text="Load Sample"
+                    Command="{Binding LoadSampleImageCommand}"
+                    FontSize="13"
+                    Padding="8,4" />
+
+            <Button Text="Pick Photo"
+                    Command="{Binding PickImageCommand}"
+                    FontSize="13"
+                    Padding="8,4" />
+
+            <BoxView WidthRequest="1" HeightRequest="30" Color="Gray" VerticalOptions="Center" />
+
+            <Label Text="Stroke:" VerticalOptions="Center" FontSize="13" />
+
+            <Button Text=" " BackgroundColor="Red" WidthRequest="32" HeightRequest="32" CornerRadius="16"
+                    Command="{Binding SetDrawColorCommand}" CommandParameter="#FFFF0000" />
+            <Button Text=" " BackgroundColor="Blue" WidthRequest="32" HeightRequest="32" CornerRadius="16"
+                    Command="{Binding SetDrawColorCommand}" CommandParameter="#FF0000FF" />
+            <Button Text=" " BackgroundColor="Green" WidthRequest="32" HeightRequest="32" CornerRadius="16"
+                    Command="{Binding SetDrawColorCommand}" CommandParameter="#FF00FF00" />
+            <Button Text=" " BackgroundColor="Yellow" WidthRequest="32" HeightRequest="32" CornerRadius="16"
+                    Command="{Binding SetDrawColorCommand}" CommandParameter="#FFFFFF00" />
+            <Button Text=" " BackgroundColor="White" WidthRequest="32" HeightRequest="32" CornerRadius="16"
+                    Command="{Binding SetDrawColorCommand}" CommandParameter="#FFFFFFFF" />
+        </HorizontalStackLayout>
+
+        <!-- Image Editor -->
+        <shiny:ImageEditor Grid.Row="1"
+                           Source="{Binding ImageData}"
+                           CurrentToolMode="{Binding CurrentToolMode}"
+                           CanUndo="{Binding CanUndo}"
+                           CanRedo="{Binding CanRedo}"
+                           DrawStrokeColor="{Binding DrawColor}"
+                           DrawStrokeWidth="{Binding DrawStrokeWidth}"
+                           AllowCrop="True"
+                           AllowRotate="True"
+                           AllowDraw="True"
+                           AllowTextAnnotation="True"
+                           AllowZoom="True" />
+    </Grid>
+
+</ContentPage>

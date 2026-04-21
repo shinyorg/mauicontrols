@@ -11,6 +11,7 @@
     xmlns:scheduler="clr-namespace:Sample.Features.Scheduler"
     xmlns:diagrams="clr-namespace:Sample.Features.Diagrams"
     xmlns:imgviewer="clr-namespace:Sample.Features.ImageViewer"
+    xmlns:imgeditor="clr-namespace:Sample.Features.ImageEditor"
     xmlns:markdown="clr-namespace:Sample.Features.Markdown"
     xmlns:securitypin="clr-namespace:Sample.Features.SecurityPin"
     xmlns:fab="clr-namespace:Sample.Features.Fab"
@@ -94,6 +95,10 @@
 
     <FlyoutItem Title="Image Viewer">
         <ShellContent ContentTemplate="{DataTemplate imgviewer:ImageViewerPage}" Route="imageviewer" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Image Editor">
+        <ShellContent ContentTemplate="{DataTemplate imgeditor:ImageEditorPage}" Route="imageeditor" />
     </FlyoutItem>
 
     <FlyoutItem Title="Markdown - Viewer">

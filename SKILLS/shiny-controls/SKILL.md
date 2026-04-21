@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, SheetView (bottom/top) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), and haptic feedback support across all interactive controls
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, SheetView (bottom/top) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), and haptic feedback support across all interactive controls
 auto_invoke: true
 triggers:
   - tableview
@@ -26,6 +26,14 @@ triggers:
   - image zoom
   - pinch to zoom
   - photo viewer
+  - image editor
+  - imageeditor
+  - image editing
+  - crop image
+  - draw on image
+  - annotate image
+  - image annotation
+  - photo editor
   - markdown
   - markdown view
   - markdown editor
@@ -53,6 +61,7 @@ triggers:
   - blazor fab
   - blazor pillview
   - blazor imageviewer
+  - blazor imageeditor
   - blazor securitypin
   - blazor scheduler
   - blazor markdown
@@ -72,6 +81,7 @@ The library contains:
 - **SheetView**: A draggable sheet overlay (bottom or top) with configurable detents, header peek when minimized, backdrop, animations, keyboard handling, and haptic feedback
 - **PillView**: A status badge/label control with 6 preset themes, custom colors, and WCAG-accessible contrast
 - **ImageViewer**: A full-screen image overlay with pinch-to-zoom, pan when zoomed, double-tap to toggle zoom, animated open/close, and a close button
+- **ImageEditor**: An inline image editor with cropping (drag-handle selection with dimmed overlay), rotation, freehand drawing with color, text annotations, undo/redo, reset, and export to PNG/JPEG/WEBP at configurable resolutions
 - **SecurityPin**: A PIN/OTP entry control with individual cells, configurable length, keyboard, and optional character masking
 - **Fab**: A Material-style floating action button with Icon, Text, Command, custom colors, border, and shadow
 - **FabMenu**: A floating action menu with an expanding, animated child `FabMenuItem` stack and two-way `IsOpen`
@@ -97,6 +107,8 @@ Invoke this skill when the user wants to:
 - Display categorized status indicators (success, warning, critical, etc.)
 - Add a zoomable image viewer / photo viewer overlay
 - Display full-screen images with pinch-to-zoom, pan, and double-tap zoom
+- Edit images with crop, rotate, draw, or text annotations
+- Build an image editor with undo/redo and export
 - Build a PIN entry / OTP / passcode input screen
 - Capture numeric or alphanumeric codes in individual cells with optional masking
 - Add a floating action button (FAB) to a page, or a speed-dial style multi-action menu
@@ -183,6 +195,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 | `shiny:Fab`             | `<Fab>`           | `Icon` takes inline SVG/text string, not `ImageSource` |
 | `shiny:FabMenu`         | `<FabMenu>`       | Items passed via `Items` parameter (List<FabMenuItem>), not as children |
 | `shiny:ImageViewer`     | `<ImageViewer>`   | `Source` is a URL string                        |
+| `shiny:ImageEditor`     | `<ImageEditor>`   | `Source` is `byte[]` (MAUI) or URL string + `ImageData` byte[] (Blazor); colors are CSS strings on Blazor |
 | `shiny:SecurityPin`     | `<SecurityPin>`   |                                                 |
 | `md:MarkdownView`       | `<MarkdownView>`  |                                                 |
 | `md:MarkdownEditor`     | `<MarkdownEditor>`|                                                 |
@@ -286,6 +299,33 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
     bool isOpen;
     string? current;
     void Open(string url) { current = url; isOpen = true; }
+}
+```
+
+**ImageEditor**
+```razor
+<ImageEditor @ref="editor"
+             Source="@imageUrl"
+             ImageData="@imageData"
+             AllowCrop="true"
+             AllowDraw="true"
+             AllowRotate="true"
+             AllowTextAnnotation="true"
+             DrawStrokeColor="#ff0000"
+             DrawStrokeWidth="3"
+             CanUndoChanged="v => canUndo = v"
+             CanRedoChanged="v => canRedo = v" />
+
+@code {
+    ImageEditor? editor;
+    string? imageUrl = "https://example.com/photo.jpg";
+    byte[]? imageData;
+    bool canUndo, canRedo;
+
+    async Task Export()
+    {
+        var bytes = await editor!.ExportAsync("png");
+    }
 }
 ```
 
@@ -1044,6 +1084,121 @@ public partial class ImageViewerViewModel : ObservableObject
 
 ---
 
+# ImageEditor
+
+An inline image editor with cropping, rotation, freehand drawing with color, text annotations, pinch-to-zoom, undo/redo, reset, and export to PNG/JPEG/WEBP at configurable resolutions. Every feature can be toggled on or off via properties, and the built-in toolbar can be replaced entirely with a `ToolbarTemplate`.
+
+## Basic Usage
+
+```xml
+<shiny:ImageEditor Source="{Binding ImageData}"
+                   CurrentToolMode="{Binding ToolMode}"
+                   AllowCrop="True"
+                   AllowRotate="True"
+                   AllowDraw="True"
+                   AllowTextAnnotation="True"
+                   DrawStrokeColor="Red"
+                   DrawStrokeWidth="3" />
+```
+
+## ImageEditor Properties
+
+| Property | Type | Default | Binding Mode | Description |
+|---|---|---|---|---|
+| `Source` | `byte[]?` | `null` | OneWay | Image data to edit |
+| `CurrentToolMode` | `ImageEditorToolMode` | `None` | TwoWay | Active tool: None, Crop, Draw, Text |
+| `AllowCrop` | `bool` | `true` | OneWay | Enable/disable crop tool and toolbar button |
+| `AllowRotate` | `bool` | `true` | OneWay | Enable/disable rotate action and toolbar button |
+| `AllowDraw` | `bool` | `true` | OneWay | Enable/disable freehand drawing tool and toolbar button |
+| `AllowTextAnnotation` | `bool` | `true` | OneWay | Enable/disable text annotation tool and toolbar button |
+| `AllowZoom` | `bool` | `true` | OneWay | Enable/disable pinch-to-zoom |
+| `CanUndo` | `bool` | `false` | OneWayToSource | Whether undo is available |
+| `CanRedo` | `bool` | `false` | OneWayToSource | Whether redo is available |
+| `DrawStrokeColor` | `Color` | `Red` | OneWay | Drawing stroke color |
+| `DrawStrokeWidth` | `double` | `3` | OneWay | Drawing stroke width |
+| `TextFontSize` | `double` | `16` | OneWay | Text annotation font size |
+| `AnnotationTextColor` | `Color` | `White` | OneWay | Text annotation color |
+| `ToolbarTemplate` | `DataTemplate?` | `null` | OneWay | Custom toolbar (replaces the default toolbar entirely) |
+| `ToolbarPosition` | `ToolbarPosition` | `Bottom` | OneWay | Toolbar placement: Top or Bottom |
+| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic feedback on tool actions |
+
+## ImageEditor Commands
+
+| Command | Parameter | Description |
+|---|---|---|
+| `UndoCommand` | — | Undo the last edit action |
+| `RedoCommand` | — | Redo the last undone action |
+| `RotateCommand` | `float` (degrees) | Rotate the image |
+| `ResetCommand` | — | Clear all edits and restore the original image |
+| `CropCommand` | — | Toggle crop mode on/off |
+| `DrawCommand` | — | Toggle draw mode on/off |
+| `TextCommand` | — | Toggle text mode on/off |
+
+## ImageEditor Methods
+
+| Method | Returns | Description |
+|---|---|---|
+| `Undo()` | `void` | Undo the last action |
+| `Redo()` | `void` | Redo the last undone action |
+| `Rotate(float degrees)` | `void` | Rotate by the given angle |
+| `Reset()` | `void` | Clear all edits |
+| `ApplyCrop()` | `void` | Commit the active crop selection |
+| `ExportAsync(ImageExportOptions?)` | `Task<Stream>` | Export the edited image |
+
+## ImageEditor Features
+
+- **Crop**: Drag-handle area selection starting at full image; areas outside the crop are dimmed, the selected area stays fully lit. 8 drag handles (4 corners + 4 midpoints) with rule-of-thirds grid overlay.
+- **Rotate**: 90° increments or arbitrary angle rotation. Each rotation is an undoable action.
+- **Freehand drawing**: Draw strokes with configurable color and width. Each completed stroke is one undoable action.
+- **Text annotations**: Tap to place text on the image. Prompts for input, configurable font size and color.
+- **Pinch-to-zoom**: View-only zoom that does not affect the exported image.
+- **Undo/redo**: Every edit action (crop, rotate, draw stroke, text) is pushed to a stack. Undo pops to a redo stack; redo re-applies.
+- **Reset**: Clears all actions and restores the original image.
+- **Export**: Render the edited image to a stream (MAUI) or byte array (Blazor) in PNG, JPEG, or WEBP format at a target resolution.
+- **Toolbar**: Default toolbar shows buttons for each enabled feature plus undo/redo/reset. Set `AllowX=false` to hide a button. Replace entirely with `ToolbarTemplate`.
+
+## ImageEditor ViewModel Pattern
+
+```csharp
+public partial class ImageEditorViewModel : ObservableObject
+{
+    [ObservableProperty] byte[]? imageData;
+    [ObservableProperty] bool canUndo;
+    [ObservableProperty] bool canRedo;
+    [ObservableProperty] ImageEditorToolMode currentToolMode;
+    [ObservableProperty] Color drawColor = Colors.Red;
+
+    [RelayCommand]
+    async Task LoadImage()
+    {
+        var result = await MediaPicker.PickPhotoAsync();
+        if (result == null) return;
+        using var stream = await result.OpenReadAsync();
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        ImageData = ms.ToArray();
+    }
+}
+```
+
+## ImageEditor Export
+
+```csharp
+// MAUI — get a Stream
+var stream = await editor.ExportAsync(new ImageExportOptions
+{
+    Format = ImageExportFormat.Jpeg,
+    Quality = 0.85f,
+    Width = 1920,
+    Height = 1080
+});
+
+// Blazor — get byte[]
+var bytes = await editor.ExportAsync("jpeg", 0.85, 1920, 1080);
+```
+
+---
+
 # SecurityPin
 
 A PIN/OTP entry control with individually rendered cells. Input is captured by a hidden `Entry` so the native keyboard appears when any cell is tapped. Digits are visible by default and can optionally be masked with any character for password-style entry.
@@ -1514,6 +1669,7 @@ When generating code with Shiny.Maui.Controls:
 - For TableView: wrap content in `shiny:TableView > shiny:TableRoot > shiny:TableSection`
 - For SheetView: place `shiny:SheetView` inside a Grid that fills the page (it overlays on top); supports `Location="Bottom"` (default), `Location="Top"`, or `Location="BottomTabs"` (for use inside Shell TabBar)
 - For ImageViewer: place `shiny:ImageViewer` inside a Grid that fills the page (it overlays on top, same pattern as SheetView)
+- For ImageEditor: use `shiny:ImageEditor` with `Source` bound to `byte[]` image data. Set `AllowX` properties to toggle features. Use `CurrentToolMode` (TwoWay) to control the active tool. Use `CanUndo`/`CanRedo` (OneWayToSource) to observe undo state. Call `ExportAsync()` to save.
 - For PillView: use inline within any layout
 - For Scheduler views: use `shiny:SchedulerCalendarView`, `shiny:SchedulerAgendaView`, or `shiny:SchedulerCalendarListView` and bind `Provider` to an `ISchedulerEventProvider`
 - For MarkdownView: use `md:MarkdownView` anywhere you need to render markdown content
@@ -1690,6 +1846,9 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
 14. **Leave MarkdownView/MarkdownEditor Theme as null** - It auto-resolves Light/Dark based on the app theme
 15. **Use MarkdownView for read-only content** - Documentation, notes, changelogs; use MarkdownEditor only when the user needs to edit
 16. **ImageViewer Source is set before IsOpen** - Always set the image source before opening the viewer
+17. **ImageEditor Source is byte[]** - Load image data as `byte[]` (not `ImageSource`) before assigning to `Source`
+18. **ImageEditor CanUndo/CanRedo are OneWayToSource** - Bind to ViewModel properties to observe undo/redo state; do not push values into them
+19. **ImageEditor export happens at original resolution by default** - Specify `Width`/`Height` in `ImageExportOptions` only when you need a different size
 17. **Use `SelectedDate` with TwoWay binding** - All scheduler views share this property for coordination
 18. **Implement all `ISchedulerEventProvider` methods** - Even if some are no-ops, all must be implemented
 

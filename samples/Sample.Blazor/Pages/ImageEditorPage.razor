@@ -1,0 +1,83 @@
+@page "/imageeditor"
+
+<PageTitle>Image Editor</PageTitle>
+
+<h1>Image Editor</h1>
+
+<div class="demo-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+    <button class="btn" @onclick="LoadSample">Load Sample Image</button>
+
+    <span style="color:#888;">|</span>
+    <span style="font-size:13px;">Stroke color:</span>
+    @foreach (var c in colors)
+    {
+        var color = c;
+        <button style="width:28px;height:28px;border-radius:14px;border:2px solid @(drawColor == color ? "#fff" : "#333");background:@color;cursor:pointer;padding:0;"
+                @onclick="() => drawColor = color"></button>
+    }
+
+    <span style="color:#888;">|</span>
+    <label style="font-size:13px;">
+        Width:
+        <input type="range" min="1" max="20" @bind="drawWidth" style="width:80px;vertical-align:middle;" />
+        @drawWidth
+    </label>
+</div>
+
+<div style="width:100%;height:600px;border:1px solid #333;border-radius:8px;overflow:hidden;">
+    <ImageEditor @ref="editor"
+                 Source="@imageUrl"
+                 ImageData="@imageData"
+                 AllowCrop="true"
+                 AllowRotate="true"
+                 AllowDraw="true"
+                 AllowTextAnnotation="true"
+                 AllowZoom="true"
+                 DrawStrokeColor="@drawColor"
+                 DrawStrokeWidth="@drawWidth"
+                 CanUndoChanged="v => canUndo = v"
+                 CanRedoChanged="v => canRedo = v" />
+</div>
+
+<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+    <button class="btn" @onclick="ExportPng">Export PNG</button>
+    <button class="btn" @onclick="ExportJpeg">Export JPEG</button>
+    @if (exportedSize > 0)
+    {
+        <span style="font-size:13px;color:#888;">Exported: @exportedSize bytes</span>
+    }
+</div>
+
+@code {
+    ImageEditor? editor;
+    string? imageUrl;
+    byte[]? imageData;
+    bool canUndo, canRedo;
+    string drawColor = "#ff0000";
+    double drawWidth = 3;
+    int exportedSize;
+
+    string[] colors = ["#ff0000", "#0000ff", "#00ff00", "#ffff00", "#ffffff", "#ff8800"];
+
+    void LoadSample()
+    {
+        imageUrl = "https://picsum.photos/seed/editor1/1200/800";
+        imageData = null;
+        exportedSize = 0;
+        StateHasChanged();
+    }
+
+    async Task ExportPng()
+    {
+        if (editor == null) return;
+        var bytes = await editor.ExportAsync("png");
+        exportedSize = bytes.Length;
+    }
+
+    async Task ExportJpeg()
+    {
+        if (editor == null) return;
+        var bytes = await editor.ExportAsync("jpeg", 0.85);
+        exportedSize = bytes.Length;
+    }
+}
