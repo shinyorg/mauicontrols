@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:shiny="http://shiny.net/maui/controls"
+    xmlns:local="clr-namespace:Sample.Features.ColorPicker"
+    x:Class="Sample.Features.ColorPicker.ColorPickerPage"
+    x:DataType="local:ColorPickerViewModel"
+    Title="Color Picker">
+
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Spacing="16" Padding="16">
+
+                <Label Text="Color Picker Button"
+                       FontSize="24"
+                       FontAttributes="Bold" />
+
+                <HorizontalStackLayout Spacing="16">
+                    <shiny:ColorPickerButton SelectedColor="{Binding SelectedColor}"
+                                             Text="Pick Color"
+                                             ShowOpacity="{Binding ShowOpacity}" />
+
+                    <Border BackgroundColor="{Binding SelectedColor}"
+                            WidthRequest="60"
+                            HeightRequest="40"
+                            StrokeThickness="1"
+                            Stroke="LightGray"
+                            StrokeShape="{RoundRectangle CornerRadius=8}">
+                        <Label Text="{Binding ColorDisplay}"
+                               TextColor="White"
+                               FontSize="12"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center" />
+                    </Border>
+                </HorizontalStackLayout>
+
+                <Label Text="Inline Color Picker"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       Margin="0,16,0,0" />
+
+                <shiny:ColorPicker SelectedColor="{Binding SelectedColor}"
+                                   ShowOpacity="{Binding ShowOpacity}" />
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center">
+                        <Label Text="Show Opacity" VerticalOptions="Center" />
+                        <Switch IsToggled="{Binding ShowOpacity}" />
+                    </HorizontalStackLayout>
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>

@@ -17,6 +17,7 @@
     xmlns:markdown="clr-namespace:Sample.Features.Markdown"
     xmlns:securitypin="clr-namespace:Sample.Features.SecurityPin"
     xmlns:fab="clr-namespace:Sample.Features.Fab"
+    xmlns:colorpicker="clr-namespace:Sample.Features.ColorPicker"
     Title="Sample">
 
     <FlyoutItem Title="Home">
@@ -105,6 +106,10 @@
 
     <FlyoutItem Title="Image Editor">
         <ShellContent ContentTemplate="{DataTemplate imgeditor:ImageEditorPage}" Route="imageeditor" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Color Picker">
+        <ShellContent ContentTemplate="{DataTemplate colorpicker:ColorPickerPage}" Route="colorpicker" />
     </FlyoutItem>
 
     <FlyoutItem Title="Chat">

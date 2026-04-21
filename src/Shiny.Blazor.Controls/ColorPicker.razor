@@ -1,0 +1,34 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="shiny-colorpicker" @ref="rootEl">
+    <canvas class="shiny-colorpicker-spectrum" @ref="spectrumEl"
+            width="300" height="200"></canvas>
+
+    <canvas class="shiny-colorpicker-hue" @ref="hueEl"
+            width="300" height="30"></canvas>
+
+    @if (ShowOpacity)
+    {
+        <div class="shiny-colorpicker-opacity-row">
+            <canvas class="shiny-colorpicker-opacity" @ref="opacityEl"
+                    width="300" height="24"></canvas>
+        </div>
+    }
+
+    <div class="shiny-colorpicker-bottom">
+        <div class="shiny-colorpicker-preview"
+             style="background:@currentCss;"></div>
+
+        @if (ShowHexInput)
+        {
+            <input class="shiny-colorpicker-hex"
+                   type="text"
+                   maxlength="9"
+                   value="@currentHex"
+                   @onchange="OnHexInput" />
+        }
+    </div>
+</div>

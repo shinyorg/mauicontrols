@@ -1,3 +1,4 @@
+using Shiny.Maui.Controls.ColorPicker;
 using Shiny.Maui.Controls.ImageEditor.EditActions;
 
 namespace Shiny.Maui.Controls.ImageEditor;
@@ -325,7 +326,11 @@ public partial class ImageEditor : ContentView
 
         if (AllowCrop) toolbar.Children.Add(CreateToolButton("Crop", "Crop", ImageEditorToolMode.Crop));
         if (AllowRotate) toolbar.Children.Add(CreateActionButton("Rot", "Rotate", () => Rotate(90)));
-        if (AllowDraw) toolbar.Children.Add(CreateToolButton("Draw", "Draw", ImageEditorToolMode.Draw));
+        if (AllowDraw)
+        {
+            toolbar.Children.Add(CreateToolButton("Draw", "Draw", ImageEditorToolMode.Draw));
+            toolbar.Children.Add(CreateDrawColorButton());
+        }
         if (AllowTextAnnotation) toolbar.Children.Add(CreateToolButton("Txt", "Text", ImageEditorToolMode.Text));
 
         // Separator
@@ -365,6 +370,20 @@ public partial class ImageEditor : ContentView
         var btn = CreateBaseButton(icon, tooltip);
         btn.Clicked += (_, _) => action();
         return btn;
+    }
+
+    ColorPickerButton CreateDrawColorButton()
+    {
+        var cpb = new ColorPickerButton
+        {
+            SelectedColor = DrawStrokeColor,
+            CornerRadius = 22,
+            HeightRequest = 36,
+            WidthRequest = 36,
+            VerticalOptions = LayoutOptions.Center
+        };
+        cpb.ColorChanged += (_, color) => DrawStrokeColor = color;
+        return cpb;
     }
 
     static Button CreateBaseButton(string icon, string tooltip)

@@ -6,4 +6,5 @@
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.ImageEditor")]
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.ImageEditor.EditActions")]
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.Chat")]
+[assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.ColorPicker")]
 [assembly: Microsoft.Maui.Controls.XmlnsPrefix("http://shiny.net/maui/controls", "shiny")]
