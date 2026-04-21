@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, SheetView (bottom/top) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), and haptic feedback support across all interactive controls
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, SheetView (bottom/top) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), and haptic feedback support across all interactive controls
 auto_invoke: true
 triggers:
   - tableview
@@ -66,6 +66,14 @@ triggers:
   - blazor scheduler
   - blazor markdown
   - blazor mermaid
+  - chat
+  - chatview
+  - chat view
+  - chat bubbles
+  - messaging
+  - chat control
+  - typing indicator
+  - blazor chatview
 ---
 
 # Shiny Controls Skill
@@ -82,6 +90,7 @@ The library contains:
 - **PillView**: A status badge/label control with 6 preset themes, custom colors, and WCAG-accessible contrast
 - **ImageViewer**: A full-screen image overlay with pinch-to-zoom, pan when zoomed, double-tap to toggle zoom, animated open/close, and a close button
 - **ImageEditor**: An inline image editor with cropping (drag-handle selection with dimmed overlay), rotation, freehand drawing with color, text annotations, undo/redo, reset, and export to PNG/JPEG/WEBP at configurable resolutions
+- **ChatView**: A modern chat UI with message bubbles, per-participant colors and avatars, visual grouping by sender/minute, typing indicators, virtualized message list with load-more, auto-link detection, image messages, and a bottom input bar with send/attach
 - **SecurityPin**: A PIN/OTP entry control with individual cells, configurable length, keyboard, and optional character masking
 - **Fab**: A Material-style floating action button with Icon, Text, Command, custom colors, border, and shadow
 - **FabMenu**: A floating action menu with an expanding, animated child `FabMenuItem` stack and two-way `IsOpen`
@@ -109,6 +118,8 @@ Invoke this skill when the user wants to:
 - Display full-screen images with pinch-to-zoom, pan, and double-tap zoom
 - Edit images with crop, rotate, draw, or text annotations
 - Build an image editor with undo/redo and export
+- Build a chat or messaging UI with bubbles, typing indicators, and message history
+- Create a conversational interface with load-more pagination and auto-scroll
 - Build a PIN entry / OTP / passcode input screen
 - Capture numeric or alphanumeric codes in individual cells with optional masking
 - Add a floating action button (FAB) to a page, or a speed-dial style multi-action menu
@@ -134,7 +145,7 @@ Invoke this skill when the user wants to:
 ### Blazor
 
 **NuGet**: `Shiny.Blazor.Controls` (+ `Shiny.Blazor.Controls.Markdown`, `Shiny.Blazor.Controls.MermaidDiagrams`)
-**Namespaces**: `Shiny.Blazor.Controls`, `Shiny.Blazor.Controls.Cells`, `Shiny.Blazor.Controls.Sections`, `Shiny.Blazor.Controls.Scheduler`, `Shiny.Blazor.Controls.Markdown`, `Shiny.Blazor.Controls.MermaidDiagrams`
+**Namespaces**: `Shiny.Blazor.Controls`, `Shiny.Blazor.Controls.Cells`, `Shiny.Blazor.Controls.Sections`, `Shiny.Blazor.Controls.Scheduler`, `Shiny.Blazor.Controls.Chat`, `Shiny.Blazor.Controls.Markdown`, `Shiny.Blazor.Controls.MermaidDiagrams`
 
 ## Setup
 
@@ -173,6 +184,7 @@ Invoke this skill when the user wants to:
    @using Shiny.Blazor.Controls.Cells
    @using Shiny.Blazor.Controls.Sections
    @using Shiny.Blazor.Controls.Scheduler
+   @using Shiny.Blazor.Controls.Chat
    @using Shiny.Blazor.Controls.Markdown
    @using Shiny.Blazor.Controls.MermaidDiagrams
    ```
@@ -196,6 +208,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 | `shiny:FabMenu`         | `<FabMenu>`       | Items passed via `Items` parameter (List<FabMenuItem>), not as children |
 | `shiny:ImageViewer`     | `<ImageViewer>`   | `Source` is a URL string                        |
 | `shiny:ImageEditor`     | `<ImageEditor>`   | `Source` is `byte[]` (MAUI) or URL string + `ImageData` byte[] (Blazor); colors are CSS strings on Blazor |
+| `shiny:ChatView`        | `<ChatView>`      | Colors are CSS strings on Blazor; `SendCommand` is `EventCallback<string>` on Blazor; uses `@using Shiny.Blazor.Controls.Chat` |
 | `shiny:SecurityPin`     | `<SecurityPin>`   |                                                 |
 | `md:MarkdownView`       | `<MarkdownView>`  |                                                 |
 | `md:MarkdownEditor`     | `<MarkdownEditor>`|                                                 |
@@ -326,6 +339,39 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
     {
         var bytes = await editor!.ExportAsync("png");
     }
+}
+```
+
+**ChatView**
+```razor
+@using Shiny.Blazor.Controls.Chat
+
+<div style="height:600px;">
+    <ChatView Messages="messages"
+              Participants="participants"
+              IsMultiPerson="true"
+              TypingParticipants="typingParticipants"
+              SendCommand="OnSend"
+              AttachImageCommand="OnAttach"
+              LoadMoreCommand="OnLoadMore"
+              MyBubbleColor="#DCF8C6"
+              OtherBubbleColor="#FFFFFF" />
+</div>
+
+@code {
+    List<ChatMessage> messages = new();
+    List<ChatParticipant> participants = new();
+    List<ChatParticipant> typingParticipants = new();
+
+    Task OnSend(string text)
+    {
+        messages.Add(new ChatMessage { Text = text, SenderId = "me", IsFromMe = true });
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    Task OnAttach() => Task.CompletedTask;
+    Task OnLoadMore() => Task.CompletedTask;
 }
 ```
 
@@ -1199,6 +1245,168 @@ var bytes = await editor.ExportAsync("jpeg", 0.85, 1920, 1080);
 
 ---
 
+# ChatView
+
+A modern chat UI control with message bubbles, typing indicators, load-more pagination, and a bottom input bar. Supports single-person and multi-person conversations with per-participant colors and avatars.
+
+## Basic Usage
+
+```xml
+<shiny:ChatView Messages="{Binding Messages}"
+                Participants="{Binding Participants}"
+                IsMultiPerson="True"
+                TypingParticipants="{Binding TypingParticipants}"
+                SendCommand="{Binding SendCommand}"
+                AttachImageCommand="{Binding AttachImageCommand}"
+                LoadMoreCommand="{Binding LoadMoreCommand}"
+                MyBubbleColor="#DCF8C6"
+                OtherBubbleColor="White" />
+```
+
+## Data Models
+
+### ChatMessage
+
+```csharp
+public class ChatMessage
+{
+    public string Id { get; set; }                  // Auto-generated GUID
+    public string? Text { get; set; }               // null for image messages
+    public string? ImageUrl { get; set; }           // null for text messages
+    public string SenderId { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
+    public bool IsFromMe { get; set; }
+}
+```
+
+### ChatParticipant
+
+```csharp
+// MAUI
+public class ChatParticipant
+{
+    public string Id { get; set; }
+    public string DisplayName { get; set; }
+    public ImageSource? Avatar { get; set; }     // MAUI ImageSource
+    public Color? BubbleColor { get; set; }      // MAUI Color
+}
+
+// Blazor
+public class ChatParticipant
+{
+    public string Id { get; set; }
+    public string DisplayName { get; set; }
+    public string? AvatarUrl { get; set; }       // URL string
+    public string? BubbleColor { get; set; }     // CSS color string
+}
+```
+
+## ChatView Properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `Messages` | `IList<ChatMessage>` | `null` | Message collection; observes `INotifyCollectionChanged` on MAUI |
+| `Participants` | `IList<ChatParticipant>` | `null` | Participant info for avatar/name/color lookup by `SenderId` |
+| `IsMultiPerson` | `bool` | `false` | Show avatars and names for other participants |
+| `ShowAvatarsInSingleChat` | `bool` | `false` | Force avatars/names even in single-person mode |
+| `MyBubbleColor` | `Color` / `string` | `#DCF8C6` | Local user bubble color |
+| `MyTextColor` | `Color` / `string` | `Black` | Local user text color |
+| `OtherBubbleColor` | `Color` / `string` | `White` | Default other-user bubble color (overridden by participant's `BubbleColor`) |
+| `OtherTextColor` | `Color` / `string` | `Black` | Other-user text color |
+| `PlaceholderText` | `string` | `"Type a message..."` | Input field placeholder |
+| `SendButtonText` | `string` | `"Send"` | Send button label |
+| `IsInputBarVisible` | `bool` | `true` | Show/hide the entire input bar |
+| `ShowTypingIndicator` | `bool` | `true` | Enable/disable typing indicator |
+| `TypingParticipants` | `IList<ChatParticipant>` | `null` | Currently typing participants (do not include "me") |
+| `ScrollToFirstUnread` | `bool` | `false` | Scroll to first unread message instead of end |
+| `FirstUnreadMessageId` | `string?` | `null` | ID of the first unread message |
+| `UseHapticFeedback` | `bool` | `true` | Haptic feedback on send (MAUI only) |
+
+## Commands (MAUI ICommand) / Events (Blazor EventCallback)
+
+| MAUI | Blazor | Parameter | Description |
+|---|---|---|---|
+| `SendCommand` | `EventCallback<string>` | text string | Fires when user sends a text message via Enter or Send button |
+| `AttachImageCommand` | `EventCallback` | -- | Fires when user taps attach button; user implements own image picker |
+| `LoadMoreCommand` | `EventCallback` | -- | Fires when user scrolls near top; prepend older messages to the list |
+
+## Methods
+
+| Method | Description |
+|---|---|
+| `ScrollToEnd(bool animate)` | Scroll to the latest message |
+| `ScrollToMessage(string messageId, bool animate)` | Scroll to a specific message by ID |
+
+## Features
+
+- **Bubbles**: Left-aligned for others, right-aligned for "me", with rounded corners and a smaller tail radius on the last message in a group
+- **Grouping**: Consecutive messages from the same sender within the same minute are grouped visually (2px spacing within group, 12px between groups)
+- **Timestamps**: Last message in each group shows timestamp. Today = time only ("2:30 PM"); previous days = full date ("Apr 15, 2:30 PM")
+- **Multi-person**: First message in each group shows avatar (initials circle or image) and display name above the bubble
+- **Single-person**: Avatars and names hidden by default (set `ShowAvatarsInSingleChat` to override)
+- **Per-participant colors**: Each `ChatParticipant.BubbleColor` overrides `OtherBubbleColor` for that sender
+- **Typing indicator**: Animated bouncing dots with text: "{Name} is typing…", "{Name1}, {Name2} are typing", or "Multiple users are typing" (3+)
+- **Link detection**: URLs in text messages are auto-detected and rendered as tappable links
+- **Image messages**: `ChatMessage.ImageUrl` renders as an image bubble (text and image are mutually exclusive)
+- **Virtualization**: MAUI uses `CollectionView` with `RemainingItemsThreshold` for automatic load-more
+- **Input bar**: `Entry` with Enter key + Send button; optional attach button (shown when `AttachImageCommand` is set)
+- **Hide input bar**: Set `IsInputBarVisible = false` for read-only chat display
+
+## ViewModel Pattern
+
+```csharp
+public partial class ChatViewModel : ObservableObject
+{
+    [ObservableProperty] ObservableCollection<ChatMessage> messages = [];
+    [ObservableProperty] ObservableCollection<ChatParticipant> participants = [];
+    [ObservableProperty] ObservableCollection<ChatParticipant> typingParticipants = [];
+    [ObservableProperty] bool isMultiPerson = true;
+
+    [RelayCommand]
+    void Send(string text)
+    {
+        Messages.Add(new ChatMessage
+        {
+            Text = text,
+            SenderId = "me",
+            IsFromMe = true,
+            Timestamp = DateTimeOffset.Now
+        });
+    }
+
+    [RelayCommand]
+    void AttachImage()
+    {
+        // User implements own image picker, then:
+        Messages.Add(new ChatMessage
+        {
+            ImageUrl = "https://example.com/photo.jpg",
+            SenderId = "me",
+            IsFromMe = true,
+            Timestamp = DateTimeOffset.Now
+        });
+    }
+
+    [RelayCommand]
+    void LoadMore()
+    {
+        // Prepend older messages to the beginning of Messages
+    }
+}
+```
+
+## Code Generation Guidance
+
+- Use `ChatView` for any chat/messaging/conversation UI — do not hand-build bubble layouts with `CollectionView`
+- Always provide a `Participants` list for multi-person chats; each participant's `BubbleColor` is optional
+- `SendCommand` receives the text string — the control clears the input after sending
+- `AttachImageCommand` fires a signal; the user implements their own image picker and adds a `ChatMessage` with `ImageUrl`
+- `LoadMoreCommand` fires when the user scrolls near the top; prepend older messages with `Insert(0, msg)`
+- `TypingParticipants` should never include the local user (the "you are typing" is excluded by design)
+- Set `IsInputBarVisible = false` for read-only chat views (e.g., chat history, support logs)
+
+---
+
 # SecurityPin
 
 A PIN/OTP entry control with individually rendered cells. Input is captured by a hidden `Entry` so the native keyboard appears when any cell is tapped. Digits are visible by default and can optionally be masked with any character for password-style entry.
@@ -1849,6 +2057,9 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
 17. **ImageEditor Source is byte[]** - Load image data as `byte[]` (not `ImageSource`) before assigning to `Source`
 18. **ImageEditor CanUndo/CanRedo are OneWayToSource** - Bind to ViewModel properties to observe undo/redo state; do not push values into them
 19. **ImageEditor export happens at original resolution by default** - Specify `Width`/`Height` in `ImageExportOptions` only when you need a different size
+20. **ChatView Messages should be an ObservableCollection** - Use `ObservableCollection<ChatMessage>` so the CollectionView reacts to adds/inserts
+21. **ChatView TypingParticipants excludes "me"** - Never include the local user in the typing list
+22. **ChatView LoadMoreCommand prepends** - Insert older messages at index 0, not append at end
 17. **Use `SelectedDate` with TwoWay binding** - All scheduler views share this property for coordination
 18. **Implement all `ISchedulerEventProvider` methods** - Even if some are no-ops, all must be implemented
 

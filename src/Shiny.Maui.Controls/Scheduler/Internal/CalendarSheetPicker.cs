@@ -85,7 +85,7 @@ class CalendarSheetPicker : ContentView
 
         prevButton = new Button
         {
-            Text = "\u276E",
+            Text = "<",
             FontSize = 16,
             TextColor = Colors.DodgerBlue,
             BackgroundColor = Colors.Transparent,
@@ -98,7 +98,7 @@ class CalendarSheetPicker : ContentView
 
         nextButton = new Button
         {
-            Text = "\u276F",
+            Text = ">",
             FontSize = 16,
             TextColor = Colors.DodgerBlue,
             BackgroundColor = Colors.Transparent,

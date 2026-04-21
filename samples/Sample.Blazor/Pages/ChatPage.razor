@@ -1,0 +1,195 @@
+@page "/chat"
+@using Shiny.Blazor.Controls.Chat
+
+<h3>Chat</h3>
+
+<div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+    <button @onclick="ToggleTyping">Toggle Typing</button>
+    <label>
+        <input type="checkbox" @bind="isMultiPerson" />
+        Multi-Person
+    </label>
+</div>
+
+<div style="height:600px;border:1px solid #ccc;border-radius:12px;overflow:hidden;">
+    <ChatView Messages="messages"
+              Participants="participants"
+              IsMultiPerson="isMultiPerson"
+              TypingParticipants="typingParticipants"
+              SendCommand="OnSend"
+              AttachImageCommand="OnAttachImage"
+              LoadMoreCommand="OnLoadMore"
+              MyBubbleColor="#DCF8C6"
+              OtherBubbleColor="#FFFFFF"
+              PlaceholderText="Type a message..." />
+</div>
+
+@code {
+    List<ChatMessage> messages = new();
+    List<ChatParticipant> participants = new();
+    List<ChatParticipant> typingParticipants = new();
+    bool isMultiPerson = true;
+
+    readonly ChatParticipant alice = new()
+    {
+        Id = "alice",
+        DisplayName = "Alice Johnson",
+        BubbleColor = "#E3F2FD"
+    };
+
+    readonly ChatParticipant bob = new()
+    {
+        Id = "bob",
+        DisplayName = "Bob Smith",
+        BubbleColor = "#FFF3E0"
+    };
+
+    protected override void OnInitialized()
+    {
+        participants.Add(alice);
+        participants.Add(bob);
+        LoadSampleMessages();
+    }
+
+    async Task OnSend(string text)
+    {
+        messages.Add(new ChatMessage
+        {
+            Text = text,
+            SenderId = "me",
+            IsFromMe = true,
+            Timestamp = DateTimeOffset.Now
+        });
+        StateHasChanged();
+
+        // Simulate typing + reply
+        typingParticipants.Add(alice);
+        StateHasChanged();
+        await Task.Delay(2000);
+        typingParticipants.Remove(alice);
+
+        messages.Add(new ChatMessage
+        {
+            Text = "That's great! Thanks for sharing.",
+            SenderId = alice.Id,
+            Timestamp = DateTimeOffset.Now
+        });
+        StateHasChanged();
+    }
+
+    Task OnAttachImage()
+    {
+        messages.Add(new ChatMessage
+        {
+            ImageUrl = "https://picsum.photos/300/200",
+            SenderId = "me",
+            IsFromMe = true,
+            Timestamp = DateTimeOffset.Now
+        });
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    Task OnLoadMore()
+    {
+        var earliest = messages.Count > 0
+            ? messages[0].Timestamp.AddMinutes(-5)
+            : DateTimeOffset.Now.AddHours(-2);
+
+        messages.InsertRange(0, new[]
+        {
+            new ChatMessage
+            {
+                Text = "This is an older message that was loaded.",
+                SenderId = alice.Id,
+                Timestamp = earliest.AddMinutes(-3)
+            },
+            new ChatMessage
+            {
+                Text = "And another one from earlier.",
+                SenderId = "me",
+                IsFromMe = true,
+                Timestamp = earliest.AddMinutes(-2)
+            },
+            new ChatMessage
+            {
+                Text = "Check this link: https://github.com/shinyorg/controls",
+                SenderId = bob.Id,
+                Timestamp = earliest.AddMinutes(-1)
+            }
+        });
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    void ToggleTyping()
+    {
+        if (typingParticipants.Count == 0)
+            typingParticipants.Add(alice);
+        else if (typingParticipants.Count == 1)
+            typingParticipants.Add(bob);
+        else
+            typingParticipants.Clear();
+    }
+
+    void LoadSampleMessages()
+    {
+        var now = DateTimeOffset.Now;
+        var yesterday = now.AddDays(-1);
+
+        messages.AddRange(new[]
+        {
+            new ChatMessage
+            {
+                Text = "Hey everyone! Has anyone tried the new controls library?",
+                SenderId = alice.Id,
+                Timestamp = yesterday.AddHours(-2)
+            },
+            new ChatMessage
+            {
+                Text = "Yes! The TableView is really nice.",
+                SenderId = bob.Id,
+                Timestamp = yesterday.AddHours(-2).AddMinutes(1)
+            },
+            new ChatMessage
+            {
+                Text = "I agree, the styling system is great.",
+                SenderId = "me",
+                IsFromMe = true,
+                Timestamp = yesterday.AddHours(-1).AddMinutes(30)
+            },
+            new ChatMessage
+            {
+                Text = "Check out https://github.com/shinyorg/controls for the latest updates.",
+                SenderId = alice.Id,
+                Timestamp = now.AddMinutes(-30)
+            },
+            new ChatMessage
+            {
+                Text = "The scheduler component is my favorite so far.",
+                SenderId = alice.Id,
+                Timestamp = now.AddMinutes(-30)
+            },
+            new ChatMessage
+            {
+                Text = "Same here! Really clean API.",
+                SenderId = bob.Id,
+                Timestamp = now.AddMinutes(-28)
+            },
+            new ChatMessage
+            {
+                Text = "Here's a screenshot of what I built:",
+                SenderId = "me",
+                IsFromMe = true,
+                Timestamp = now.AddMinutes(-5)
+            },
+            new ChatMessage
+            {
+                ImageUrl = "https://picsum.photos/300/200",
+                SenderId = "me",
+                IsFromMe = true,
+                Timestamp = now.AddMinutes(-5)
+            }
+        });
+    }
+}

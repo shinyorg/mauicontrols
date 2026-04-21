@@ -1,0 +1,98 @@
+@namespace Shiny.Blazor.Controls.Chat
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="shiny-chat" @ref="rootEl">
+    <div class="shiny-chat-messages" @ref="messagesEl">
+        @if (LoadMoreCommand.HasDelegate)
+        {
+            <button class="shiny-chat-loadmore" @onclick="OnLoadMoreClick">Load earlier messages</button>
+        }
+
+        @if (Messages is not null)
+        {
+            @for (var i = 0; i < Messages.Count; i++)
+            {
+                var msg = Messages[i];
+                var prev = i > 0 ? Messages[i - 1] : null;
+                var next = i < Messages.Count - 1 ? Messages[i + 1] : null;
+                var isFirst = ChatGroupHelper.IsNewGroup(msg, prev);
+                var isLast = next is null || ChatGroupHelper.IsNewGroup(next, msg);
+                var participant = GetParticipant(msg.SenderId);
+                var showAvatar = ShouldShowAvatar(msg, isFirst);
+                var bubbleColor = msg.IsFromMe ? MyBubbleColor : (participant?.BubbleColor ?? OtherBubbleColor);
+                var textColor = msg.IsFromMe ? MyTextColor : OtherTextColor;
+
+                <div class="shiny-chat-bubble-wrap @(msg.IsFromMe ? "is-me" : "is-other") @(isFirst ? "group-first" : "") @(isLast ? "group-last" : "")">
+                    @if (showAvatar)
+                    {
+                        <div class="shiny-chat-sender-row">
+                            <div class="shiny-chat-avatar" style="background:@(participant?.BubbleColor ?? OtherBubbleColor);">
+                                @if (participant?.AvatarUrl is not null)
+                                {
+                                    <img src="@participant.AvatarUrl" alt="@participant.DisplayName" />
+                                }
+                                else
+                                {
+                                    @ChatGroupHelper.GetInitials(participant?.DisplayName)
+                                }
+                            </div>
+                            <span class="shiny-chat-name">@(participant?.DisplayName ?? "Unknown")</span>
+                        </div>
+                    }
+
+                    @{var tapMsg = msg;}
+                    <div class="shiny-chat-bubble" style="background:@bubbleColor;color:@textColor;cursor:pointer;"
+                         @onclick="() => OnMessageTap(tapMsg)">
+                        @if (msg.ImageUrl is not null)
+                        {
+                            <img class="shiny-chat-image" src="@msg.ImageUrl" alt="Image" />
+                        }
+                        else
+                        {
+                            <span>@((MarkupString)Linkify(msg.Text ?? ""))</span>
+                        }
+                    </div>
+
+                    @if (isLast)
+                    {
+                        <div class="shiny-chat-time">@ChatGroupHelper.FormatTimestamp(msg.Timestamp)</div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    @if (unreadCount > 0)
+    {
+        <div class="shiny-chat-newmessages" @onclick="OnNewMessagesPillClick">
+            @(unreadCount == 1 ? "1 New Message" : $"{unreadCount} New Messages")
+        </div>
+    }
+
+    @if (ShowTypingIndicator && typingText is not null)
+    {
+        <div class="shiny-chat-typing">
+            <span class="shiny-chat-typing-dots"><span></span><span></span><span></span></span>
+            @typingText
+        </div>
+    }
+
+    @if (IsInputBarVisible)
+    {
+        <div class="shiny-chat-inputbar">
+            @if (AttachImageCommand.HasDelegate)
+            {
+                <button class="shiny-chat-attach" @onclick="OnAttachClick" type="button">+</button>
+            }
+            <input class="shiny-chat-input"
+                   @ref="inputEl"
+                   placeholder="@PlaceholderText"
+                   @bind="inputText"
+                   @bind:event="oninput"
+                   @onkeydown="OnKeyDown" />
+            <button class="shiny-chat-send" @onclick="OnSendClick" type="button">@SendButtonText</button>
+        </div>
+    }
+</div>

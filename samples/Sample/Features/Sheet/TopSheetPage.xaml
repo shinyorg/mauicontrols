@@ -55,7 +55,7 @@
                     Padding="16,10"
                     StrokeThickness="0">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                    <Label Text="&#9728;"
+                    <Label Text="*"
                            FontSize="28"
                            VerticalOptions="Center" />
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">

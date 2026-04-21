@@ -233,6 +233,15 @@ public class ImageViewer : ContentView
         }
     }
 
+    protected override void OnBindingContextChanged()
+    {
+        base.OnBindingContextChanged();
+        if (footerView != null)
+            footerView.BindingContext = BindingContext;
+        if (headerView != null)
+            headerView.BindingContext = BindingContext;
+    }
+
     void ApplyFooterTemplate()
     {
         if (footerView != null)
@@ -244,6 +253,7 @@ public class ImageViewer : ContentView
             if (content is View view)
             {
                 view.VerticalOptions = LayoutOptions.End;
+                view.BindingContext = BindingContext;
                 footerView = view;
                 rootGrid.Children.Add(footerView);
             }

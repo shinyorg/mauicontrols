@@ -13,7 +13,7 @@ public partial class ImageEditor : ContentView
     public ImageEditor()
     {
         state = new ImageEditorState();
-        drawable = new ImageEditorDrawable();
+        drawable = new ImageEditorDrawable { State = state };
 
         state.StateChanged += OnStateChanged;
 
@@ -38,7 +38,6 @@ public partial class ImageEditor : ContentView
         };
 
         Grid.SetRow(graphicsView, 0);
-        Grid.SetRowSpan(graphicsView, 2);
 
         BuildDefaultToolbar();
 
@@ -324,24 +323,24 @@ public partial class ImageEditor : ContentView
             BackgroundColor = Color.FromRgba(0, 0, 0, 0.6f)
         };
 
-        if (AllowCrop) toolbar.Children.Add(CreateToolButton("\u2702", "Crop", ImageEditorToolMode.Crop));
-        if (AllowRotate) toolbar.Children.Add(CreateActionButton("\u21BB", "Rotate", () => Rotate(90)));
-        if (AllowDraw) toolbar.Children.Add(CreateToolButton("\u270F", "Draw", ImageEditorToolMode.Draw));
-        if (AllowTextAnnotation) toolbar.Children.Add(CreateToolButton("T", "Text", ImageEditorToolMode.Text));
+        if (AllowCrop) toolbar.Children.Add(CreateToolButton("Crop", "Crop", ImageEditorToolMode.Crop));
+        if (AllowRotate) toolbar.Children.Add(CreateActionButton("Rot", "Rotate", () => Rotate(90)));
+        if (AllowDraw) toolbar.Children.Add(CreateToolButton("Draw", "Draw", ImageEditorToolMode.Draw));
+        if (AllowTextAnnotation) toolbar.Children.Add(CreateToolButton("Txt", "Text", ImageEditorToolMode.Text));
 
         // Separator
         toolbar.Children.Add(new BoxView { WidthRequest = 1, HeightRequest = 30, Color = Colors.Grey, VerticalOptions = LayoutOptions.Center });
 
-        toolbar.Children.Add(CreateActionButton("\u21B6", "Undo", Undo));
-        toolbar.Children.Add(CreateActionButton("\u21B7", "Redo", Redo));
-        toolbar.Children.Add(CreateActionButton("\u21BA", "Reset", Reset));
+        toolbar.Children.Add(CreateActionButton("Undo", "Undo", Undo));
+        toolbar.Children.Add(CreateActionButton("Redo", "Redo", Redo));
+        toolbar.Children.Add(CreateActionButton("Reset", "Reset", Reset));
 
         // Add confirm/cancel buttons for crop mode
         if (CurrentToolMode == ImageEditorToolMode.Crop)
         {
             toolbar.Children.Add(new BoxView { WidthRequest = 1, HeightRequest = 30, Color = Colors.Grey, VerticalOptions = LayoutOptions.Center });
-            toolbar.Children.Add(CreateActionButton("\u2713", "Apply", ApplyCrop));
-            toolbar.Children.Add(CreateActionButton("\u2717", "Cancel", () => CurrentToolMode = ImageEditorToolMode.None));
+            toolbar.Children.Add(CreateActionButton("OK", "Apply", ApplyCrop));
+            toolbar.Children.Add(CreateActionButton("X", "Cancel", () => CurrentToolMode = ImageEditorToolMode.None));
         }
 
         toolbarView = toolbar;
@@ -373,13 +372,13 @@ public partial class ImageEditor : ContentView
         return new Button
         {
             Text = icon,
-            FontSize = 18,
+            FontSize = 12,
             TextColor = Colors.White,
             BackgroundColor = Colors.Transparent,
-            WidthRequest = 44,
+            MinimumWidthRequest = 44,
             HeightRequest = 44,
             CornerRadius = 22,
-            Padding = 0
+            Padding = new Thickness(6, 0)
         };
     }
 
@@ -388,11 +387,23 @@ public partial class ImageEditor : ContentView
         if (toolbarView == null)
             return;
 
-        var row = ToolbarPosition == ToolbarPosition.Top ? 0 : 1;
-        Grid.SetRow(toolbarView, row);
-        toolbarView.VerticalOptions = ToolbarPosition == ToolbarPosition.Top
-            ? LayoutOptions.Start
-            : LayoutOptions.End;
+        if (ToolbarPosition == ToolbarPosition.Top)
+        {
+            // Swap row definitions so toolbar is on top
+            rootGrid.RowDefinitions.Clear();
+            rootGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            rootGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+            Grid.SetRow(graphicsView, 1);
+            Grid.SetRow(toolbarView, 0);
+        }
+        else
+        {
+            rootGrid.RowDefinitions.Clear();
+            rootGrid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+            rootGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            Grid.SetRow(graphicsView, 0);
+            Grid.SetRow(toolbarView, 1);
+        }
 
         rootGrid.Children.Add(toolbarView);
     }

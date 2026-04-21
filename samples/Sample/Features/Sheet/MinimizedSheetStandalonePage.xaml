@@ -60,7 +60,7 @@
                             HeightRequest="44"
                             StrokeThickness="0"
                             StrokeShape="RoundRectangle 8">
-                        <Label Text="&#9835;"
+                        <Label Text="♪"
                                FontSize="22"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"
@@ -76,12 +76,12 @@
                                TextColor="#9CA3AF" />
                     </VerticalStackLayout>
                     <Label Grid.Column="2"
-                           Text="&#9208;"
+                           Text="||"
                            FontSize="22"
                            TextColor="White"
                            VerticalOptions="Center" />
                     <Label Grid.Column="3"
-                           Text="&#9197;"
+                           Text="&gt;&gt;"
                            FontSize="22"
                            TextColor="#9CA3AF"
                            VerticalOptions="Center" />
@@ -100,7 +100,7 @@
                 <Border.Shadow>
                     <Shadow Brush="#6C63FF" Offset="0,8" Radius="20" Opacity="0.4" />
                 </Border.Shadow>
-                <Label Text="&#9835;"
+                <Label Text="♪"
                        FontSize="90"
                        HorizontalOptions="Center"
                        VerticalOptions="Center"

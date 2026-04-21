@@ -12,6 +12,8 @@
     xmlns:diagrams="clr-namespace:Sample.Features.Diagrams"
     xmlns:imgviewer="clr-namespace:Sample.Features.ImageViewer"
     xmlns:imgeditor="clr-namespace:Sample.Features.ImageEditor"
+    xmlns:chat="clr-namespace:Sample.Features.Chat"
+    xmlns:kitchensink="clr-namespace:Sample.Features.KitchenSink"
     xmlns:markdown="clr-namespace:Sample.Features.Markdown"
     xmlns:securitypin="clr-namespace:Sample.Features.SecurityPin"
     xmlns:fab="clr-namespace:Sample.Features.Fab"
@@ -19,6 +21,10 @@
 
     <FlyoutItem Title="Home">
         <ShellContent ContentTemplate="{DataTemplate home:HomePage}" Route="home" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Kitchen Sink">
+        <ShellContent ContentTemplate="{DataTemplate kitchensink:KitchenSinkPage}" Route="kitchensinkchat" />
     </FlyoutItem>
 
     <FlyoutItem Title="Sheet">
@@ -99,6 +105,10 @@
 
     <FlyoutItem Title="Image Editor">
         <ShellContent ContentTemplate="{DataTemplate imgeditor:ImageEditorPage}" Route="imageeditor" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Chat">
+        <ShellContent ContentTemplate="{DataTemplate chat:ChatPage}" Route="chat" />
     </FlyoutItem>
 
     <FlyoutItem Title="Markdown - Viewer">

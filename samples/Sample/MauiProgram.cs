@@ -5,6 +5,8 @@ using Sample.Features.Sheet;
 using Sample.Features.Diagrams;
 using Sample.Features.Fab;
 using Sample.Features.Home;
+using Sample.Features.Chat;
+using Sample.Features.KitchenSink;
 using Sample.Features.ImageEditor;
 using Sample.Features.ImageViewer;
 using Sample.Features.Markdown;
@@ -48,7 +50,9 @@ public static class MauiProgram
                 .Add<AgendaCalendarPickerPage, AgendaCalendarPickerViewModel>(registerRoute: false)
                 .Add<CalendarListPage, CalendarListViewModel>(registerRoute: false)
                 .Add<ImageViewerPage, ImageViewerViewModel>(registerRoute: false)
-                .Add<ImageEditorPage, ImageEditorViewModel>(registerRoute: false)
+                .Add<ImageEditorPage, ImageEditorViewModel>()
+                .Add<ChatPage, ChatViewModel>(registerRoute: false)
+                .Add<KitchenSinkPage, KitchenSinkViewModel>(registerRoute: false)
                 .Add<MarkdownViewPage, MarkdownViewViewModel>(registerRoute: false)
                 .Add<MarkdownEditorPage, MarkdownEditorViewModel>(registerRoute: false)
             )

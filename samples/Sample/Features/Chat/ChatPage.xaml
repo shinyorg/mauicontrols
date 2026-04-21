@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:shiny="http://shiny.net/maui/controls"
+    xmlns:local="clr-namespace:Sample.Features.Chat"
+    x:Class="Sample.Features.Chat.ChatPage"
+    x:DataType="local:ChatViewModel"
+    Title="Chat">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <HorizontalStackLayout Grid.Row="0" Spacing="8" Padding="12,8">
+            <Button Text="Simulate Incoming"
+                    Command="{Binding SimulateIncomingCommand}"
+                    FontSize="12"
+                    HeightRequest="36" />
+            <Button Text="Toggle Typing"
+                    Command="{Binding ToggleTypingCommand}"
+                    FontSize="12"
+                    HeightRequest="36" />
+            <Switch IsToggled="{Binding IsMultiPerson}"
+                    VerticalOptions="Center" />
+            <Label Text="Multi-Person"
+                   VerticalOptions="Center"
+                   FontSize="12" />
+        </HorizontalStackLayout>
+
+        <shiny:ChatView Grid.Row="1"
+                        Messages="{Binding Messages}"
+                        Participants="{Binding Participants}"
+                        IsMultiPerson="{Binding IsMultiPerson}"
+                        TypingParticipants="{Binding TypingParticipants}"
+                        SendCommand="{Binding SendCommand}"
+                        AttachImageCommand="{Binding AttachImageCommand}"
+                        LoadMoreCommand="{Binding LoadMoreCommand}"
+                        MyBubbleColor="#DCF8C6"
+                        OtherBubbleColor="White"
+                        PlaceholderText="Type a message..." />
+    </Grid>
+
+</ContentPage>

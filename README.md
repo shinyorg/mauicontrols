@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, SheetView, Fab/FabMenu, PillView, SecurityPin, ImageViewer, and ImageEditor. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, SheetView, Fab/FabMenu, PillView, SecurityPin, ImageViewer, ImageEditor, and ChatView. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -275,6 +275,59 @@ An inline image editor with cropping, rotation, freehand drawing, text annotatio
 **Commands:** `UndoCommand`, `RedoCommand`, `RotateCommand`, `ResetCommand`, `CropCommand`, `DrawCommand`, `TextCommand`
 
 **Methods:** `Undo()`, `Redo()`, `Rotate(float)`, `Reset()`, `ApplyCrop()`, `ExportAsync(ImageExportOptions?)`
+
+### ChatView
+
+A modern chat UI control with message bubbles, typing indicators, load-more pagination, and a bottom input bar. Supports single-person and multi-person conversations with per-participant colors and avatars.
+
+```xml
+<shiny:ChatView Messages="{Binding Messages}"
+                Participants="{Binding Participants}"
+                IsMultiPerson="True"
+                TypingParticipants="{Binding TypingParticipants}"
+                SendCommand="{Binding SendCommand}"
+                AttachImageCommand="{Binding AttachImageCommand}"
+                LoadMoreCommand="{Binding LoadMoreCommand}"
+                MyBubbleColor="#DCF8C6"
+                OtherBubbleColor="White"
+                PlaceholderText="Type a message..." />
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| Messages | IList\<ChatMessage\> | null | Bindable message collection (supports INotifyCollectionChanged) |
+| Participants | IList\<ChatParticipant\> | null | Participant info for avatar/color lookup |
+| IsMultiPerson | bool | false | Show avatars and names for other participants |
+| ShowAvatarsInSingleChat | bool | false | Force avatars even in single-person mode |
+| MyBubbleColor | Color | #DCF8C6 | Local user bubble color |
+| MyTextColor | Color | Black | Local user text color |
+| OtherBubbleColor | Color | White | Default other-user bubble color |
+| OtherTextColor | Color | Black | Other-user text color |
+| PlaceholderText | string | "Type a message..." | Input placeholder |
+| SendButtonText | string | "Send" | Send button label |
+| IsInputBarVisible | bool | true | Show/hide the input bar |
+| ShowTypingIndicator | bool | true | Enable typing notifications |
+| TypingParticipants | IList\<ChatParticipant\> | null | Currently typing participants |
+| ScrollToFirstUnread | bool | false | Scroll to first unread instead of end |
+| FirstUnreadMessageId | string? | null | ID of the first unread message |
+| UseHapticFeedback | bool | true | Haptic feedback on send |
+
+**Commands:** `SendCommand` (ICommand, receives text string), `AttachImageCommand` (ICommand), `LoadMoreCommand` (ICommand)
+
+**Methods:** `ScrollToEnd(bool animate)`, `ScrollToMessage(string messageId, bool animate)`
+
+**Features:**
+- Chat bubbles with left/right alignment and customizable colors per participant
+- Visual grouping by sender and minute (tight spacing within group, wider between groups)
+- Today timestamps show time only; previous days show full date
+- Multi-person: avatar (initials or image) and name shown above first message in each group
+- Single-person: avatars/names hidden by default
+- Typing indicators ("{Name} is typing…", "{Name1}, {Name2} are typing", "Multiple users are typing")
+- Virtualized via CollectionView with `RemainingItemsThreshold` for load-more
+- Auto-link detection in text messages
+- Image messages (text and image are mutually exclusive per message)
+- Bottom input bar with Enter key and Send button; optional attach button
+- Entire input bar can be hidden for read-only use
 
 ### PillView
 

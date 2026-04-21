@@ -1,0 +1,244 @@
+.shiny-chat {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background: #f0f0f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.shiny-chat-messages {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Load more */
+.shiny-chat-loadmore {
+    align-self: center;
+    background: transparent;
+    border: 1px solid #ccc;
+    border-radius: 16px;
+    padding: 6px 16px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+
+.shiny-chat-loadmore:hover {
+    background: #e0e0e0;
+}
+
+/* Bubble wrap */
+.shiny-chat-bubble-wrap {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+    margin-top: 2px;
+}
+
+.shiny-chat-bubble-wrap.group-first {
+    margin-top: 12px;
+}
+
+.shiny-chat-bubble-wrap.is-me {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.shiny-chat-bubble-wrap.is-other {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+/* Sender row (avatar + name) */
+.shiny-chat-sender-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.shiny-chat-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.shiny-chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.shiny-chat-name {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Bubble */
+.shiny-chat-bubble {
+    padding: 8px 12px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.4;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.06);
+}
+
+.shiny-chat-bubble-wrap.is-me .shiny-chat-bubble {
+    border-bottom-right-radius: 4px;
+}
+
+.shiny-chat-bubble-wrap.is-other .shiny-chat-bubble {
+    border-bottom-left-radius: 4px;
+}
+
+.shiny-chat-bubble a {
+    color: #007AFF;
+    text-decoration: underline;
+}
+
+/* Image messages */
+.shiny-chat-image {
+    max-width: 250px;
+    max-height: 250px;
+    border-radius: 12px;
+    display: block;
+}
+
+.shiny-chat-bubble:has(.shiny-chat-image) {
+    padding: 4px;
+    background: transparent !important;
+    box-shadow: none;
+}
+
+/* Timestamp */
+.shiny-chat-time {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+    padding: 0 4px;
+}
+
+/* New Messages pill */
+.shiny-chat-newmessages {
+    align-self: center;
+    background: #007AFF;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 8px 0;
+    box-shadow: 0 2px 8px rgba(0,122,255,0.3);
+    z-index: 1;
+}
+
+.shiny-chat-newmessages:hover {
+    background: #0066DD;
+}
+
+/* Typing indicator */
+.shiny-chat-typing {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    font-size: 13px;
+    color: #888;
+}
+
+.shiny-chat-typing-dots {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.shiny-chat-typing-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #999;
+    animation: shiny-chat-dot-bounce 1s infinite;
+}
+
+.shiny-chat-typing-dots span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.shiny-chat-typing-dots span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes shiny-chat-dot-bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+}
+
+/* Input bar */
+.shiny-chat-inputbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+}
+
+.shiny-chat-input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 15px;
+    outline: none;
+    font-family: inherit;
+}
+
+.shiny-chat-input:focus {
+    border-color: #007AFF;
+}
+
+.shiny-chat-send {
+    background: #007AFF;
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.shiny-chat-send:hover {
+    background: #0066DD;
+}
+
+.shiny-chat-attach {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    font-weight: bold;
+    color: #007AFF;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+}

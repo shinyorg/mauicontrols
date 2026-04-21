@@ -5,7 +5,7 @@ namespace Shiny.Maui.Controls.ImageEditor;
 internal sealed class ImageEditorDrawable : IDrawable
 {
     public Microsoft.Maui.Graphics.IImage? Image { get; set; }
-    public ImageEditorState State { get; } = new();
+    public ImageEditorState State { get; set; } = new();
 
     // View transform (zoom/pan - not edit actions)
     public float ViewScale { get; set; } = 1f;

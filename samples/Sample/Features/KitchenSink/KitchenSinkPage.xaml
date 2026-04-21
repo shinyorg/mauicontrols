@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:shiny="http://shiny.net/maui/controls"
+    xmlns:local="clr-namespace:Sample.Features.KitchenSink"
+    x:Class="Sample.Features.KitchenSink.KitchenSinkPage"
+    x:DataType="local:KitchenSinkViewModel"
+    Title="Kitchen Sink">
+
+    <Grid>
+
+        <!-- Main content -->
+        <VerticalStackLayout VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="8">
+            <Label Text="Kitchen Sink"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+            <Label Text="Tap the chat button to pick a conversation"
+                   FontSize="14"
+                   TextColor="Gray"
+                   HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
+
+        <!-- FabMenu: open chats -->
+        <shiny:FabMenu Text="Chats"
+                       FabBackgroundColor="#6C63FF"
+                       TextColor="White"
+                       HasBackdrop="True"
+                       CloseOnBackdropTap="True"
+                       CloseOnItemTap="True">
+            <shiny:FabMenuItem Text="Alice Johnson"
+                               FabBackgroundColor="#E3F2FD"
+                               Command="{Binding OpenChatCommand}"
+                               CommandParameter="alice" />
+            <shiny:FabMenuItem Text="Bob Smith"
+                               FabBackgroundColor="#FFF3E0"
+                               Command="{Binding OpenChatCommand}"
+                               CommandParameter="bob" />
+            <shiny:FabMenuItem Text="Carol Davis"
+                               FabBackgroundColor="#F3E5F5"
+                               Command="{Binding OpenChatCommand}"
+                               CommandParameter="carol" />
+        </shiny:FabMenu>
+
+        <!-- Sheet: chat window -->
+        <shiny:SheetView IsOpen="{Binding IsChatOpen}"
+                         HasBackdrop="True"
+                         CloseOnBackdropTap="True"
+                         HandleColor="Gray"
+                         SheetBackgroundColor="White"
+                         SheetCornerRadius="20"
+                         FitContent="True">
+            <shiny:SheetView.HeaderTemplate>
+                <Border BackgroundColor="#6C63FF"
+                        Padding="16,12"
+                        StrokeThickness="0">
+                    <Label Text="{Binding ChatTitle}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="White" />
+                </Border>
+            </shiny:SheetView.HeaderTemplate>
+
+            <shiny:ChatView Messages="{Binding Messages}"
+                            Participants="{Binding Participants}"
+                            TypingParticipants="{Binding TypingParticipants}"
+                            IsMultiPerson="False"
+                            ShowAvatarsInSingleChat="True"
+                            SendCommand="{Binding SendCommand}"
+                            MessageTappedCommand="{Binding MessageTappedCommand}"
+                            MyBubbleColor="#DCF8C6"
+                            OtherBubbleColor="White"
+                            PlaceholderText="Type a message..."
+                            HeightRequest="300"/>
+        </shiny:SheetView>
+
+        <!-- ImageViewer overlay with Edit footer -->
+        <shiny:ImageViewer Source="{Binding ViewerImageSource}"
+                           IsOpen="{Binding IsImageViewerOpen}">
+            <shiny:ImageViewer.FooterTemplate>
+                <DataTemplate x:DataType="local:KitchenSinkViewModel">
+                    <HorizontalStackLayout HorizontalOptions="Center"
+                                           Spacing="12"
+                                           Padding="16">
+                        <Button Text="Edit"
+                                BackgroundColor="#6C63FF"
+                                TextColor="White"
+                                CornerRadius="20"
+                                Padding="24,10"
+                                FontAttributes="Bold"
+                                Command="{Binding EditImageCommand}" />
+                    </HorizontalStackLayout>
+                </DataTemplate>
+            </shiny:ImageViewer.FooterTemplate>
+        </shiny:ImageViewer>
+
+    </Grid>
+
+</ContentPage>
