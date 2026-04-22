@@ -45,6 +45,9 @@ public partial class ImageEditor : ContentView
         BuildDefaultToolbar();
 
         Content = rootGrid;
+
+        // Invalidate once layout is ready so images set during binding actually render
+        graphicsView.SizeChanged += (_, _) => Invalidate();
     }
 
     #region Bindable Properties
@@ -267,13 +270,21 @@ public partial class ImageEditor : ContentView
         }
         else
         {
-            var stream = await ResolveImageSourceStreamAsync(Source);
-            if (stream != null)
+            try
             {
-                await using (stream)
-                    drawable.Image = Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(stream);
+                var stream = await ResolveImageSourceStreamAsync(Source);
+                if (stream != null)
+                {
+                    await using (stream)
+                        drawable.Image = Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(stream);
+
+                }
+                else
+                {
+                    drawable.Image = null;
+                }
             }
-            else
+            catch
             {
                 drawable.Image = null;
             }
@@ -289,14 +300,44 @@ public partial class ImageEditor : ContentView
         switch (source)
         {
             case FileImageSource fileSource:
+                // Try regular file path first
+                if (File.Exists(fileSource.File))
+                    return File.OpenRead(fileSource.File);
+
+                // Try app package file (raw assets/bundles)
                 try { return await FileSystem.OpenAppPackageFileAsync(fileSource.File); }
-                catch
+                catch { /* fall through to platform-specific loading */ }
+
+#if IOS || MACCATALYST
+                // On iOS/Catalyst, MAUI images are in the app bundle
+                var uiImage = UIKit.UIImage.FromBundle(System.IO.Path.GetFileNameWithoutExtension(fileSource.File));
+                if (uiImage != null)
                 {
-                    // Try as a regular file path
-                    if (File.Exists(fileSource.File))
-                        return File.OpenRead(fileSource.File);
-                    return null;
+                    var pngData = uiImage.AsPNG();
+                    if (pngData != null)
+                        return pngData.AsStream();
                 }
+#elif ANDROID
+                // On Android, try loading via the MAUI resource system
+                var context = Android.App.Application.Context;
+                var resName = System.IO.Path.GetFileNameWithoutExtension(fileSource.File)?.ToLowerInvariant();
+                if (resName != null && context.Resources != null)
+                {
+                    var resId = context.Resources.GetIdentifier(resName, "drawable", context.PackageName);
+                    if (resId != 0)
+                    {
+                        var drawable = context.Resources.GetDrawable(resId, context.Theme);
+                        if (drawable is Android.Graphics.Drawables.BitmapDrawable bd && bd.Bitmap != null)
+                        {
+                            var ms = new MemoryStream();
+                            await bd.Bitmap.CompressAsync(Android.Graphics.Bitmap.CompressFormat.Png!, 100, ms);
+                            ms.Position = 0;
+                            return ms;
+                        }
+                    }
+                }
+#endif
+                return null;
 
             case StreamImageSource streamSource:
                 return await streamSource.Stream(CancellationToken.None);

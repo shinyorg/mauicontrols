@@ -232,8 +232,12 @@ A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animat
 
 An inline image editor with cropping, rotation, freehand drawing, text annotations, and zoom. Includes a built-in undo/redo stack, reset-to-original, and export to PNG/JPEG/WEBP at configurable resolutions. Every feature can be toggled on/off, and the default toolbar can be replaced with a custom template.
 
+| Editor | Crop Mode |
+|:---:|:---:|
+| ![Image Editor](assets/imageeditor1.png) | ![Crop Mode](assets/imageeditor2.png) |
+
 ```xml
-<shiny:ImageEditor Source="{Binding ImageData}"
+<shiny:ImageEditor Source="{Binding ImageSource}"
                    CurrentToolMode="{Binding ToolMode}"
                    AllowCrop="True"
                    AllowRotate="True"
@@ -245,8 +249,8 @@ An inline image editor with cropping, rotation, freehand drawing, text annotatio
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| Source | byte[]? | null | Image data to edit |
-| CurrentToolMode | ImageEditorToolMode | None | Active tool (None, Crop, Draw, Text) — TwoWay |
+| Source | ImageSource? | null | Image to edit (supports file, stream, URI) |
+| CurrentToolMode | ImageEditorToolMode | Move | Active tool (Move, Crop, Draw, Text) — TwoWay |
 | AllowCrop | bool | true | Enable/disable crop tool |
 | AllowRotate | bool | true | Enable/disable rotate action |
 | AllowDraw | bool | true | Enable/disable freehand drawing |
@@ -254,31 +258,39 @@ An inline image editor with cropping, rotation, freehand drawing, text annotatio
 | AllowZoom | bool | true | Enable/disable pinch-to-zoom |
 | CanUndo | bool | false | Whether undo is available (OneWayToSource) |
 | CanRedo | bool | false | Whether redo is available (OneWayToSource) |
-| DrawStrokeColor | Color | Red | Drawing stroke color |
+| DrawStrokeColor | Color | White | Drawing stroke color — TwoWay |
 | DrawStrokeWidth | double | 3 | Drawing stroke width |
 | TextFontSize | double | 16 | Text annotation font size |
 | AnnotationTextColor | Color | White | Text annotation color |
+| SaveCommand | ICommand? | null | Invoked with `EditedImage` parameter on save |
+| SaveText | string | "Save" | Save button label |
+| CropApplyText | string | "Apply Crop" | Crop apply button label |
+| CropCancelText | string | "Cancel" | Crop cancel button label |
 | ToolbarTemplate | DataTemplate? | null | Custom toolbar (replaces default) |
 | ToolbarPosition | ToolbarPosition | Bottom | Toolbar placement (Top or Bottom) |
 | UseHapticFeedback | bool | true | Haptic feedback on actions |
 
 **Features:**
-- Crop with drag handles and dimmed overlay outside the selection
+- Move mode with pinch-to-zoom and pan (origin-aware, double-tap to toggle)
+- Crop with drag handles, rule-of-thirds grid, dimmed overlay, and dedicated Apply/Cancel toolbar
 - 90° rotation (or arbitrary angles)
-- Freehand drawing with configurable color and stroke width
-- Text annotations placed by tapping the image
-- Pinch-to-zoom for viewing (separate from edit actions)
+- Freehand drawing with configurable color and stroke width (constrained to image bounds)
+- Inline text annotations placed by tapping the image
+- Integrated color picker for draw color
 - Undo/redo for every edit action
 - Reset to original image
-- Export as PNG, JPEG, or WEBP at custom resolutions
+- Save via `SaveCommand` with `EditedImage` — call `ToStreamAsync(format)` to get PNG, JPEG, or WEBP
+- Image border showing the drawable surface area
 
-**Commands:** `UndoCommand`, `RedoCommand`, `RotateCommand`, `ResetCommand`, `CropCommand`, `DrawCommand`, `TextCommand`
+**Commands:** `UndoCommand`, `RedoCommand`, `RotateCommand`, `ResetCommand`, `CropCommand`, `DrawCommand`, `TextCommand`, `SaveCommand`
 
-**Methods:** `Undo()`, `Redo()`, `Rotate(float)`, `Reset()`, `ApplyCrop()`, `ExportAsync(ImageExportOptions?)`
+**Methods:** `Undo()`, `Redo()`, `Rotate(float)`, `Reset()`, `ApplyCrop()`, `GetEditedImage()`
 
 ### ChatView
 
 A modern chat UI control with message bubbles, typing indicators, load-more pagination, and a bottom input bar. Supports single-person and multi-person conversations with per-participant colors and avatars.
+
+![ChatView](assets/chat1.png)
 
 ```xml
 <shiny:ChatView Messages="{Binding Messages}"
@@ -328,6 +340,30 @@ A modern chat UI control with message bubbles, typing indicators, load-more pagi
 - Image messages (text and image are mutually exclusive per message)
 - Bottom input bar with Enter key and Send button; optional attach button
 - Entire input bar can be hidden for read-only use
+
+### ColorPicker
+
+A full-featured color picker with spectrum, hue bar, opacity slider, hex input, and preview swatch. Available as both an inline `ColorPicker` control and a `ColorPickerButton` that opens as a popup dialog.
+
+| Button | Picker Dialog |
+|:---:|:---:|
+| ![Color Picker Button](assets/colorpicker1.png) | ![Color Picker Dialog](assets/colorpicker2.png) |
+
+```xml
+<shiny:ColorPickerButton SelectedColor="{Binding SelectedColor}"
+                         Text="Pick Color"
+                         ShowOpacity="True" />
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| SelectedColor | Color | Red | Currently selected color — TwoWay |
+| Text | string? | null | Button label text |
+| ShowOpacity | bool | false | Show/hide opacity slider |
+| CornerRadius | int | 8 | Button corner radius |
+| ColorChangedCommand | ICommand? | null | Fires when color changes |
+
+**Event:** `ColorChanged` (EventHandler\<Color\>)
 
 ### PillView
 

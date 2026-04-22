@@ -142,6 +142,26 @@ if [ -n "$IMG_ID" ]; then
 fi
 
 echo ""
+echo "=== Image Editor ==="
+nav "imageeditor"
+sleep 2
+capture "imageeditor1.png"
+if find_and_tap "Button[Text='Crop']"; then
+    capture "imageeditor2.png"
+    find_and_tap "Button[Text='Cancel']"
+fi
+
+echo ""
+echo "=== Color Picker ==="
+nav "colorpicker"
+capture "colorpicker1.png"
+
+echo ""
+echo "=== Chat ==="
+nav "chat"
+capture "chat1.png"
+
+echo ""
 echo "=== Markdown ==="
 nav "markdownview"
 capture "markdown-view.png"
