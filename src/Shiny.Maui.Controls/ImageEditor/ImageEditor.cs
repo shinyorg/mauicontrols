@@ -10,6 +10,7 @@ public partial class ImageEditor : ContentView
     readonly ImageEditorDrawable drawable;
     readonly ImageEditorState state;
     View? toolbarView;
+    ColorPickerButton? drawColorButton;
 
     public ImageEditor()
     {
@@ -27,6 +28,7 @@ public partial class ImageEditor : ContentView
 
         SetupGestures();
         SetupCommands();
+        EnableMoveGestures();
 
         rootGrid = new Grid
         {
@@ -49,14 +51,14 @@ public partial class ImageEditor : ContentView
 
     public static readonly BindableProperty SourceProperty = BindableProperty.Create(
         nameof(Source),
-        typeof(byte[]),
+        typeof(ImageSource),
         typeof(ImageEditor),
         null,
-        propertyChanged: (b, _, _) => ((ImageEditor)b).OnSourceChanged());
+        propertyChanged: (b, _, _) => _ = ((ImageEditor)b).OnSourceChangedAsync());
 
-    public byte[]? Source
+    public ImageSource? Source
     {
-        get => (byte[]?)GetValue(SourceProperty);
+        get => (ImageSource?)GetValue(SourceProperty);
         set => SetValue(SourceProperty, value);
     }
 
@@ -64,7 +66,7 @@ public partial class ImageEditor : ContentView
         nameof(CurrentToolMode),
         typeof(ImageEditorToolMode),
         typeof(ImageEditor),
-        ImageEditorToolMode.None,
+        ImageEditorToolMode.Move,
         BindingMode.TwoWay,
         propertyChanged: (b, _, n) => ((ImageEditor)b).OnToolModeChanged((ImageEditorToolMode)n));
 
@@ -142,8 +144,15 @@ public partial class ImageEditor : ContentView
     }
 
     public static readonly BindableProperty DrawStrokeColorProperty = BindableProperty.Create(
-        nameof(DrawStrokeColor), typeof(Color), typeof(ImageEditor), Colors.Red,
-        propertyChanged: (b, _, n) => ((ImageEditor)b).drawable.ActiveStrokeColor = (Color)n);
+        nameof(DrawStrokeColor), typeof(Color), typeof(ImageEditor), Colors.White,
+        BindingMode.TwoWay,
+        propertyChanged: (b, _, n) =>
+        {
+            var editor = (ImageEditor)b;
+            editor.drawable.ActiveStrokeColor = (Color)n;
+            if (editor.drawColorButton != null)
+                editor.drawColorButton.SelectedColor = (Color)n;
+        });
 
     public Color DrawStrokeColor
     {
@@ -208,23 +217,97 @@ public partial class ImageEditor : ContentView
         set => SetValue(UseHapticFeedbackProperty, value);
     }
 
+    public static readonly BindableProperty CropApplyTextProperty = BindableProperty.Create(
+        nameof(CropApplyText), typeof(string), typeof(ImageEditor), "Apply Crop",
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public string CropApplyText
+    {
+        get => (string)GetValue(CropApplyTextProperty);
+        set => SetValue(CropApplyTextProperty, value);
+    }
+
+    public static readonly BindableProperty CropCancelTextProperty = BindableProperty.Create(
+        nameof(CropCancelText), typeof(string), typeof(ImageEditor), "Cancel",
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public string CropCancelText
+    {
+        get => (string)GetValue(CropCancelTextProperty);
+        set => SetValue(CropCancelTextProperty, value);
+    }
+
+    public static readonly BindableProperty SaveCommandProperty = BindableProperty.Create(
+        nameof(SaveCommand), typeof(System.Windows.Input.ICommand), typeof(ImageEditor), null,
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public System.Windows.Input.ICommand? SaveCommand
+    {
+        get => (System.Windows.Input.ICommand?)GetValue(SaveCommandProperty);
+        set => SetValue(SaveCommandProperty, value);
+    }
+
+    public static readonly BindableProperty SaveTextProperty = BindableProperty.Create(
+        nameof(SaveText), typeof(string), typeof(ImageEditor), "Save",
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public string SaveText
+    {
+        get => (string)GetValue(SaveTextProperty);
+        set => SetValue(SaveTextProperty, value);
+    }
+
     #endregion
 
-    void OnSourceChanged()
+    async Task OnSourceChangedAsync()
     {
-        if (Source == null || Source.Length == 0)
+        if (Source == null)
         {
             drawable.Image = null;
         }
         else
         {
-            using var stream = new MemoryStream(Source);
-            drawable.Image = Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(stream);
+            var stream = await ResolveImageSourceStreamAsync(Source);
+            if (stream != null)
+            {
+                await using (stream)
+                    drawable.Image = Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(stream);
+            }
+            else
+            {
+                drawable.Image = null;
+            }
         }
 
         state.Reset();
         ResetViewTransform();
         Invalidate();
+    }
+
+    static async Task<Stream?> ResolveImageSourceStreamAsync(ImageSource source)
+    {
+        switch (source)
+        {
+            case FileImageSource fileSource:
+                try { return await FileSystem.OpenAppPackageFileAsync(fileSource.File); }
+                catch
+                {
+                    // Try as a regular file path
+                    if (File.Exists(fileSource.File))
+                        return File.OpenRead(fileSource.File);
+                    return null;
+                }
+
+            case StreamImageSource streamSource:
+                return await streamSource.Stream(CancellationToken.None);
+
+            case UriImageSource uriSource:
+                using (var client = new HttpClient())
+                    return new MemoryStream(await client.GetByteArrayAsync(uriSource.Uri));
+
+            default:
+                return null;
+        }
     }
 
     void OnToolModeChanged(ImageEditorToolMode mode)
@@ -236,14 +319,21 @@ public partial class ImageEditor : ContentView
 
         if (mode == ImageEditorToolMode.Crop)
         {
-            // Start crop with full image selected
-            drawable.ActiveCropRect = new RectF(0, 0, 1, 1);
+            drawable.ActiveCropRect = new RectF(0.1f, 0.1f, 0.8f, 0.8f);
+            ResetViewTransform(); // Ensure crop overlay draws on unzoomed view
         }
         else
         {
             drawable.ActiveCropRect = null;
         }
 
+        // Enable/disable move gestures
+        if (mode == ImageEditorToolMode.Move)
+            EnableMoveGestures();
+        else
+            DisableMoveGestures();
+
+        BuildDefaultToolbar();
         Invalidate();
     }
 
@@ -256,6 +346,9 @@ public partial class ImageEditor : ContentView
 
     void FinalizeCurrentOperation()
     {
+        // Finalize in-progress text entry
+        CommitActiveTextEntry();
+
         // Finalize in-progress draw stroke
         if (drawable.ActiveStrokePoints is { Count: >= 2 })
         {
@@ -281,9 +374,13 @@ public partial class ImageEditor : ContentView
 
     void ResetViewTransform()
     {
-        drawable.ViewScale = 1f;
-        drawable.ViewOffsetX = 0f;
-        drawable.ViewOffsetY = 0f;
+        // Reset native view transforms (used by Move mode)
+        graphicsView.Scale = 1;
+        graphicsView.TranslationX = 0;
+        graphicsView.TranslationY = 0;
+        currentScale = 1;
+        xOffset = 0;
+        yOffset = 0;
     }
 
     void Invalidate() => graphicsView.Invalidate();
@@ -316,6 +413,14 @@ public partial class ImageEditor : ContentView
 
         RemoveToolbar();
 
+        // When in crop mode, show a focused crop toolbar
+        if (CurrentToolMode == ImageEditorToolMode.Crop)
+        {
+            toolbarView = BuildCropToolbar();
+            AddToolbarToGrid();
+            return;
+        }
+
         var toolbar = new HorizontalStackLayout
         {
             Spacing = 4,
@@ -324,6 +429,7 @@ public partial class ImageEditor : ContentView
             BackgroundColor = Color.FromRgba(0, 0, 0, 0.6f)
         };
 
+        if (AllowZoom) toolbar.Children.Add(CreateToolButton("\u21c5", "Move", ImageEditorToolMode.Move));
         if (AllowCrop) toolbar.Children.Add(CreateToolButton("Crop", "Crop", ImageEditorToolMode.Crop));
         if (AllowRotate) toolbar.Children.Add(CreateActionButton("Rot", "Rotate", () => Rotate(90)));
         if (AllowDraw)
@@ -340,16 +446,64 @@ public partial class ImageEditor : ContentView
         toolbar.Children.Add(CreateActionButton("Redo", "Redo", Redo));
         toolbar.Children.Add(CreateActionButton("Reset", "Reset", Reset));
 
-        // Add confirm/cancel buttons for crop mode
-        if (CurrentToolMode == ImageEditorToolMode.Crop)
+        if (SaveCommand != null)
         {
             toolbar.Children.Add(new BoxView { WidthRequest = 1, HeightRequest = 30, Color = Colors.Grey, VerticalOptions = LayoutOptions.Center });
-            toolbar.Children.Add(CreateActionButton("OK", "Apply", ApplyCrop));
-            toolbar.Children.Add(CreateActionButton("X", "Cancel", () => CurrentToolMode = ImageEditorToolMode.None));
+            toolbar.Children.Add(CreateActionButton(SaveText, "Save", ExecuteSave));
         }
 
         toolbarView = toolbar;
         AddToolbarToGrid();
+    }
+
+    View BuildCropToolbar()
+    {
+        var toolbar = new HorizontalStackLayout
+        {
+            Spacing = 8,
+            HorizontalOptions = LayoutOptions.Center,
+            Padding = new Thickness(12, 6),
+            BackgroundColor = Color.FromRgba(0, 0, 0, 0.6f)
+        };
+
+        var cancelBtn = new Button
+        {
+            Text = CropCancelText,
+            FontSize = 14,
+            TextColor = Colors.White,
+            BackgroundColor = Color.FromRgba(255, 59, 48, 200), // red
+            CornerRadius = 8,
+            HeightRequest = 40,
+            Padding = new Thickness(16, 0)
+        };
+        cancelBtn.Clicked += (_, _) => CurrentToolMode = ImageEditorToolMode.Move;
+
+        var label = new Label
+        {
+            Text = "Drag edges to crop",
+            TextColor = Colors.White,
+            FontSize = 13,
+            VerticalOptions = LayoutOptions.Center,
+            Opacity = 0.8
+        };
+
+        var applyBtn = new Button
+        {
+            Text = CropApplyText,
+            FontSize = 14,
+            TextColor = Colors.White,
+            BackgroundColor = Color.FromRgba(52, 199, 89, 200), // green
+            CornerRadius = 8,
+            HeightRequest = 40,
+            Padding = new Thickness(16, 0)
+        };
+        applyBtn.Clicked += (_, _) => ApplyCrop();
+
+        toolbar.Children.Add(cancelBtn);
+        toolbar.Children.Add(label);
+        toolbar.Children.Add(applyBtn);
+
+        return toolbar;
     }
 
     Button CreateToolButton(string icon, string tooltip, ImageEditorToolMode mode)
@@ -360,7 +514,7 @@ public partial class ImageEditor : ContentView
             : Colors.Transparent;
         btn.Clicked += (_, _) =>
         {
-            CurrentToolMode = CurrentToolMode == mode ? ImageEditorToolMode.None : mode;
+            CurrentToolMode = CurrentToolMode == mode ? ImageEditorToolMode.Move : mode;
         };
         return btn;
     }
@@ -374,7 +528,7 @@ public partial class ImageEditor : ContentView
 
     ColorPickerButton CreateDrawColorButton()
     {
-        var cpb = new ColorPickerButton
+        drawColorButton = new ColorPickerButton
         {
             SelectedColor = DrawStrokeColor,
             CornerRadius = 22,
@@ -382,8 +536,8 @@ public partial class ImageEditor : ContentView
             WidthRequest = 36,
             VerticalOptions = LayoutOptions.Center
         };
-        cpb.ColorChanged += (_, color) => DrawStrokeColor = color;
-        return cpb;
+        drawColorButton.ColorChanged += (_, color) => DrawStrokeColor = color;
+        return drawColorButton;
     }
 
     static Button CreateBaseButton(string icon, string tooltip)

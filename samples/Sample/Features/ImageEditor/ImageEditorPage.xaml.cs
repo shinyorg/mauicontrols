@@ -6,11 +6,4 @@ public partial class ImageEditorPage : ContentPage
     {
         InitializeComponent();
     }
-
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        if (BindingContext is ImageEditorViewModel vm && vm.ImageData == null)
-            vm.LoadSampleImageCommand.Execute(null);
-    }
 }

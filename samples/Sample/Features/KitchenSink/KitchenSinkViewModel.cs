@@ -121,11 +121,8 @@ public partial class KitchenSinkViewModel(INavigator navigator) : ObservableObje
 
         IsImageViewerOpen = false;
 
-        // Download the image bytes and navigate to the editor
-        using var client = new HttpClient();
-        var bytes = await client.GetByteArrayAsync(ViewerImageSource);
-
-        await navigator.NavigateTo<ImageEditor.ImageEditorViewModel>(vm => vm.ImageData = bytes);
+        var imageUri = ViewerImageSource;
+        await navigator.NavigateTo<ImageEditor.ImageEditorViewModel>(vm => vm.ImageSource = ImageSource.FromUri(new Uri(imageUri)));
     }
 
     async Task SimulateReplyAsync()

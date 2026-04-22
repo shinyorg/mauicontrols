@@ -193,6 +193,12 @@ public partial class ColorPicker : ContentView
         UpdatePreview(color);
         UpdateHexDisplay(color);
         UpdateOpacityTrack(color);
+
+        // Fire events directly — OnSelectedColorChanged won't fire them
+        // because isUpdating is true when this is called from internal handlers
+        ColorChanged?.Invoke(this, color);
+        if (ColorChangedCommand?.CanExecute(color) == true)
+            ColorChangedCommand.Execute(color);
     }
 
     void UpdateFromColor(Color color)

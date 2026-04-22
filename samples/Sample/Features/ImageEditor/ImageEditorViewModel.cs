@@ -1,13 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Shiny;
 using Shiny.Maui.Controls.ImageEditor;
 
 namespace Sample.Features.ImageEditor;
 
-public partial class ImageEditorViewModel : ObservableObject
+public partial class ImageEditorViewModel(IDialogs dialogs) : ObservableObject
 {
     [ObservableProperty]
-    byte[]? imageData;
+    ImageSource? imageSource = "dotnet_bot.png";
 
     [ObservableProperty]
     bool canUndo;
@@ -19,20 +20,10 @@ public partial class ImageEditorViewModel : ObservableObject
     ImageEditorToolMode currentToolMode;
 
     [ObservableProperty]
-    Color drawColor = Colors.Red;
+    Color drawColor = Colors.White;
 
     [ObservableProperty]
     double drawStrokeWidth = 3;
-
-    [RelayCommand]
-    async Task LoadSampleImage()
-    {
-        // Load the embedded dotnet_bot image as bytes
-        using var stream = await FileSystem.OpenAppPackageFileAsync("dotnet_bot.png");
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
-        ImageData = ms.ToArray();
-    }
 
     [RelayCommand]
     async Task PickImage()
@@ -44,15 +35,19 @@ public partial class ImageEditorViewModel : ObservableObject
         if (result == null)
             return;
 
-        using var stream = await result.OpenReadAsync();
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
-        ImageData = ms.ToArray();
+        ImageSource = ImageSource.FromFile(result.FullPath);
     }
 
     [RelayCommand]
-    void SetDrawColor(string colorHex)
+    async Task Save(EditedImage editedImage)
     {
-        DrawColor = Color.FromArgb(colorHex);
+        await using var stream = await editedImage.ToStreamAsync(ImageExportFormat.Png);
+
+        var fileName = $"edited_{DateTime.Now:yyyyMMdd_HHmmss}.png";
+        var filePath = Path.Combine(FileSystem.CacheDirectory, fileName);
+        await using (var fileStream = File.Create(filePath))
+            await stream.CopyToAsync(fileStream);
+
+        await dialogs.Alert("Saved", $"Image saved to:\n{filePath}");
     }
 }

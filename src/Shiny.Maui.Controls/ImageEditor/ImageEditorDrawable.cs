@@ -7,11 +7,6 @@ internal sealed class ImageEditorDrawable : IDrawable
     public Microsoft.Maui.Graphics.IImage? Image { get; set; }
     public ImageEditorState State { get; set; } = new();
 
-    // View transform (zoom/pan - not edit actions)
-    public float ViewScale { get; set; } = 1f;
-    public float ViewOffsetX { get; set; }
-    public float ViewOffsetY { get; set; }
-
     // Current tool mode
     public ImageEditorToolMode ToolMode { get; set; }
 
@@ -20,7 +15,7 @@ internal sealed class ImageEditorDrawable : IDrawable
 
     // In-progress draw stroke
     public List<PointF>? ActiveStrokePoints { get; set; }
-    public Color ActiveStrokeColor { get; set; } = Colors.Red;
+    public Color ActiveStrokeColor { get; set; } = Colors.White;
     public float ActiveStrokeWidth { get; set; } = 3f;
 
     // Cached effective image bounds after applying all crop/rotate actions
@@ -36,18 +31,15 @@ internal sealed class ImageEditorDrawable : IDrawable
 
         canvas.SaveState();
 
-        // Calculate base image rect (fit image into available area)
-        imageRect = CalculateFitRect(Image.Width, Image.Height, dirtyRect);
-
-        // Apply view transform (zoom/pan)
-        var cx = dirtyRect.Width / 2f;
-        var cy = dirtyRect.Height / 2f;
-        canvas.Translate(cx + ViewOffsetX, cy + ViewOffsetY);
-        canvas.Scale(ViewScale, ViewScale);
-        canvas.Translate(-cx, -cy);
-
-        // Draw the image with all committed actions applied
         DrawImageWithActions(canvas, dirtyRect);
+
+        // Draw border around the image surface area
+        if (imageRect is { Width: > 0, Height: > 0 })
+        {
+            canvas.StrokeColor = Color.FromRgba(255, 255, 255, 0.3f);
+            canvas.StrokeSize = 1f;
+            canvas.DrawRectangle(imageRect);
+        }
 
         // Draw in-progress tool overlays
         if (ToolMode == ImageEditorToolMode.Crop && ActiveCropRect.HasValue)
@@ -61,11 +53,14 @@ internal sealed class ImageEditorDrawable : IDrawable
 
     void DrawImageWithActions(ICanvas canvas, RectF dirtyRect)
     {
-        // Build up cumulative transform from actions
-        var currentRect = imageRect;
+        // Compute cumulative crop region in normalized image coordinates (0-1)
+        // and cumulative rotation
+        var cropX = 0f;
+        var cropY = 0f;
+        var cropW = 1f;
+        var cropH = 1f;
         float cumulativeRotation = 0f;
 
-        // First pass: compute the effective crop region and rotation
         foreach (var action in State.Actions)
         {
             switch (action)
@@ -75,69 +70,76 @@ internal sealed class ImageEditorDrawable : IDrawable
                     break;
 
                 case CropAction crop:
-                    // Apply crop to current rect (crop rect is normalized 0-1)
-                    currentRect = new RectF(
-                        currentRect.X + crop.CropRect.X * currentRect.Width,
-                        currentRect.Y + crop.CropRect.Y * currentRect.Height,
-                        crop.CropRect.Width * currentRect.Width,
-                        crop.CropRect.Height * currentRect.Height
-                    );
+                    // Compose crops: new crop is relative to current visible region
+                    cropX += crop.CropRect.X * cropW;
+                    cropY += crop.CropRect.Y * cropH;
+                    cropW *= crop.CropRect.Width;
+                    cropH *= crop.CropRect.Height;
                     break;
             }
         }
 
-        // Normalize rotation
         cumulativeRotation %= 360f;
         if (cumulativeRotation < 0) cumulativeRotation += 360f;
 
-        // For 90/270 degree rotations, the image rect dimensions swap
-        var drawRect = currentRect;
-        var needsSwap = Math.Abs(cumulativeRotation % 180 - 90) < 0.1f;
-        if (needsSwap)
-        {
-            // Swap width/height and recenter
-            var newWidth = currentRect.Height;
-            var newHeight = currentRect.Width;
-            drawRect = new RectF(
-                currentRect.Center.X - newWidth / 2f,
-                currentRect.Center.Y - newHeight / 2f,
-                newWidth,
-                newHeight
-            );
-        }
+        // Determine the effective visible image dimensions (in source pixels)
+        var srcW = Image!.Width * cropW;
+        var srcH = Image.Height * cropH;
 
-        // Draw the image with rotation
+        // For 90/270 rotation, the visible dimensions are swapped
+        var needsSwap = Math.Abs(cumulativeRotation % 180 - 90) < 0.1f;
+        var displayW = needsSwap ? srcH : srcW;
+        var displayH = needsSwap ? srcW : srcH;
+
+        // Fit the effective visible portion into the available area
+        imageRect = CalculateFitRect(displayW, displayH, dirtyRect);
+
+        // Now we need to draw only the cropped portion of the image, filling imageRect.
+        // Strategy: clip to imageRect, then position/scale the full image so the cropped
+        // portion aligns with imageRect.
+        canvas.SaveState();
+        canvas.ClipRectangle(imageRect);
+
+        // Calculate where the full image would go such that the crop region fills imageRect
+        var fullDrawW = imageRect.Width / (needsSwap ? cropH : cropW);
+        var fullDrawH = imageRect.Height / (needsSwap ? cropW : cropH);
+
+        float fullDrawX, fullDrawY;
+
         if (Math.Abs(cumulativeRotation) > 0.1f)
         {
-            canvas.SaveState();
-            canvas.Translate(drawRect.Center.X, drawRect.Center.Y);
+            // With rotation, translate to center of imageRect, rotate, then draw offset
+            canvas.Translate(imageRect.Center.X, imageRect.Center.Y);
             canvas.Rotate(cumulativeRotation);
-            canvas.Translate(-drawRect.Center.X, -drawRect.Center.Y);
+            canvas.Translate(-imageRect.Center.X, -imageRect.Center.Y);
 
-            // When rotated, draw into the unswapped rect so rotation makes it fit
             if (needsSwap)
             {
-                var unswapped = new RectF(
-                    drawRect.Center.X - currentRect.Width / 2f,
-                    drawRect.Center.Y - currentRect.Height / 2f,
-                    currentRect.Width,
-                    currentRect.Height
-                );
-                canvas.DrawImage(Image, unswapped.X, unswapped.Y, unswapped.Width, unswapped.Height);
+                // After rotation, source X maps to display Y and vice versa
+                var unrotatedW = imageRect.Height / cropW;
+                var unrotatedH = imageRect.Width / cropH;
+                fullDrawX = imageRect.Center.X - unrotatedW / 2f - cropX / cropW * imageRect.Height;
+                fullDrawY = imageRect.Center.Y - unrotatedH / 2f - cropY / cropH * imageRect.Width;
+                canvas.DrawImage(Image, fullDrawX, fullDrawY, unrotatedW, unrotatedH);
             }
             else
             {
-                canvas.DrawImage(Image, drawRect.X, drawRect.Y, drawRect.Width, drawRect.Height);
+                fullDrawX = imageRect.X - cropX / cropW * imageRect.Width;
+                fullDrawY = imageRect.Y - cropY / cropH * imageRect.Height;
+                canvas.DrawImage(Image, fullDrawX, fullDrawY, fullDrawW, fullDrawH);
             }
-
-            canvas.RestoreState();
         }
         else
         {
-            canvas.DrawImage(Image, drawRect.X, drawRect.Y, drawRect.Width, drawRect.Height);
+            // No rotation: position the full image so crop region aligns with imageRect
+            fullDrawX = imageRect.X - cropX / cropW * imageRect.Width;
+            fullDrawY = imageRect.Y - cropY / cropH * imageRect.Height;
+            canvas.DrawImage(Image, fullDrawX, fullDrawY, fullDrawW, fullDrawH);
         }
 
-        // Second pass: draw overlay actions (strokes, text)
+        canvas.RestoreState();
+
+        // Draw overlay actions (strokes, text) mapped to the visible imageRect
         foreach (var action in State.Actions)
         {
             switch (action)
@@ -145,21 +147,21 @@ internal sealed class ImageEditorDrawable : IDrawable
                 case DrawStrokeAction stroke:
                     var scaledPoints = stroke.Points
                         .Select(p => new PointF(
-                            drawRect.X + p.X * drawRect.Width,
-                            drawRect.Y + p.Y * drawRect.Height))
+                            imageRect.X + p.X * imageRect.Width,
+                            imageRect.Y + p.Y * imageRect.Height))
                         .ToList();
                     DrawStroke(canvas, scaledPoints, stroke.StrokeColor, stroke.StrokeWidth);
                     break;
 
                 case TextAnnotationAction text:
-                    var textX = drawRect.X + text.Position.X * drawRect.Width;
-                    var textY = drawRect.Y + text.Position.Y * drawRect.Height;
+                    var textX = imageRect.X + text.Position.X * imageRect.Width;
+                    var textY = imageRect.Y + text.Position.Y * imageRect.Height;
                     canvas.FontSize = text.FontSize;
                     canvas.FontColor = text.TextColor;
                     canvas.DrawString(
                         text.Text,
                         textX, textY,
-                        drawRect.Width - (textX - drawRect.X),
+                        imageRect.Width - (textX - imageRect.X),
                         text.FontSize * 1.5f,
                         HorizontalAlignment.Left,
                         VerticalAlignment.Top);
@@ -170,7 +172,6 @@ internal sealed class ImageEditorDrawable : IDrawable
 
     void DrawCropOverlay(ICanvas canvas, RectF normalizedCrop)
     {
-        // Convert normalized crop to pixel coords
         var cropRect = new RectF(
             imageRect.X + normalizedCrop.X * imageRect.Width,
             imageRect.Y + normalizedCrop.Y * imageRect.Height,
@@ -178,27 +179,23 @@ internal sealed class ImageEditorDrawable : IDrawable
             normalizedCrop.Height * imageRect.Height
         );
 
-        // Draw dim overlay in four rectangles around the crop area
+        // Dim overlay around crop area
         var dimColor = Color.FromRgba(0, 0, 0, 0.5f);
         canvas.FillColor = dimColor;
 
-        // Top
         canvas.FillRectangle(imageRect.X, imageRect.Y, imageRect.Width, cropRect.Y - imageRect.Y);
-        // Bottom
         var bottomY = cropRect.Bottom;
         canvas.FillRectangle(imageRect.X, bottomY, imageRect.Width, imageRect.Bottom - bottomY);
-        // Left
         canvas.FillRectangle(imageRect.X, cropRect.Y, cropRect.X - imageRect.X, cropRect.Height);
-        // Right
         var rightX = cropRect.Right;
         canvas.FillRectangle(rightX, cropRect.Y, imageRect.Right - rightX, cropRect.Height);
 
-        // Draw crop border
+        // Crop border
         canvas.StrokeColor = Colors.White;
         canvas.StrokeSize = 2f;
         canvas.DrawRectangle(cropRect);
 
-        // Draw rule-of-thirds lines
+        // Rule-of-thirds
         canvas.StrokeColor = Color.FromRgba(255, 255, 255, 0.3f);
         canvas.StrokeSize = 1f;
         var thirdW = cropRect.Width / 3f;
@@ -208,18 +205,14 @@ internal sealed class ImageEditorDrawable : IDrawable
         canvas.DrawLine(cropRect.X, cropRect.Y + thirdH, cropRect.Right, cropRect.Y + thirdH);
         canvas.DrawLine(cropRect.X, cropRect.Y + thirdH * 2, cropRect.Right, cropRect.Y + thirdH * 2);
 
-        // Draw 8 drag handles (4 corners + 4 midpoints)
+        // 8 drag handles
         canvas.FillColor = Colors.White;
-        const float handleSize = 10f;
-        var halfHandle = handleSize / 2f;
+        const float halfHandle = 5f;
 
-        // Corners
         DrawHandle(canvas, cropRect.X, cropRect.Y, halfHandle);
         DrawHandle(canvas, cropRect.Right, cropRect.Y, halfHandle);
         DrawHandle(canvas, cropRect.X, cropRect.Bottom, halfHandle);
         DrawHandle(canvas, cropRect.Right, cropRect.Bottom, halfHandle);
-
-        // Midpoints
         DrawHandle(canvas, cropRect.Center.X, cropRect.Y, halfHandle);
         DrawHandle(canvas, cropRect.Center.X, cropRect.Bottom, halfHandle);
         DrawHandle(canvas, cropRect.X, cropRect.Center.Y, halfHandle);
@@ -269,8 +262,5 @@ internal sealed class ImageEditorDrawable : IDrawable
         );
     }
 
-    /// <summary>
-    /// Returns the current image rect in view coordinates (for gesture hit testing).
-    /// </summary>
     public RectF GetImageRect() => imageRect;
 }

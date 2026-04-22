@@ -12,13 +12,13 @@
         <ScrollView>
             <VerticalStackLayout Spacing="16" Padding="16">
 
-                <Label Text="Color Picker Button"
+                <Label Text="Color Picker"
                        FontSize="24"
                        FontAttributes="Bold" />
 
                 <HorizontalStackLayout Spacing="16">
                     <shiny:ColorPickerButton SelectedColor="{Binding SelectedColor}"
-                                             Text="Pick Color"
+                                             Text="{Binding PickerButtonText}"
                                              ShowOpacity="{Binding ShowOpacity}" />
 
                     <Border BackgroundColor="{Binding SelectedColor}"
@@ -36,20 +36,10 @@
                     </Border>
                 </HorizontalStackLayout>
 
-                <Label Text="Inline Color Picker"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       Margin="0,16,0,0" />
-
-                <shiny:ColorPicker SelectedColor="{Binding SelectedColor}"
-                                   ShowOpacity="{Binding ShowOpacity}" />
-
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                    <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center">
-                        <Label Text="Show Opacity" VerticalOptions="Center" />
-                        <Switch IsToggled="{Binding ShowOpacity}" />
-                    </HorizontalStackLayout>
-                </Grid>
+                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                    <Label Text="Show Opacity" VerticalOptions="Center" />
+                    <Switch IsToggled="{Binding ShowOpacity}" />
+                </HorizontalStackLayout>
 
             </VerticalStackLayout>
         </ScrollView>

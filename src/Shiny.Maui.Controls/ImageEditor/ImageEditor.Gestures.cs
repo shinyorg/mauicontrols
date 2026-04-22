@@ -2,129 +2,254 @@ namespace Shiny.Maui.Controls.ImageEditor;
 
 public partial class ImageEditor
 {
-    const float MinZoom = 1f;
-    const float MaxZoom = 5f;
+    const double MinScale = 1.0;
+    const double MaxScale = 5.0;
     const float CropHandleHitRadius = 24f;
 
-    float startScale = 1f;
+    readonly PinchGestureRecognizer pinchGesture = new();
+    readonly PanGestureRecognizer panGesture = new();
+
+    double currentScale = 1;
+    double startScale = 1;
+    double xOffset, yOffset;
+    double startX, startY;
+    bool isPinching;
+
     PointF touchStartPoint;
-    float viewStartX, viewStartY;
     CropHandle activeCropHandle = CropHandle.None;
     RectF cropStartRect;
-    bool isPanning;
+    bool isDragging;
 
     void SetupGestures()
     {
-        var pinch = new PinchGestureRecognizer();
-        pinch.PinchUpdated += OnPinchUpdated;
-        graphicsView.GestureRecognizers.Add(pinch);
+        pinchGesture.PinchUpdated += OnPinchUpdated;
+        panGesture.PanUpdated += OnPanUpdated;
 
-        var pan = new PanGestureRecognizer();
-        pan.PanUpdated += OnPanUpdated;
-        graphicsView.GestureRecognizers.Add(pan);
+        var doubleTap = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
+        doubleTap.Tapped += OnDoubleTapped;
+        graphicsView.GestureRecognizers.Add(doubleTap);
 
         var tap = new TapGestureRecognizer { NumberOfTapsRequired = 1 };
         tap.Tapped += OnTapped;
         graphicsView.GestureRecognizers.Add(tap);
+
+        // StartInteraction/DragInteraction for Draw and Crop (absolute coordinates)
+        graphicsView.StartInteraction += OnStartInteraction;
+        graphicsView.DragInteraction += OnDragInteraction;
+        graphicsView.EndInteraction += OnEndInteraction;
     }
+
+    void EnableMoveGestures()
+    {
+        if (!graphicsView.GestureRecognizers.Contains(pinchGesture))
+            graphicsView.GestureRecognizers.Add(pinchGesture);
+    }
+
+    void DisableMoveGestures()
+    {
+        graphicsView.GestureRecognizers.Remove(pinchGesture);
+        graphicsView.GestureRecognizers.Remove(panGesture);
+
+        if (currentScale > MinScale)
+            _ = AnimateResetZoomAsync();
+    }
+
+    #region Pinch Zoom (Move mode — native view transforms like ImageViewer)
 
     void OnPinchUpdated(object? sender, PinchGestureUpdatedEventArgs e)
     {
-        if (!AllowZoom || CurrentToolMode != ImageEditorToolMode.None)
-            return;
+        if (CurrentToolMode != ImageEditorToolMode.Move) return;
 
         switch (e.Status)
         {
             case GestureStatus.Started:
-                startScale = drawable.ViewScale;
+                isPinching = true;
+                startScale = currentScale;
                 break;
 
             case GestureStatus.Running:
-                drawable.ViewScale = Math.Clamp(
-                    startScale * (float)e.Scale,
-                    MinZoom,
-                    MaxZoom);
-                Invalidate();
+                currentScale += (e.Scale - 1) * startScale;
+                currentScale = Math.Clamp(currentScale, MinScale, MaxScale);
+
+                var pinchX = (e.ScaleOrigin.X - 0.5) * graphicsView.Width;
+                var pinchY = (e.ScaleOrigin.Y - 0.5) * graphicsView.Height;
+                var scaleDelta = currentScale - startScale;
+
+                var targetX = xOffset - pinchX * scaleDelta;
+                var targetY = yOffset - pinchY * scaleDelta;
+
+                graphicsView.TranslationX = ClampX(targetX);
+                graphicsView.TranslationY = ClampY(targetY);
+                graphicsView.Scale = currentScale;
                 break;
 
             case GestureStatus.Completed:
             case GestureStatus.Canceled:
-                if (drawable.ViewScale <= MinZoom + 0.05f)
-                    ResetViewTransform();
-                Invalidate();
+                isPinching = false;
+                xOffset = graphicsView.TranslationX;
+                yOffset = graphicsView.TranslationY;
+
+                if (currentScale <= MinScale)
+                    _ = AnimateResetZoomAsync();
+                else if (!graphicsView.GestureRecognizers.Contains(panGesture))
+                    graphicsView.GestureRecognizers.Add(panGesture);
                 break;
         }
     }
 
     void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
+        if (isPinching || currentScale <= MinScale || CurrentToolMode != ImageEditorToolMode.Move)
+            return;
+
         switch (e.StatusType)
         {
             case GestureStatus.Started:
-                OnPanStart();
+                startX = xOffset;
+                startY = yOffset;
                 break;
 
             case GestureStatus.Running:
-                OnPanMove((float)e.TotalX, (float)e.TotalY);
+                graphicsView.TranslationX = ClampX(startX + e.TotalX);
+                graphicsView.TranslationY = ClampY(startY + e.TotalY);
                 break;
 
             case GestureStatus.Completed:
-            case GestureStatus.Canceled:
-                OnPanEnd();
+                xOffset = graphicsView.TranslationX;
+                yOffset = graphicsView.TranslationY;
                 break;
         }
     }
 
-    void OnPanStart()
+    void OnDoubleTapped(object? sender, TappedEventArgs e)
     {
-        isPanning = true;
+        if (CurrentToolMode != ImageEditorToolMode.Move) return;
+
+        if (currentScale > MinScale)
+            _ = AnimateResetZoomAsync();
+        else
+            _ = AnimateZoomInAsync(e);
+    }
+
+    async Task AnimateZoomInAsync(TappedEventArgs e)
+    {
+        var targetScale = Math.Min(2.5, MaxScale);
+        var point = e.GetPosition(graphicsView);
+
+        double tx = 0, ty = 0;
+        if (point.HasValue)
+        {
+            tx = -(point.Value.X - graphicsView.Width / 2) * (targetScale - 1);
+            ty = -(point.Value.Y - graphicsView.Height / 2) * (targetScale - 1);
+        }
+
+        currentScale = targetScale;
+        tx = ClampX(tx);
+        ty = ClampY(ty);
+        xOffset = tx;
+        yOffset = ty;
+
+        await Task.WhenAll(
+            graphicsView.ScaleTo(targetScale, 250, Easing.CubicOut),
+            graphicsView.TranslateTo(tx, ty, 250, Easing.CubicOut)
+        );
+
+        if (!graphicsView.GestureRecognizers.Contains(panGesture))
+            graphicsView.GestureRecognizers.Add(panGesture);
+    }
+
+    async Task AnimateResetZoomAsync()
+    {
+        graphicsView.GestureRecognizers.Remove(panGesture);
+
+        await Task.WhenAll(
+            graphicsView.ScaleTo(1, 250, Easing.CubicOut),
+            graphicsView.TranslateTo(0, 0, 250, Easing.CubicOut)
+        );
+
+        currentScale = 1;
+        xOffset = 0;
+        yOffset = 0;
+    }
+
+    double ClampX(double x)
+    {
+        if (currentScale <= MinScale) return 0;
+        var maxX = graphicsView.Width * (currentScale - 1) / 2;
+        return Math.Clamp(x, -maxX, maxX);
+    }
+
+    double ClampY(double y)
+    {
+        if (currentScale <= MinScale) return 0;
+        var maxY = graphicsView.Height * (currentScale - 1) / 2;
+        return Math.Clamp(y, -maxY, maxY);
+    }
+
+    #endregion
+
+    #region Touch Interaction — Draw & Crop (Start/Drag/End)
+
+    void OnStartInteraction(object? sender, TouchEventArgs e)
+    {
+        if (CurrentToolMode != ImageEditorToolMode.Draw && CurrentToolMode != ImageEditorToolMode.Crop)
+            return;
+
+        var point = e.Touches[0];
+        touchStartPoint = point;
+        isDragging = true;
 
         switch (CurrentToolMode)
         {
-            case ImageEditorToolMode.None:
-                viewStartX = drawable.ViewOffsetX;
-                viewStartY = drawable.ViewOffsetY;
-                break;
-
-            case ImageEditorToolMode.Crop:
-                // We need to estimate start point for crop; use center of image as fallback.
-                // The actual handle detection happens with the first delta.
-                touchStartPoint = PointF.Zero;
-                activeCropHandle = CropHandle.None;
+            case ImageEditorToolMode.Crop when drawable.ActiveCropRect.HasValue:
+                cropStartRect = drawable.ActiveCropRect.Value;
+                activeCropHandle = HitTestCropHandle(point);
                 break;
 
             case ImageEditorToolMode.Draw:
-                drawable.ActiveStrokePoints = [];
+            {
+                var imageRect = drawable.GetImageRect();
+                if (imageRect is not { Width: > 0, Height: > 0 } || !imageRect.Contains(point))
+                    return;
+                drawable.ActiveStrokePoints = [point];
+                Invalidate();
                 break;
+            }
         }
     }
 
-    void OnPanMove(float totalX, float totalY)
+    void OnDragInteraction(object? sender, TouchEventArgs e)
     {
+        if (!isDragging) return;
+
+        var point = e.Touches[0];
+
         switch (CurrentToolMode)
         {
-            case ImageEditorToolMode.None:
-                if (drawable.ViewScale > MinZoom + 0.05f)
+            case ImageEditorToolMode.Crop when activeCropHandle != CropHandle.None:
+                HandleCropDrag(point);
+                break;
+
+            case ImageEditorToolMode.Draw when drawable.ActiveStrokePoints != null:
+            {
+                var imageRect = drawable.GetImageRect();
+                if (imageRect is { Width: > 0, Height: > 0 })
                 {
-                    drawable.ViewOffsetX = viewStartX + totalX;
-                    drawable.ViewOffsetY = viewStartY + totalY;
-                    Invalidate();
+                    // Clamp point to image bounds
+                    var clamped = new PointF(
+                        Math.Clamp(point.X, imageRect.X, imageRect.Right),
+                        Math.Clamp(point.Y, imageRect.Y, imageRect.Bottom));
+                    drawable.ActiveStrokePoints.Add(clamped);
                 }
+                Invalidate();
                 break;
-
-            case ImageEditorToolMode.Crop:
-                HandleCropPan(totalX, totalY);
-                break;
-
-            case ImageEditorToolMode.Draw:
-                HandleDrawPan(totalX, totalY);
-                break;
+            }
         }
     }
 
-    void OnPanEnd()
+    void OnEndInteraction(object? sender, TouchEventArgs e)
     {
-        isPanning = false;
+        isDragging = false;
 
         switch (CurrentToolMode)
         {
@@ -138,6 +263,10 @@ public partial class ImageEditor
         }
     }
 
+    #endregion
+
+    #region Tap (Text placement)
+
     void OnTapped(object? sender, TappedEventArgs e)
     {
         if (CurrentToolMode != ImageEditorToolMode.Text)
@@ -148,44 +277,18 @@ public partial class ImageEditor
             HandleTextPlacement(point.Value);
     }
 
+    #endregion
+
     #region Crop Interaction
 
-    void HandleCropPan(float totalX, float totalY)
+    void HandleCropDrag(PointF point)
     {
-        if (!drawable.ActiveCropRect.HasValue)
-            return;
-
         var imageRect = drawable.GetImageRect();
         if (imageRect is not { Width: > 0, Height: > 0 })
             return;
 
-        // On first move, determine which handle to drag based on the center of the crop
-        if (activeCropHandle == CropHandle.None)
-        {
-            cropStartRect = drawable.ActiveCropRect.Value;
-
-            // Use the crop center as the assumed start point
-            var cropPixel = new RectF(
-                imageRect.X + cropStartRect.X * imageRect.Width,
-                imageRect.Y + cropStartRect.Y * imageRect.Height,
-                cropStartRect.Width * imageRect.Width,
-                cropStartRect.Height * imageRect.Height
-            );
-
-            // Default to bottom-right handle for initial drags (shrinking from full image)
-            activeCropHandle = CropHandle.BottomRight;
-
-            // Try to detect which edge/corner is being dragged based on delta direction
-            if (totalX < -5 && totalY < -5) activeCropHandle = CropHandle.BottomRight;
-            else if (totalX > 5 && totalY > 5) activeCropHandle = CropHandle.TopLeft;
-            else if (totalX < -5 && totalY > 5) activeCropHandle = CropHandle.BottomLeft;
-            else if (totalX > 5 && totalY < -5) activeCropHandle = CropHandle.TopRight;
-            else activeCropHandle = CropHandle.Move;
-        }
-
-        // Delta in normalized coords
-        var dx = totalX / imageRect.Width;
-        var dy = totalY / imageRect.Height;
+        var dx = (point.X - touchStartPoint.X) / imageRect.Width;
+        var dy = (point.Y - touchStartPoint.Y) / imageRect.Height;
 
         var crop = cropStartRect;
         RectF newCrop;
@@ -199,7 +302,6 @@ public partial class ImageEditor
                     crop.Width,
                     crop.Height);
                 break;
-
             case CropHandle.TopLeft:
                 newCrop = ResizeCrop(crop, dx, dy, 0, 0);
                 break;
@@ -232,6 +334,44 @@ public partial class ImageEditor
         Invalidate();
     }
 
+    CropHandle HitTestCropHandle(PointF touchPoint)
+    {
+        if (!drawable.ActiveCropRect.HasValue)
+            return CropHandle.None;
+
+        var imageRect = drawable.GetImageRect();
+        if (imageRect is not { Width: > 0, Height: > 0 })
+            return CropHandle.None;
+
+        var crop = drawable.ActiveCropRect.Value;
+        var cropPixel = new RectF(
+            imageRect.X + crop.X * imageRect.Width,
+            imageRect.Y + crop.Y * imageRect.Height,
+            crop.Width * imageRect.Width,
+            crop.Height * imageRect.Height
+        );
+
+        if (IsNear(touchPoint, cropPixel.X, cropPixel.Y)) return CropHandle.TopLeft;
+        if (IsNear(touchPoint, cropPixel.Right, cropPixel.Y)) return CropHandle.TopRight;
+        if (IsNear(touchPoint, cropPixel.X, cropPixel.Bottom)) return CropHandle.BottomLeft;
+        if (IsNear(touchPoint, cropPixel.Right, cropPixel.Bottom)) return CropHandle.BottomRight;
+
+        if (IsNear(touchPoint, cropPixel.Center.X, cropPixel.Y)) return CropHandle.TopCenter;
+        if (IsNear(touchPoint, cropPixel.Center.X, cropPixel.Bottom)) return CropHandle.BottomCenter;
+        if (IsNear(touchPoint, cropPixel.X, cropPixel.Center.Y)) return CropHandle.MiddleLeft;
+        if (IsNear(touchPoint, cropPixel.Right, cropPixel.Center.Y)) return CropHandle.MiddleRight;
+
+        if (IsNearHorizontalEdge(touchPoint, cropPixel.X, cropPixel.Right, cropPixel.Y)) return CropHandle.TopCenter;
+        if (IsNearHorizontalEdge(touchPoint, cropPixel.X, cropPixel.Right, cropPixel.Bottom)) return CropHandle.BottomCenter;
+        if (IsNearVerticalEdge(touchPoint, cropPixel.Y, cropPixel.Bottom, cropPixel.X)) return CropHandle.MiddleLeft;
+        if (IsNearVerticalEdge(touchPoint, cropPixel.Y, cropPixel.Bottom, cropPixel.Right)) return CropHandle.MiddleRight;
+
+        if (cropPixel.Contains(touchPoint))
+            return CropHandle.Move;
+
+        return CropHandle.None;
+    }
+
     static RectF ResizeCrop(RectF crop, float dLeft, float dTop, float dRight, float dBottom)
     {
         const float minSize = 0.05f;
@@ -252,66 +392,33 @@ public partial class ImageEditor
         return new RectF(x, y, w, h);
     }
 
-    #endregion
-
-    #region Draw Interaction
-
-    void HandleDrawPan(float totalX, float totalY)
+    static bool IsNear(PointF touch, float x, float y)
     {
-        if (drawable.ActiveStrokePoints == null)
-            return;
+        var dx = touch.X - x;
+        var dy = touch.Y - y;
+        return dx * dx + dy * dy <= CropHandleHitRadius * CropHandleHitRadius;
+    }
 
-        // PanGestureRecognizer gives TotalX/TotalY relative to gesture start.
-        // We approximate absolute position using the center of the GraphicsView as origin,
-        // offset by the pan delta. This works because GraphicsView fills the control.
-        var imageRect = drawable.GetImageRect();
-        if (imageRect is not { Width: > 0, Height: > 0 })
-            return;
+    static bool IsNearHorizontalEdge(PointF touch, float x1, float x2, float y)
+    {
+        return touch.X >= x1 - CropHandleHitRadius && touch.X <= x2 + CropHandleHitRadius
+            && MathF.Abs(touch.Y - y) <= CropHandleHitRadius;
+    }
 
-        // For drawing, we store the point directly
-        // First point establishes origin, subsequent points are relative
-        if (drawable.ActiveStrokePoints.Count == 0)
-        {
-            // Store the first point at image center + delta
-            var startX = imageRect.Center.X + totalX;
-            var startY = imageRect.Center.Y + totalY;
-            drawable.ActiveStrokePoints.Add(new PointF(startX, startY));
-        }
-        else
-        {
-            // Compute new point relative to first point's delta
-            var firstPoint = drawable.ActiveStrokePoints[0];
-            var newPoint = new PointF(
-                firstPoint.X + (totalX - (drawable.ActiveStrokePoints.Count > 1 ? 0 : 0)),
-                firstPoint.Y + (totalY - (drawable.ActiveStrokePoints.Count > 1 ? 0 : 0))
-            );
-
-            // Actually, we need to track the origin offset
-            // Since TotalX/Y are cumulative from start, each point is origin + totalDelta
-            var origin = drawable.ActiveStrokePoints[0];
-            // Recalculate: origin was placed at some position, and totalX/Y grows
-            // The first call had some totalX/Y, so all subsequent points are:
-            // origin + (currentTotal - firstTotal)
-            // But we don't have firstTotal. Instead, add point at each new total:
-            if (drawable.ActiveStrokePoints.Count == 1)
-            {
-                // Store the reference totalX/Y with the origin
-                touchStartPoint = new PointF(totalX, totalY);
-            }
-
-            var px = origin.X + (totalX - touchStartPoint.X);
-            var py = origin.Y + (totalY - touchStartPoint.Y);
-            drawable.ActiveStrokePoints.Add(new PointF(px, py));
-        }
-
-        Invalidate();
+    static bool IsNearVerticalEdge(PointF touch, float y1, float y2, float x)
+    {
+        return touch.Y >= y1 - CropHandleHitRadius && touch.Y <= y2 + CropHandleHitRadius
+            && MathF.Abs(touch.X - x) <= CropHandleHitRadius;
     }
 
     #endregion
 
     #region Text Placement
 
-    async void HandleTextPlacement(PointF point)
+    Entry? activeTextEntry;
+    PointF activeTextPosition;
+
+    void HandleTextPlacement(PointF point)
     {
         var imageRect = drawable.GetImageRect();
         if (imageRect is not { Width: > 0, Height: > 0 })
@@ -320,13 +427,58 @@ public partial class ImageEditor
         if (!imageRect.Contains(point))
             return;
 
-        var text = await PromptForTextAsync();
+        CommitActiveTextEntry();
+
+        activeTextPosition = point;
+
+        activeTextEntry = new Entry
+        {
+            FontSize = TextFontSize,
+            TextColor = DrawStrokeColor,
+            BackgroundColor = Colors.Transparent,
+            Placeholder = "Type here...",
+            PlaceholderColor = DrawStrokeColor.WithAlpha(0.5f),
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Start,
+            WidthRequest = 200,
+            Margin = new Thickness(point.X, point.Y, 0, 0)
+        };
+
+        activeTextEntry.Completed += OnTextEntryCompleted;
+        activeTextEntry.Unfocused += OnTextEntryUnfocused;
+
+        Grid.SetRow(activeTextEntry, 0);
+        rootGrid.Children.Add(activeTextEntry);
+
+        activeTextEntry.Focus();
+    }
+
+    void OnTextEntryCompleted(object? sender, EventArgs e) => CommitActiveTextEntry();
+    void OnTextEntryUnfocused(object? sender, FocusEventArgs e) => CommitActiveTextEntry();
+
+    void CommitActiveTextEntry()
+    {
+        if (activeTextEntry == null)
+            return;
+
+        var text = activeTextEntry.Text;
+        var entry = activeTextEntry;
+        activeTextEntry = null;
+
+        entry.Completed -= OnTextEntryCompleted;
+        entry.Unfocused -= OnTextEntryUnfocused;
+        rootGrid.Children.Remove(entry);
+
         if (string.IsNullOrWhiteSpace(text))
             return;
 
+        var imageRect = drawable.GetImageRect();
+        if (imageRect is not { Width: > 0, Height: > 0 })
+            return;
+
         var normalized = new PointF(
-            (point.X - imageRect.X) / imageRect.Width,
-            (point.Y - imageRect.Y) / imageRect.Height
+            (activeTextPosition.X - imageRect.X) / imageRect.Width,
+            (activeTextPosition.Y - imageRect.Y) / imageRect.Height
         );
 
         state.Push(new EditActions.TextAnnotationAction
@@ -334,17 +486,8 @@ public partial class ImageEditor
             Text = text,
             Position = normalized,
             FontSize = (float)TextFontSize,
-            TextColor = AnnotationTextColor
+            TextColor = DrawStrokeColor
         });
-    }
-
-    Task<string?> PromptForTextAsync()
-    {
-        var page = GetParentPage();
-        if (page == null)
-            return Task.FromResult<string?>(null);
-
-        return page.DisplayPromptAsync("Add Text", "Enter annotation text:");
     }
 
     Page? GetParentPage()

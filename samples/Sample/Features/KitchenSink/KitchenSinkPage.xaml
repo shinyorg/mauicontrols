@@ -74,7 +74,7 @@
                             MyBubbleColor="#DCF8C6"
                             OtherBubbleColor="White"
                             PlaceholderText="Type a message..."
-                            HeightRequest="300"/>
+                            HeightRequest="500"/>
         </shiny:SheetView>
 
         <!-- ImageViewer overlay with Edit footer -->

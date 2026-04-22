@@ -13,6 +13,9 @@ public partial class ColorPickerViewModel : ObservableObject
     [ObservableProperty]
     string colorDisplay = "#6495ED";
 
+    [ObservableProperty]
+    string pickerButtonText = "Pick Color (#6495ED)";
+
     partial void OnSelectedColorChanged(Color value)
     {
         var r = (int)(value.Red * 255);
@@ -23,5 +26,7 @@ public partial class ColorPickerViewModel : ObservableObject
         ColorDisplay = a < 255
             ? $"#{a:X2}{r:X2}{g:X2}{b:X2}"
             : $"#{r:X2}{g:X2}{b:X2}";
+
+        PickerButtonText = $"Pick Color ({ColorDisplay})";
     }
 }

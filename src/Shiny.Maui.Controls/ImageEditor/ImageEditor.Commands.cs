@@ -20,13 +20,13 @@ public partial class ImageEditor
         RotateCommand = new Command<float>(Rotate);
         ResetCommand = new Command(Reset);
         CropCommand = new Command(() => CurrentToolMode = CurrentToolMode == ImageEditorToolMode.Crop
-            ? ImageEditorToolMode.None
+            ? ImageEditorToolMode.Move
             : ImageEditorToolMode.Crop);
         DrawCommand = new Command(() => CurrentToolMode = CurrentToolMode == ImageEditorToolMode.Draw
-            ? ImageEditorToolMode.None
+            ? ImageEditorToolMode.Move
             : ImageEditorToolMode.Draw);
         TextCommand = new Command(() => CurrentToolMode = CurrentToolMode == ImageEditorToolMode.Text
-            ? ImageEditorToolMode.None
+            ? ImageEditorToolMode.Move
             : ImageEditorToolMode.Text);
 
         state.StateChanged += () =>
@@ -59,7 +59,7 @@ public partial class ImageEditor
         state.Reset();
         drawable.ActiveCropRect = null;
         drawable.ActiveStrokePoints = null;
-        CurrentToolMode = ImageEditorToolMode.None;
+        CurrentToolMode = ImageEditorToolMode.Move;
         ResetViewTransform();
         Invalidate();
     }
@@ -72,60 +72,32 @@ public partial class ImageEditor
         // Don't commit if it's essentially the full image
         if (cropRect is { X: < 0.01f, Y: < 0.01f, Width: > 0.98f, Height: > 0.98f })
         {
-            CurrentToolMode = ImageEditorToolMode.None;
+            CurrentToolMode = ImageEditorToolMode.Move;
             return;
         }
 
         state.Push(new CropAction { CropRect = cropRect });
         drawable.ActiveCropRect = null;
-        CurrentToolMode = ImageEditorToolMode.None;
+        CurrentToolMode = ImageEditorToolMode.Move;
     }
 
-    public async Task<Stream> ExportAsync(ImageExportOptions? options = null)
+    public EditedImage? GetEditedImage()
     {
-        options ??= new ImageExportOptions();
+        FinalizeCurrentOperation();
 
         if (drawable.Image == null)
-            return Stream.Null;
+            return null;
 
-        var originalWidth = drawable.Image.Width;
-        var originalHeight = drawable.Image.Height;
+        return new EditedImage(drawable.Image, state);
+    }
 
-        // Determine output dimensions
-        var targetWidth = (int)(options.Width ?? originalWidth);
-        var targetHeight = (int)(options.Height ?? originalHeight);
+    void ExecuteSave()
+    {
+        var editedImage = GetEditedImage();
+        if (editedImage == null)
+            return;
 
-        // Use the GraphicsView's canvas to render to a bitmap
-        var exportDrawable = new ImageEditorDrawable
-        {
-            Image = drawable.Image,
-            ViewScale = 1f,
-            ViewOffsetX = 0f,
-            ViewOffsetY = 0f,
-            ToolMode = ImageEditorToolMode.None
-        };
-
-        // Copy all committed actions
-        foreach (var action in state.Actions)
-            exportDrawable.State.Push(action);
-
-        // Render to a bitmap export context
-        var stream = new MemoryStream();
-
-#if IOS || MACCATALYST
-        using var context = new Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext(targetWidth, targetHeight, 1f);
-        exportDrawable.Draw(context.Canvas, new RectF(0, 0, targetWidth, targetHeight));
-        context.WriteToStream(stream);
-#elif ANDROID
-        using var context = new Microsoft.Maui.Graphics.Platform.PlatformBitmapExportContext(targetWidth, targetHeight, 1f);
-        exportDrawable.Draw(context.Canvas, new RectF(0, 0, targetWidth, targetHeight));
-        context.WriteToStream(stream);
-#else
-        // Fallback: render using the platform's default export mechanism
-        exportDrawable.Draw(null!, new RectF(0, 0, targetWidth, targetHeight));
-#endif
-
-        stream.Position = 0;
-        return stream;
+        if (SaveCommand?.CanExecute(editedImage) == true)
+            SaveCommand.Execute(editedImage);
     }
 }

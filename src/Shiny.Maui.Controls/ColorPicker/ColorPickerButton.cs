@@ -198,9 +198,12 @@ public class ColorPickerButton : ContentView
         var page = GetParentPage();
         if (page is ContentPage cp)
         {
-            if (cp.Content is Grid grid && !grid.Children.Contains(overlay))
-                grid.Children.Add(overlay);
-            else if (cp.Content is not Grid)
+            if (cp.Content is Grid grid)
+            {
+                if (!grid.Children.Contains(overlay))
+                    grid.Children.Add(overlay);
+            }
+            else
             {
                 // Wrap existing content in a Grid to overlay
                 var existing = cp.Content;
@@ -220,25 +223,46 @@ public class ColorPickerButton : ContentView
         if (!isOpen) return;
         isOpen = false;
 
+        // Fully remove overlay from visual tree to avoid input interception
+        if (overlay.Parent is Layout parent)
+            parent.Remove(overlay);
+
         overlay.IsVisible = false;
         popupBorder.IsVisible = false;
         foreach (var child in overlay.Children)
             ((View)child).IsVisible = false;
     }
 
+    bool isUpdatingColor;
+
     void OnPickerColorChanged(object? sender, Color color)
     {
-        SelectedColor = color;
+        if (isUpdatingColor) return;
+        isUpdatingColor = true;
+
+        SetValue(SelectedColorProperty, color);
+        UpdateButtonColor(color);
+
+        ColorChanged?.Invoke(this, color);
+        if (ColorChangedCommand?.CanExecute(color) == true)
+            ColorChangedCommand.Execute(color);
+
+        isUpdatingColor = false;
     }
 
     void OnSelectedColorChanged(Color color)
     {
+        if (isUpdatingColor) return;
+        isUpdatingColor = true;
+
         UpdateButtonColor(color);
         picker.SelectedColor = color;
 
         ColorChanged?.Invoke(this, color);
         if (ColorChangedCommand?.CanExecute(color) == true)
             ColorChangedCommand.Execute(color);
+
+        isUpdatingColor = false;
     }
 
     void UpdateButtonColor(Color color)
