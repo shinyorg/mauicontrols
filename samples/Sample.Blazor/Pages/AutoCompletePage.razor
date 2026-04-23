@@ -1,0 +1,159 @@
+@page "/autocomplete"
+
+<PageTitle>AutoComplete</PageTitle>
+
+<h1>AutoCompleteEntry</h1>
+
+<div class="demo-section">
+    <h2>Fruits (local filter, no SearchCommand)</h2>
+    <AutoCompleteEntry
+        ItemsSource="fruits"
+        Placeholder="Type a fruit..."
+        Threshold="1"
+        DebounceInterval="100"
+        SelectedItem="selectedFruit"
+        SelectedItemChanged="f => selectedFruit = f" />
+    <div class="state">Selected: <code>@(selectedFruit ?? "(none)")</code></div>
+</div>
+
+<div class="demo-section">
+    <h2>Programming Languages (TextMemberPath)</h2>
+    <AutoCompleteEntry
+        ItemsSource="languages"
+        Placeholder="Search languages..."
+        TextMemberPath="Name"
+        Threshold="1"
+        DebounceInterval="100"
+        SelectedItem="selectedLang"
+        SelectedItemChanged="OnLangSelected" />
+    <div class="state">
+        @if (selectedLang is Language lang)
+        {
+            <span>@lang.Name (@lang.Year) — @lang.Paradigm</span>
+        }
+        else
+        {
+            <span>(none)</span>
+        }
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Custom Template (with year)</h2>
+    <AutoCompleteEntry
+        ItemsSource="languages"
+        Placeholder="Search languages..."
+        TextMemberPath="Name"
+        Threshold="1"
+        MaxDropDownHeight="250">
+        <ItemTemplate Context="item">
+            @{ var l = (Language)item; }
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span>@l.Name</span>
+                <span style="color:#9CA3AF;font-size:12px;">(@l.Year)</span>
+            </div>
+        </ItemTemplate>
+    </AutoCompleteEntry>
+</div>
+
+<div class="demo-section">
+    <h2>Simulated Async Search (with spinner)</h2>
+    <AutoCompleteEntry
+        Placeholder="Search cities..."
+        SearchCommand="OnSearchCities"
+        ItemsSource="cityResults"
+        IsBusy="isSearching"
+        TextMemberPath="Name"
+        Threshold="2"
+        DebounceInterval="300"
+        SelectedItem="selectedCity"
+        SelectedItemChanged="c => selectedCity = c" />
+    <div class="state">
+        @if (selectedCity is City city)
+        {
+            <span>@city.Name (founded @city.Year) — @city.Region</span>
+        }
+        else
+        {
+            <span>(none)</span>
+        }
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Styled (dark theme)</h2>
+    <div style="background:#222;padding:12px;border-radius:8px;">
+        <AutoCompleteEntry
+            ItemsSource="fruits"
+            Placeholder="Dark themed..."
+            TextColor="white"
+            PlaceholderColor="#aaa"
+            DropDownBackgroundColor="#333"
+            DropDownBorderColor="#555"
+            SpinnerColor="dodgerblue"
+            Threshold="1" />
+    </div>
+</div>
+
+@code {
+    record Language(string Name, int Year, string Paradigm);
+    record City(string Name, int Year, string Region);
+
+    object? selectedFruit;
+    object? selectedLang;
+    object? selectedCity;
+    bool isSearching;
+    System.Collections.IList? cityResults;
+
+    List<string> fruits =
+    [
+        "Apple", "Apricot", "Avocado", "Banana", "Blackberry", "Blueberry",
+        "Cherry", "Coconut", "Cranberry", "Date", "Dragon Fruit", "Fig",
+        "Grape", "Grapefruit", "Guava", "Kiwi", "Lemon", "Lime",
+        "Lychee", "Mango", "Melon", "Nectarine", "Orange", "Papaya",
+        "Passion Fruit", "Peach", "Pear", "Pineapple", "Plum", "Pomegranate",
+        "Raspberry", "Starfruit", "Strawberry", "Tangerine", "Watermelon"
+    ];
+
+    List<Language> languages =
+    [
+        new("C", 1972, "Procedural"), new("C++", 1985, "Multi-paradigm"),
+        new("C#", 2000, "Object-oriented"), new("Dart", 2011, "Object-oriented"),
+        new("F#", 2005, "Functional"), new("Go", 2009, "Concurrent"),
+        new("Java", 1995, "Object-oriented"), new("JavaScript", 1995, "Multi-paradigm"),
+        new("Kotlin", 2011, "Multi-paradigm"), new("Python", 1991, "Multi-paradigm"),
+        new("Ruby", 1995, "Object-oriented"), new("Rust", 2010, "Multi-paradigm"),
+        new("Swift", 2014, "Multi-paradigm"), new("TypeScript", 2012, "Multi-paradigm")
+    ];
+
+    static readonly List<City> allCities =
+    [
+        new("New York", 1624, "Americas"), new("Los Angeles", 1781, "Americas"),
+        new("London", 43, "Europe"), new("Paris", 250, "Europe"),
+        new("Tokyo", 1457, "Asia"), new("Toronto", 1793, "Americas"),
+        new("Sydney", 1788, "Oceania"), new("Singapore", 1819, "Asia"),
+        new("Berlin", 1237, "Europe"), new("Mumbai", 1507, "Asia"),
+        new("São Paulo", 1554, "Americas"), new("Dubai", 1833, "Middle East"),
+        new("Seoul", 18, "Asia"), new("Mexico City", 1325, "Americas"),
+        new("Stockholm", 1252, "Europe"), new("Amsterdam", 1275, "Europe"),
+        new("Barcelona", 230, "Europe"), new("Rome", -753, "Europe"),
+        new("San Francisco", 1776, "Americas"), new("Vancouver", 1886, "Americas")
+    ];
+
+    void OnLangSelected(object? item) => selectedLang = item;
+
+    async Task OnSearchCities(string query)
+    {
+        isSearching = true;
+        StateHasChanged();
+
+        await Task.Delay(800); // simulate network
+
+        var filtered = allCities
+            .Where(c => c.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        cityResults = filtered;
+        isSearching = false;
+    }
+}

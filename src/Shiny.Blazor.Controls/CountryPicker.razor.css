@@ -1,0 +1,36 @@
+.shiny-country-picker {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.shiny-country-flag {
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.shiny-country-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+}
+
+.shiny-country-item-flag {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.shiny-country-item-name {
+    flex: 1;
+    font-size: 14px;
+}
+
+.shiny-country-item-dial {
+    font-size: 12px;
+    color: #9CA3AF;
+    flex-shrink: 0;
+}

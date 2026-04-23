@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, SheetView (bottom/top) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), and haptic feedback support across all interactive controls
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, SheetView (bottom/top) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, and haptic feedback support across all interactive controls
 auto_invoke: true
 triggers:
   - tableview
@@ -66,6 +66,26 @@ triggers:
   - blazor scheduler
   - blazor markdown
   - blazor mermaid
+  - autocomplete
+  - auto complete
+  - autocompleteentry
+  - auto complete entry
+  - search input
+  - typeahead
+  - type ahead
+  - country picker
+  - countrypicker
+  - country selector
+  - country search
+  - address entry
+  - addressentry
+  - address search
+  - address lookup
+  - geocoding
+  - geocode
+  - blazor autocomplete
+  - blazor country picker
+  - blazor address entry
   - chat
   - chatview
   - chat view
@@ -99,6 +119,9 @@ The library contains:
 - **SchedulerCalendarListView**: Vertically scrolling event list grouped by day with infinite scroll
 - **MarkdownView**: A read-only markdown renderer that converts markdown text to native MAUI controls with theming and link handling
 - **MarkdownEditor**: A markdown editor with formatting toolbar, live preview toggle, and customizable toolbar items
+- **AutoCompleteEntry**: A text input with debounced search, dropdown suggestions, busy indicator, custom item templates, and full styling control via CSS custom properties (Blazor) or bindable properties (MAUI)
+- **CountryPicker**: A country search control built on AutoCompleteEntry with flag emoji, country name, and dial code
+- **AddressEntry**: An address search control built on AutoCompleteEntry with geocoding (Nominatim/OpenStreetMap by default) and structured address results
 
 ## When to Use This Skill
 
@@ -133,6 +156,11 @@ Invoke this skill when the user wants to:
 - Render markdown text as native MAUI controls
 - Build a markdown editor with formatting toolbar and live preview
 - Display documentation, notes, or rich text content from markdown strings
+- Add a search/autocomplete text input with dropdown suggestions
+- Build a typeahead or search-as-you-type control with debounce
+- Add a country picker or country selector with flag display
+- Build an address search/lookup field with geocoding
+- Implement a custom search provider for address or location queries
 
 ## Library Overview
 
@@ -213,6 +241,9 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 | `md:MarkdownView`       | `<MarkdownView>`  |                                                 |
 | `md:MarkdownEditor`     | `<MarkdownEditor>`|                                                 |
 | `diagram:MermaidDiagramControl` | `<MermaidDiagramControl>` |                                     |
+| `shiny:AutoCompleteEntry` | `<AutoCompleteEntry>` | Colors are CSS strings; `SearchCommand` is `EventCallback<string>`; supports `CssClass`, `InputClass`, `DropDownClass`, and `AdditionalAttributes` on Blazor |
+| `shiny:CountryPicker`  | `<CountryPicker>` | Colors are CSS strings on Blazor |
+| `shiny:AddressEntry`   | `<AddressEntry>`  | Colors are CSS strings on Blazor; uses `IAddressSearchProvider` on both hosts |
 | Scheduler views        | `<SchedulerCalendarView>`, `<SchedulerAgendaView>`, `<SchedulerCalendarListView>` | Same names |
 
 ### Binding, events, content
@@ -2418,3 +2449,356 @@ var myEventTemplate = new DataTemplate(() =>
 - All-day events always sort to top within their day group
 - Custom templates must use AOT-safe static lambda bindings, never string-based bindings
 - `AdditionalTimezones` is an `IList<TimeZoneInfo>` — add timezones in code-behind
+
+---
+
+# AutoCompleteEntry
+
+A text input with debounced search, dropdown suggestions, busy indicator, and custom item templates. Supports both local filtering (set `ItemsSource` without `SearchCommand`) and remote search (set `SearchCommand` to trigger async search). Available on both MAUI and Blazor with full styling control.
+
+## MAUI Usage
+
+```xml
+<!-- Local filtering -->
+<shiny:AutoCompleteEntry
+    Text="{Binding SearchText}"
+    Placeholder="Search fruits..."
+    ItemsSource="{Binding AllFruits}"
+    SelectedItem="{Binding SelectedFruit}"
+    TextMemberPath="Name"
+    FontSize="16"
+    CornerRadius="8" />
+
+<!-- Remote search -->
+<shiny:AutoCompleteEntry
+    Text="{Binding SearchText}"
+    Placeholder="Search..."
+    ItemsSource="{Binding Results}"
+    SelectedItem="{Binding SelectedResult}"
+    SearchCommand="{Binding SearchCommand}"
+    IsBusy="{Binding IsSearching}"
+    TextMemberPath="Name"
+    DebounceInterval="400"
+    Threshold="2"
+    MaxDropDownHeight="300"
+    FontSize="16"
+    FontFamily="OpenSans"
+    TextColor="Black"
+    DropDownBackgroundColor="White"
+    DropDownBorderColor="LightGray"
+    SpinnerColor="DodgerBlue"
+    CornerRadius="8" />
+```
+
+### MAUI Custom Item Template
+
+```csharp
+var autoComplete = new AutoCompleteEntry
+{
+    Placeholder = "Search products...",
+    TextMemberPath = nameof(Product.Name),
+    FontSize = 16,
+    CornerRadius = 8,
+    ItemTemplate = new DataTemplate(() =>
+    {
+        var grid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Auto)
+            },
+            Padding = new Thickness(8, 6)
+        };
+
+        var name = new Label { FontSize = 14, VerticalTextAlignment = TextAlignment.Center };
+        name.SetBinding(Label.TextProperty, nameof(Product.Name));
+
+        var price = new Label { FontSize = 12, TextColor = Colors.Grey };
+        price.SetBinding(Label.TextProperty, nameof(Product.PriceDisplay));
+
+        grid.Add(name, 0, 0);
+        grid.Add(price, 1, 0);
+        return grid;
+    })
+};
+```
+
+## Blazor Usage
+
+```razor
+<AutoCompleteEntry
+    Text="@searchText"
+    TextChanged="v => searchText = v"
+    Placeholder="Search..."
+    ItemsSource="@results"
+    SelectedItemChanged="OnSelected"
+    SearchCommand="OnSearch"
+    IsBusy="@isBusy"
+    TextMemberPath="Name"
+    DebounceInterval="400"
+    Threshold="2"
+    FontSize="16"
+    TextColor="#333"
+    DropDownBackgroundColor="#fff"
+    DropDownBorderColor="#ccc"
+    SpinnerColor="#3B82F6"
+    InputClass="my-input"
+    DropDownClass="my-dropdown">
+    <ItemTemplate Context="item">
+        @{ var p = (Product)item; }
+        <div style="display:flex;justify-content:space-between;">
+            <span>@p.Name</span>
+            <span style="color:#888;">@p.PriceDisplay</span>
+        </div>
+    </ItemTemplate>
+</AutoCompleteEntry>
+
+@code {
+    string searchText = "";
+    bool isBusy;
+    IList? results;
+
+    async Task OnSearch(string query)
+    {
+        isBusy = true;
+        results = await MyApi.SearchAsync(query);
+        isBusy = false;
+    }
+
+    void OnSelected(object? item)
+    {
+        if (item is Product p) { /* handle selection */ }
+    }
+}
+```
+
+### Blazor CSS Custom Properties
+
+Override these on a parent element or the component itself to theme without parameters:
+
+| Variable | Default | Controls |
+|---|---|---|
+| `--shiny-ac-text` | inherit | Input text color |
+| `--shiny-ac-ph` | #9CA3AF | Placeholder color |
+| `--shiny-ac-dd-bg` | #fff | Dropdown background |
+| `--shiny-ac-dd-border` | #D1D5DB | Dropdown border |
+| `--shiny-ac-spinner` | #9CA3AF | Spinner color |
+| `--shiny-ac-font-size` | inherit | Input font size |
+| `--shiny-ac-dd-max-h` | 200px | Dropdown max height |
+
+Example: theme a whole page section without touching each component:
+
+```css
+.dark-theme {
+    --shiny-ac-text: #f0f0f0;
+    --shiny-ac-ph: #888;
+    --shiny-ac-dd-bg: #1e1e1e;
+    --shiny-ac-dd-border: #444;
+    --shiny-ac-spinner: #60A5FA;
+}
+```
+
+## AutoCompleteEntry Properties
+
+| Property | Type | Default | Host | Description |
+|---|---|---|---|---|
+| `Text` | `string` | `""` | Both | Current text value (TwoWay) |
+| `Placeholder` | `string?` | `null` | Both | Placeholder text |
+| `PlaceholderColor` | Color/string | `null` | Both | Placeholder color |
+| `ItemsSource` | `IList` | `null` | Both | Suggestion items |
+| `SelectedItem` | `object?` | `null` | Both | Selected item (TwoWay) |
+| `SearchCommand` | ICommand/EventCallback | `null` | Both | Async search trigger |
+| `TextMemberPath` | `string?` | `null` | Both | Display property name |
+| `ItemTemplate` | DataTemplate/RenderFragment | `null` | Both | Custom item template |
+| `IsBusy` | `bool` | `false` | Both | Show spinner (TwoWay) |
+| `DebounceInterval` | `int` | `300` | Both | Debounce delay (ms) |
+| `Threshold` | `int` | `1` | Both | Min chars before search |
+| `MaxDropDownHeight` | `double` | `200` | Both | Max dropdown height |
+| `TextColor` | Color/string | `null` | Both | Text color |
+| `FontSize` | `double` | `14` | Both | Font size |
+| `FontFamily` | `string?` | `null` | MAUI | Font family |
+| `FontAttributes` | `FontAttributes` | `None` | MAUI | Bold/italic |
+| `DropDownBackgroundColor` | Color/string | White | Both | Dropdown background |
+| `DropDownBorderColor` | Color/string | LightGray | Both | Dropdown border |
+| `CornerRadius` | `double` | `4` | MAUI | Dropdown corner radius |
+| `SpinnerColor` | Color/string | Grey | Both | Spinner color |
+| `CssClass` | `string?` | `null` | Blazor | Root CSS class |
+| `InputClass` | `string?` | `null` | Blazor | Input CSS class |
+| `DropDownClass` | `string?` | `null` | Blazor | Dropdown CSS class |
+| `AdditionalAttributes` | `IDictionary` | `null` | Blazor | Unmatched HTML attributes |
+
+Events: `ItemSelected` (MAUI: `EventHandler<object?>`, Blazor: `EventCallback<object?>`)
+
+---
+
+# CountryPicker
+
+A country search control built on `AutoCompleteEntry`. Displays flag emoji, country name, and dial code in the dropdown. Wraps the full ISO 3166-1 country list. All styling properties are forwarded to the inner `AutoCompleteEntry`.
+
+## MAUI Usage
+
+```xml
+<shiny:CountryPicker SelectedCountry="{Binding Country}"
+                     Placeholder="Select country..."
+                     FontSize="16"
+                     TextColor="Black"
+                     CornerRadius="8" />
+```
+
+## Blazor Usage
+
+```razor
+<CountryPicker SelectedCountry="@selectedCountry"
+               SelectedCountryChanged="OnCountryChanged"
+               Placeholder="Select country..."
+               FontSize="16"
+               TextColor="#333"
+               InputClass="my-input" />
+
+@code {
+    Country? selectedCountry;
+
+    void OnCountryChanged(Country? country)
+    {
+        selectedCountry = country;
+    }
+}
+```
+
+## CountryPicker Properties
+
+| Property | Type | Default | Host | Description |
+|---|---|---|---|---|
+| `SelectedCountry` | `Country` | `null` | Both | Selected country (TwoWay) |
+| `Placeholder` | `string` | `"Search countries..."` | Both | Placeholder text |
+| `MaxDropDownHeight` | `double` | `200` | Both | Max dropdown height |
+| `TextColor` | Color/string | `null` | Both | Text color |
+| `PlaceholderColor` | Color/string | `null` | Both | Placeholder color |
+| `DropDownBackgroundColor` | Color/string | `null` | Both | Dropdown background |
+| `DropDownBorderColor` | Color/string | `null` | Both | Dropdown border |
+| `FontSize` | `double` | `14` | Both | Font size |
+| `FontFamily` | `string?` | `null` | MAUI | Font family |
+| `CornerRadius` | `double` | `4` | MAUI | Dropdown corner radius |
+| `InputClass` | `string?` | `null` | Blazor | Input CSS class |
+| `DropDownClass` | `string?` | `null` | Blazor | Dropdown CSS class |
+
+Events: `CountrySelected` (MAUI: `EventHandler<Country>`, Blazor: `EventCallback<Country>`)
+
+### Country Model
+
+| Property | Type | Description |
+|---|---|---|
+| `Name` | `string` | Country name (e.g. "United States") |
+| `Iso2` | `string` | ISO 3166-1 alpha-2 code (e.g. "US") |
+| `Iso3` | `string` | ISO 3166-1 alpha-3 code (e.g. "USA") |
+| `DialCode` | `string` | International dial code (e.g. "+1") |
+| `FlagEmoji` | `string` | Flag emoji (e.g. "🇺🇸") |
+
+Flag emoji display is automatically disabled on Windows (not supported by the platform font).
+
+---
+
+# AddressEntry
+
+An address search control built on `AutoCompleteEntry`. Queries a geocoding provider (Nominatim/OpenStreetMap by default) and returns structured address data with coordinates. Supports custom providers via `IAddressSearchProvider`.
+
+## MAUI Usage
+
+```xml
+<shiny:AddressEntry SelectedAddress="{Binding Address}"
+                    Placeholder="Search address..."
+                    CountryCodes="us,ca"
+                    FontSize="16"
+                    CornerRadius="8" />
+```
+
+## Blazor Usage
+
+```razor
+<AddressEntry SelectedAddress="@selectedAddress"
+              SelectedAddressChanged="OnAddressChanged"
+              Placeholder="Search address..."
+              CountryCodes="us,ca"
+              FontSize="16"
+              TextColor="#333" />
+
+@code {
+    Address? selectedAddress;
+
+    void OnAddressChanged(Address? address)
+    {
+        selectedAddress = address;
+    }
+}
+```
+
+## Custom Search Provider
+
+```csharp
+public class GoogleGeoProvider : IAddressSearchProvider
+{
+    public async Task<IList<Address>> SearchAsync(string query, string? countryCodes, CancellationToken ct)
+    {
+        // Call Google Geocoding API and map results to Address records
+        return results;
+    }
+}
+```
+
+MAUI:
+```xml
+<shiny:AddressEntry SearchProvider="{Binding MyGeoProvider}" />
+```
+
+Blazor:
+```razor
+<AddressEntry SearchProvider="myGeoProvider" />
+```
+
+## AddressEntry Properties
+
+| Property | Type | Default | Host | Description |
+|---|---|---|---|---|
+| `SelectedAddress` | `Address` | `null` | Both | Selected address (TwoWay) |
+| `SearchProvider` | `IAddressSearchProvider?` | `null` | Both | Custom geocoding provider |
+| `CountryCodes` | `string?` | `null` | Both | Comma-separated ISO codes to filter |
+| `Placeholder` | `string` | `"Search address..."` | Both | Placeholder text |
+| `MaxDropDownHeight` | `double` | `250` | Both | Max dropdown height |
+| `TextColor` | Color/string | `null` | Both | Text color |
+| `PlaceholderColor` | Color/string | `null` | Both | Placeholder color |
+| `DropDownBackgroundColor` | Color/string | `null` | Both | Dropdown background |
+| `DropDownBorderColor` | Color/string | `null` | Both | Dropdown border |
+| `FontSize` | `double` | `14` | Both | Font size |
+| `FontFamily` | `string?` | `null` | MAUI | Font family |
+| `CornerRadius` | `double` | `4` | MAUI | Dropdown corner radius |
+| `InputClass` | `string?` | `null` | Blazor | Input CSS class |
+| `DropDownClass` | `string?` | `null` | Blazor | Dropdown CSS class |
+
+Events: `AddressSelected` (MAUI: `EventHandler<Address>`, Blazor: `EventCallback<Address>`)
+
+### Address Model
+
+| Property | Type | Description |
+|---|---|---|
+| `DisplayName` | `string` | Full formatted address |
+| `HouseNumber` | `string?` | House/building number |
+| `Street` | `string?` | Street name |
+| `City` | `string?` | City/town/village |
+| `State` | `string?` | State/province |
+| `PostalCode` | `string?` | Postal/ZIP code |
+| `Country` | `string?` | Country name |
+| `CountryCode` | `string?` | ISO country code |
+| `Latitude` | `double` | Latitude coordinate |
+| `Longitude` | `double` | Longitude coordinate |
+
+### IAddressSearchProvider
+
+```csharp
+public interface IAddressSearchProvider
+{
+    Task<IList<Address>> SearchAsync(string query, string? countryCodes, CancellationToken ct);
+}
+```
+
+The default provider (`NominatimAddressSearchProvider`) queries OpenStreetMap's Nominatim API with a User-Agent header. For production use, consider a provider with higher rate limits.

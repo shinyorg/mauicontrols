@@ -1,0 +1,233 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.AspNetCore.Components.Web
+@using System.Collections
+@using System.Diagnostics.CodeAnalysis
+@implements IDisposable
+
+<div class="shiny-ac @CssClass" style="@RootStyle" @attributes="AdditionalAttributes">
+    <div class="shiny-ac-input-wrap">
+        <input
+            @ref="inputRef"
+            class="shiny-ac-input @InputClass"
+            type="text"
+            placeholder="@Placeholder"
+            value="@Text"
+            autocomplete="off"
+            @oninput="OnInputChanged"
+            @onfocus="OnFocus"
+            @onblur="OnBlurDelayed" />
+
+        @if (IsBusy)
+        {
+            <div class="shiny-ac-spinner">
+                <svg class="shiny-ac-spin-svg" viewBox="0 0 24 24" width="20" height="20">
+                    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3"
+                            stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                </svg>
+            </div>
+        }
+    </div>
+
+    @if (isDropDownVisible && filteredItems is not null && filteredItems.Count > 0)
+    {
+        <div class="shiny-ac-dropdown @DropDownClass">
+            @foreach (var item in filteredItems)
+            {
+                <div class="shiny-ac-item" @onmousedown="() => SelectItemAsync(item)" @onmousedown:preventDefault>
+                    @if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        <span>@GetDisplayText(item)</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    ElementReference inputRef;
+    bool isFocused;
+    bool isDropDownVisible;
+    IList? filteredItems;
+    CancellationTokenSource? debounceCts;
+
+    [Parameter] public string Text { get; set; } = "";
+    [Parameter] public EventCallback<string> TextChanged { get; set; }
+
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? PlaceholderColor { get; set; }
+
+    [Parameter] public IList? ItemsSource { get; set; }
+    [Parameter] public EventCallback<IList?> ItemsSourceChanged { get; set; }
+
+    [Parameter] public EventCallback<string> SearchCommand { get; set; }
+
+    [Parameter] public object? SelectedItem { get; set; }
+    [Parameter] public EventCallback<object?> SelectedItemChanged { get; set; }
+
+    [Parameter] public bool IsBusy { get; set; }
+
+    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
+    [Parameter] public string? TextMemberPath { get; set; }
+
+    [Parameter] public int DebounceInterval { get; set; } = 300;
+    [Parameter] public int Threshold { get; set; } = 1;
+    [Parameter] public double MaxDropDownHeight { get; set; } = 200;
+
+    [Parameter] public string? TextColor { get; set; }
+    [Parameter] public string? DropDownBackgroundColor { get; set; }
+    [Parameter] public string? DropDownBorderColor { get; set; }
+    [Parameter] public string? SpinnerColor { get; set; }
+
+    [Parameter] public double? FontSize { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? InputClass { get; set; }
+    [Parameter] public string? DropDownClass { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    [Parameter] public EventCallback<object?> ItemSelected { get; set; }
+
+    string RootStyle
+    {
+        get
+        {
+            var parts = new List<string> { "position:relative" };
+            if (TextColor is not null) parts.Add($"--shiny-ac-text:{TextColor}");
+            if (PlaceholderColor is not null) parts.Add($"--shiny-ac-ph:{PlaceholderColor}");
+            if (DropDownBackgroundColor is not null) parts.Add($"--shiny-ac-dd-bg:{DropDownBackgroundColor}");
+            if (DropDownBorderColor is not null) parts.Add($"--shiny-ac-dd-border:{DropDownBorderColor}");
+            if (SpinnerColor is not null) parts.Add($"--shiny-ac-spinner:{SpinnerColor}");
+            if (FontSize.HasValue) parts.Add($"--shiny-ac-font-size:{FontSize.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}px");
+            if (MaxDropDownHeight != 200) parts.Add($"--shiny-ac-dd-max-h:{MaxDropDownHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)}px");
+            return string.Join(';', parts);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // When ItemsSource changes externally (e.g. from SearchCommand callback), update dropdown
+        if (SearchCommand.HasDelegate && isFocused && !string.IsNullOrEmpty(Text) && Text.Length >= Threshold)
+        {
+            filteredItems = ItemsSource;
+            isDropDownVisible = filteredItems is not null && filteredItems.Count > 0;
+        }
+    }
+
+    async Task OnInputChanged(ChangeEventArgs e)
+    {
+        var newText = e.Value?.ToString() ?? "";
+        Text = newText;
+        await TextChanged.InvokeAsync(newText);
+        SelectedItem = null;
+        await SelectedItemChanged.InvokeAsync(null);
+
+        debounceCts?.Cancel();
+
+        if (newText.Length < Threshold)
+        {
+            isDropDownVisible = false;
+            return;
+        }
+
+        debounceCts = new CancellationTokenSource();
+        var token = debounceCts.Token;
+
+        await Task.Delay(DebounceInterval, token).ContinueWith(async _ =>
+        {
+            if (token.IsCancellationRequested) return;
+
+            await InvokeAsync(async () =>
+            {
+                await PerformSearch(newText);
+                StateHasChanged();
+            });
+        }, TaskContinuationOptions.OnlyOnRanToCompletion);
+    }
+
+    async Task PerformSearch(string searchText)
+    {
+        if (SearchCommand.HasDelegate)
+        {
+            await SearchCommand.InvokeAsync(searchText);
+            filteredItems = ItemsSource;
+            isDropDownVisible = filteredItems is not null && filteredItems.Count > 0;
+        }
+        else
+        {
+            FilterLocalItems(searchText);
+        }
+    }
+
+    void FilterLocalItems(string searchText)
+    {
+        if (ItemsSource is null || ItemsSource.Count == 0)
+        {
+            isDropDownVisible = false;
+            return;
+        }
+
+        var results = new List<object>();
+        foreach (var item in ItemsSource)
+        {
+            var text = GetDisplayText(item);
+            if (text.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                results.Add(item);
+        }
+
+        filteredItems = results;
+        isDropDownVisible = results.Count > 0;
+    }
+
+    string GetDisplayText(object item)
+    {
+        if (item is string s) return s;
+
+        if (!string.IsNullOrEmpty(TextMemberPath))
+        {
+            var prop = GetPropertyFromItem(item, TextMemberPath);
+            if (prop is not null)
+                return prop.GetValue(item)?.ToString() ?? "";
+        }
+
+        return item.ToString() ?? "";
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "TextMemberPath is user-specified; types are preserved by the app.")]
+    static System.Reflection.PropertyInfo? GetPropertyFromItem(object item, string propertyName)
+        => item.GetType().GetProperty(propertyName);
+
+    async Task SelectItemAsync(object item)
+    {
+        SelectedItem = item;
+        await SelectedItemChanged.InvokeAsync(item);
+
+        var displayText = GetDisplayText(item);
+        Text = displayText;
+        await TextChanged.InvokeAsync(displayText);
+
+        isDropDownVisible = false;
+        await ItemSelected.InvokeAsync(item);
+    }
+
+    void OnFocus() => isFocused = true;
+
+    async Task OnBlurDelayed()
+    {
+        await Task.Delay(200);
+        isFocused = false;
+        isDropDownVisible = false;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        debounceCts?.Cancel();
+        debounceCts?.Dispose();
+    }
+}

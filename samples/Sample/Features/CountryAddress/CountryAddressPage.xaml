@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Features.CountryAddress"
+             xmlns:shiny="http://shiny.net/maui/controls"
+             x:Class="Sample.Features.CountryAddress.CountryAddressPage"
+             x:DataType="local:CountryAddressViewModel"
+             Title="Country &amp; Address">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="24">
+
+            <Label Text="Country &amp; Address Picker"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+
+            <!-- Country Picker -->
+            <Frame Padding="16" CornerRadius="8" BorderColor="LightGray" HasShadow="False">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Country"
+                           FontAttributes="Bold"
+                           FontSize="16" />
+
+                    <shiny:CountryPicker SelectedCountry="{Binding SelectedCountry}" />
+
+                    <BoxView HeightRequest="1" Color="LightGray" />
+
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                          ColumnSpacing="12" RowSpacing="4"
+                          IsVisible="{Binding HasCountry}">
+                        <Label Text="Name:" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="{Binding SelectedCountry.Name}" />
+
+                        <Label Grid.Row="1" Text="Code:" FontAttributes="Bold" />
+                        <Label Grid.Row="1" Grid.Column="1"
+                               Text="{Binding CountryCodeDisplay}" />
+
+                        <Label Grid.Row="2" Text="Dial:" FontAttributes="Bold" />
+                        <Label Grid.Row="2" Grid.Column="1"
+                               Text="{Binding SelectedCountry.DialCode}" />
+
+                        <Label Grid.Row="3" Text="Flag:" FontAttributes="Bold" />
+                        <Label Grid.Row="3" Grid.Column="1"
+                               Text="{Binding SelectedCountry.FlagEmoji}"
+                               FontSize="24" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Address Picker -->
+            <Frame Padding="16" CornerRadius="8" BorderColor="LightGray" HasShadow="False">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Address"
+                           FontAttributes="Bold"
+                           FontSize="16" />
+
+                    <Label Text="Powered by OpenStreetMap Nominatim (free, no API key)"
+                           FontSize="11"
+                           TextColor="Gray" />
+
+                    <shiny:AddressEntry
+                        SelectedAddress="{Binding SelectedAddress}"
+                        CountryCodes="{Binding CountryCodeFilter}"
+                        Placeholder="Start typing an address..." />
+
+                    <BoxView HeightRequest="1" Color="LightGray" />
+
+                    <Grid ColumnDefinitions="Auto,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnSpacing="12" RowSpacing="4"
+                          IsVisible="{Binding HasAddress}">
+                        <Label Text="Street:" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="{Binding StreetDisplay}" />
+
+                        <Label Grid.Row="1" Text="City:" FontAttributes="Bold" />
+                        <Label Grid.Row="1" Grid.Column="1"
+                               Text="{Binding SelectedAddress.City}" />
+
+                        <Label Grid.Row="2" Text="State:" FontAttributes="Bold" />
+                        <Label Grid.Row="2" Grid.Column="1"
+                               Text="{Binding SelectedAddress.State}" />
+
+                        <Label Grid.Row="3" Text="Postal:" FontAttributes="Bold" />
+                        <Label Grid.Row="3" Grid.Column="1"
+                               Text="{Binding SelectedAddress.PostalCode}" />
+
+                        <Label Grid.Row="4" Text="Country:" FontAttributes="Bold" />
+                        <Label Grid.Row="4" Grid.Column="1"
+                               Text="{Binding SelectedAddress.Country}" />
+
+                        <Label Grid.Row="5" Text="Coords:" FontAttributes="Bold" />
+                        <Label Grid.Row="5" Grid.Column="1"
+                               Text="{Binding CoordsDisplay}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Tip: Select a country first to filter address results to that country"
+                   FontSize="11"
+                   TextColor="Gray"
+                   HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

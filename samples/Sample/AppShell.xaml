@@ -18,6 +18,8 @@
     xmlns:securitypin="clr-namespace:Sample.Features.SecurityPin"
     xmlns:fab="clr-namespace:Sample.Features.Fab"
     xmlns:colorpicker="clr-namespace:Sample.Features.ColorPicker"
+    xmlns:autocomplete="clr-namespace:Sample.Features.AutoComplete"
+    xmlns:countryaddress="clr-namespace:Sample.Features.CountryAddress"
     Title="Sample">
 
     <FlyoutItem Title="Home">
@@ -122,6 +124,14 @@
 
     <FlyoutItem Title="Markdown - Editor">
         <ShellContent ContentTemplate="{DataTemplate markdown:MarkdownEditorPage}" Route="markdowneditor" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="AutoComplete">
+        <ShellContent ContentTemplate="{DataTemplate autocomplete:AutoCompletePage}" Route="autocomplete" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Country &amp; Address">
+        <ShellContent ContentTemplate="{DataTemplate countryaddress:CountryAddressPage}" Route="countryaddress" />
     </FlyoutItem>
 
     <FlyoutItem Title="Diagrams - Basic Flowchart">

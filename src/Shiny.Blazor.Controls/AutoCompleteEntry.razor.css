@@ -1,0 +1,65 @@
+.shiny-ac {
+    display: inline-block;
+    width: 100%;
+}
+
+.shiny-ac-input-wrap {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.shiny-ac-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: var(--shiny-ac-font-size, inherit);
+    color: var(--shiny-ac-text, inherit);
+    padding: 8px 0;
+    width: 100%;
+}
+
+.shiny-ac-input::placeholder {
+    color: var(--shiny-ac-ph, #9CA3AF);
+}
+
+.shiny-ac-spinner {
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    color: var(--shiny-ac-spinner, #9CA3AF);
+}
+
+.shiny-ac-spin-svg {
+    animation: shiny-ac-spin 0.8s linear infinite;
+}
+
+@keyframes shiny-ac-spin {
+    to { transform: rotate(360deg); }
+}
+
+.shiny-ac-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    overflow-y: auto;
+    background: var(--shiny-ac-dd-bg, #fff);
+    border: 1px solid var(--shiny-ac-dd-border, #D1D5DB);
+    max-height: var(--shiny-ac-dd-max-h, 200px);
+    border-radius: 4px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.shiny-ac-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+}
+
+.shiny-ac-item:hover {
+    background-color: rgba(0,0,0,0.05);
+}

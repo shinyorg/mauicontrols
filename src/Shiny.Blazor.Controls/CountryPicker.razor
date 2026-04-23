@@ -1,0 +1,94 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.AspNetCore.Components.Web
+@using System.Collections
+@using System.Runtime.InteropServices
+
+<div class="shiny-country-picker">
+    @if (showFlags && selectedCountry is not null)
+    {
+        <span class="shiny-country-flag">@selectedCountry.FlagEmoji</span>
+    }
+    <AutoCompleteEntry
+        Text="@text"
+        TextChanged="OnTextChanged"
+        Placeholder="@Placeholder"
+        ItemsSource="@countries"
+        SelectedItem="@selectedCountry"
+        SelectedItemChanged="OnItemSelected"
+        TextMemberPath="Name"
+        MaxDropDownHeight="@MaxDropDownHeight"
+        TextColor="@TextColor"
+        DropDownBackgroundColor="@DropDownBackgroundColor"
+        DropDownBorderColor="@DropDownBorderColor"
+        PlaceholderColor="@PlaceholderColor"
+        FontSize="@FontSize"
+        InputClass="@InputClass"
+        DropDownClass="@DropDownClass">
+        <ItemTemplate Context="item">
+            @{ var c = (Country)item; }
+            <div class="shiny-country-item">
+                @if (showFlags)
+                {
+                    <span class="shiny-country-item-flag">@c.FlagEmoji</span>
+                }
+                <span class="shiny-country-item-name">@c.Name</span>
+                <span class="shiny-country-item-dial">@c.DialCode</span>
+            </div>
+        </ItemTemplate>
+    </AutoCompleteEntry>
+</div>
+
+@code {
+    static readonly bool showFlags = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+    List<Country> countries = CountryData.All.ToList();
+    Country? selectedCountry;
+    string text = "";
+
+    [Parameter] public Country? SelectedCountry { get; set; }
+    [Parameter] public EventCallback<Country?> SelectedCountryChanged { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "Search countries...";
+    [Parameter] public double MaxDropDownHeight { get; set; } = 200;
+    [Parameter] public string? TextColor { get; set; }
+    [Parameter] public string? PlaceholderColor { get; set; }
+    [Parameter] public string? DropDownBackgroundColor { get; set; }
+    [Parameter] public string? DropDownBorderColor { get; set; }
+    [Parameter] public double? FontSize { get; set; }
+    [Parameter] public string? InputClass { get; set; }
+    [Parameter] public string? DropDownClass { get; set; }
+
+    [Parameter] public EventCallback<Country> CountrySelected { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (SelectedCountry != selectedCountry)
+        {
+            selectedCountry = SelectedCountry;
+            text = selectedCountry?.Name ?? "";
+        }
+    }
+
+    async Task OnTextChanged(string newText)
+    {
+        text = newText;
+        if (string.IsNullOrEmpty(newText) && selectedCountry is not null)
+        {
+            selectedCountry = null;
+            SelectedCountry = null;
+            await SelectedCountryChanged.InvokeAsync(null);
+        }
+    }
+
+    async Task OnItemSelected(object? item)
+    {
+        if (item is Country country)
+        {
+            selectedCountry = country;
+            SelectedCountry = country;
+            text = country.Name;
+            await SelectedCountryChanged.InvokeAsync(country);
+            await CountrySelected.InvokeAsync(country);
+        }
+    }
+}

@@ -1,0 +1,117 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.AspNetCore.Components.Web
+@using System.Collections
+@using System.Net.Http.Json
+@using System.Text.Json.Serialization
+@inject HttpClient Http
+
+<AutoCompleteEntry
+    Text="@text"
+    TextChanged="OnTextChanged"
+    Placeholder="@Placeholder"
+    ItemsSource="@results"
+    SelectedItem="@selectedAddress"
+    SelectedItemChanged="OnItemSelected"
+    IsBusy="@isBusy"
+    TextMemberPath="DisplayName"
+    DebounceInterval="400"
+    Threshold="3"
+    MaxDropDownHeight="@MaxDropDownHeight"
+    TextColor="@TextColor"
+    DropDownBackgroundColor="@DropDownBackgroundColor"
+    DropDownBorderColor="@DropDownBorderColor"
+    PlaceholderColor="@PlaceholderColor"
+    FontSize="@FontSize"
+    InputClass="@InputClass"
+    DropDownClass="@DropDownClass"
+    SearchCommand="OnSearch">
+    <ItemTemplate Context="item">
+        @{ var addr = (Address)item; }
+        <div style="padding:4px 8px;font-size:13px;line-height:1.4;">@addr.DisplayName</div>
+    </ItemTemplate>
+</AutoCompleteEntry>
+
+@code {
+    string text = "";
+    bool isBusy;
+    IList? results;
+    Address? selectedAddress;
+    CancellationTokenSource? searchCts;
+
+    [Parameter] public Address? SelectedAddress { get; set; }
+    [Parameter] public EventCallback<Address?> SelectedAddressChanged { get; set; }
+
+    [Parameter] public IAddressSearchProvider? SearchProvider { get; set; }
+
+    [Parameter] public string? CountryCodes { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Search address...";
+    [Parameter] public double MaxDropDownHeight { get; set; } = 250;
+    [Parameter] public string? TextColor { get; set; }
+    [Parameter] public string? PlaceholderColor { get; set; }
+    [Parameter] public string? DropDownBackgroundColor { get; set; }
+    [Parameter] public string? DropDownBorderColor { get; set; }
+    [Parameter] public double? FontSize { get; set; }
+    [Parameter] public string? InputClass { get; set; }
+    [Parameter] public string? DropDownClass { get; set; }
+
+    [Parameter] public EventCallback<Address> AddressSelected { get; set; }
+
+    IAddressSearchProvider ResolvedProvider
+        => SearchProvider ?? new NominatimAddressSearchProvider(Http);
+
+    protected override void OnParametersSet()
+    {
+        if (SelectedAddress != selectedAddress)
+        {
+            selectedAddress = SelectedAddress;
+            text = selectedAddress?.DisplayName ?? "";
+        }
+    }
+
+    async Task OnSearch(string query)
+    {
+        searchCts?.Cancel();
+        searchCts = new CancellationTokenSource();
+        var token = searchCts.Token;
+
+        isBusy = true;
+        try
+        {
+            var addresses = await ResolvedProvider.SearchAsync(query, CountryCodes, token);
+            if (!token.IsCancellationRequested)
+                results = addresses as IList ?? addresses.ToList();
+        }
+        catch (TaskCanceledException) { }
+        catch
+        {
+            results = null;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    async Task OnTextChanged(string newText)
+    {
+        text = newText;
+        if (string.IsNullOrEmpty(newText) && selectedAddress is not null)
+        {
+            selectedAddress = null;
+            SelectedAddress = null;
+            await SelectedAddressChanged.InvokeAsync(null);
+        }
+    }
+
+    async Task OnItemSelected(object? item)
+    {
+        if (item is Address address)
+        {
+            selectedAddress = address;
+            SelectedAddress = address;
+            text = address.DisplayName;
+            await SelectedAddressChanged.InvokeAsync(address);
+            await AddressSelected.InvokeAsync(address);
+        }
+    }
+}

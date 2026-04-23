@@ -14,6 +14,8 @@ using Sample.Features.Markdown;
 using Sample.Features.Pills;
 using Sample.Features.Scheduler;
 using Sample.Features.SecurityPin;
+using Sample.Features.AutoComplete;
+using Sample.Features.CountryAddress;
 using Sample.Features.TableView;
 using Shiny;
 using Shiny.Maui.Controls.Scheduler;
@@ -57,6 +59,8 @@ public static class MauiProgram
                 .Add<ColorPickerPage, ColorPickerViewModel>(registerRoute: false)
                 .Add<MarkdownViewPage, MarkdownViewViewModel>(registerRoute: false)
                 .Add<MarkdownEditorPage, MarkdownEditorViewModel>(registerRoute: false)
+                .Add<AutoCompletePage, AutoCompleteViewModel>(registerRoute: false)
+                .Add<CountryAddressPage, CountryAddressViewModel>(registerRoute: false)
             )
             .ConfigureFonts(fonts =>
             {

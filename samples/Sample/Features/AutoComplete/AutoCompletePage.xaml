@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Features.AutoComplete"
+             xmlns:shiny="http://shiny.net/maui/controls"
+             x:Class="Sample.Features.AutoComplete.AutoCompletePage"
+             x:DataType="local:AutoCompleteViewModel"
+             Title="AutoCompleteEntry">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="24">
+
+            <Label Text="AutoCompleteEntry Demo"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+
+            <!-- Simple string list (local filter) -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Fruits (local filter, no SearchCommand)"
+                       FontAttributes="Bold" />
+                <shiny:AutoCompleteEntry
+                    Placeholder="Type a fruit..."
+                    ItemsSource="{Binding Fruits}"
+                    SelectedItem="{Binding SelectedFruit}"
+                    Threshold="1"
+                    DebounceInterval="100" />
+                <Label Text="{Binding SelectedFruit, StringFormat='Selected: {0}'}"
+                       FontSize="12"
+                       TextColor="Gray" />
+            </VerticalStackLayout>
+
+            <!-- Object list with TextMemberPath -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Programming Languages (TextMemberPath)"
+                       FontAttributes="Bold" />
+                <shiny:AutoCompleteEntry
+                    Placeholder="Search languages..."
+                    ItemsSource="{Binding Languages}"
+                    SelectedItem="{Binding SelectedLanguage}"
+                    TextMemberPath="Name"
+                    Threshold="1"
+                    DebounceInterval="100" />
+                <Label Text="{Binding SelectedLanguageInfo}"
+                       FontSize="12"
+                       TextColor="Gray" />
+            </VerticalStackLayout>
+
+            <!-- Custom ItemTemplate -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Custom Template (with year)"
+                       FontAttributes="Bold" />
+                <shiny:AutoCompleteEntry
+                    Placeholder="Search languages..."
+                    ItemsSource="{Binding Languages}"
+                    SelectedItem="{Binding SelectedLanguage2}"
+                    TextMemberPath="Name"
+                    Threshold="1"
+                    MaxDropDownHeight="250">
+                    <shiny:AutoCompleteEntry.ItemTemplate>
+                        <DataTemplate x:DataType="local:ProgrammingLanguage">
+                            <Grid ColumnDefinitions="*,Auto" Padding="8,6" ColumnSpacing="12">
+                                <Label Text="{Binding Name}"
+                                       FontSize="14"
+                                       VerticalTextAlignment="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Year, StringFormat='({0})'}"
+                                       FontSize="12"
+                                       TextColor="Gray"
+                                       VerticalTextAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </shiny:AutoCompleteEntry.ItemTemplate>
+                </shiny:AutoCompleteEntry>
+            </VerticalStackLayout>
+
+            <!-- Async search with IsBusy -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Simulated Async Search (with spinner)"
+                       FontAttributes="Bold" />
+                <shiny:AutoCompleteEntry
+                    Placeholder="Search cities..."
+                    SearchCommand="{Binding SearchCitiesCommand}"
+                    ItemsSource="{Binding CityResults}"
+                    IsBusy="{Binding IsSearchingCities}"
+                    SelectedItem="{Binding SelectedCity}"
+                    TextMemberPath="Name"
+                    Threshold="2"
+                    DebounceInterval="300" />
+                <Label Text="{Binding SelectedCityInfo}"
+                       FontSize="12"
+                       TextColor="Gray" />
+            </VerticalStackLayout>
+
+            <!-- Styled -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Styled AutoComplete"
+                       FontAttributes="Bold" />
+                <shiny:AutoCompleteEntry
+                    Placeholder="Dark themed..."
+                    ItemsSource="{Binding Fruits}"
+                    TextColor="White"
+                    PlaceholderColor="LightGray"
+                    DropDownBackgroundColor="#333333"
+                    DropDownBorderColor="#555555"
+                    SpinnerColor="DodgerBlue"
+                    BackgroundColor="#222222"
+                    Threshold="1" />
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

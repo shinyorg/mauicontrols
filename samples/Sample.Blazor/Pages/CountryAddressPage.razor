@@ -1,0 +1,55 @@
+@page "/countryaddress"
+
+<PageTitle>Country &amp; Address</PageTitle>
+
+<h1>Country &amp; Address Picker</h1>
+
+<div class="demo-section">
+    <h2>Country</h2>
+    <CountryPicker @bind-SelectedCountry="selectedCountry" />
+
+    @if (selectedCountry is not null)
+    {
+        <div class="state" style="margin-top:12px;">
+            <div><strong>Name:</strong> @selectedCountry.Name</div>
+            <div><strong>Code:</strong> @selectedCountry.Code2 / @selectedCountry.Code3</div>
+            <div><strong>Dial:</strong> @selectedCountry.DialCode</div>
+            <div><strong>Flag:</strong> <span style="font-size:24px;">@selectedCountry.FlagEmoji</span></div>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Address</h2>
+    <p style="font-size:11px;color:#9CA3AF;">Powered by OpenStreetMap Nominatim (free, no API key)</p>
+    <AddressEntry @bind-SelectedAddress="selectedAddress"
+                  CountryCodes="@countryFilter"
+                  Placeholder="Start typing an address..." />
+
+    @if (selectedAddress is not null)
+    {
+        <div class="state" style="margin-top:12px;">
+            <div><strong>Street:</strong> @streetDisplay</div>
+            <div><strong>City:</strong> @selectedAddress.City</div>
+            <div><strong>State:</strong> @selectedAddress.State</div>
+            <div><strong>Postal:</strong> @selectedAddress.PostalCode</div>
+            <div><strong>Country:</strong> @selectedAddress.Country</div>
+            <div><strong>Coords:</strong> @($"{selectedAddress.Latitude:F5}, {selectedAddress.Longitude:F5}")</div>
+        </div>
+    }
+</div>
+
+<p style="font-size:11px;color:#9CA3AF;text-align:center;margin-top:16px;">
+    Tip: Select a country first to filter address results to that country
+</p>
+
+@code {
+    Country? selectedCountry;
+    Address? selectedAddress;
+
+    string? countryFilter => selectedCountry?.Code2.ToLowerInvariant();
+
+    string? streetDisplay => selectedAddress is { } a
+        ? string.IsNullOrEmpty(a.HouseNumber) ? a.Street : $"{a.HouseNumber} {a.Street}"
+        : null;
+}
