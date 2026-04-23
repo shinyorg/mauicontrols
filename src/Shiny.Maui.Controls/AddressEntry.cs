@@ -27,14 +27,23 @@ public interface IAddressSearchProvider
 
 public class NominatimAddressSearchProvider : IAddressSearchProvider
 {
-    static readonly HttpClient httpClient = new()
+    static readonly Lazy<HttpClient> lazyHttpClient = new(() =>
     {
-        DefaultRequestHeaders =
+        var client = new HttpClient();
+        try
         {
-            { "User-Agent", "Shiny.Maui.Controls/1.0" },
-            { "Accept-Language", "en" }
+            var name = AppInfo.PackageName;
+            var version = AppInfo.Version;
+            client.DefaultRequestHeaders.Add("User-Agent", $"{name}/{version}");
         }
-    };
+        catch
+        {
+            client.DefaultRequestHeaders.Add("User-Agent", "Shiny.Maui.Controls/1.0");
+        }
+        client.DefaultRequestHeaders.Add("Accept-Language", "en");
+        return client;
+    });
+    static HttpClient httpClient => lazyHttpClient.Value;
 
     public async Task<IList<Address>> SearchAsync(string query, string? countryCodes, CancellationToken ct)
     {
