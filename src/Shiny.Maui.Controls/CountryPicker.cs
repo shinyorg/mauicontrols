@@ -15,6 +15,7 @@ public class CountryPicker : ContentView
             Placeholder = "Search countries...",
             ItemsSource = CountryData.All.ToList(),
             TextMemberPath = nameof(Country.Name),
+            ShowAllOnFocus = true,
             HorizontalOptions = LayoutOptions.Fill,
             ItemTemplate = new DataTemplate(() =>
             {
@@ -23,16 +24,15 @@ public class CountryPicker : ContentView
                     ColumnDefinitions =
                     {
                         new ColumnDefinition(GridLength.Auto),
-                        new ColumnDefinition(GridLength.Star),
-                        new ColumnDefinition(GridLength.Auto)
+                        new ColumnDefinition(GridLength.Star)
                     },
                     ColumnSpacing = 8,
-                    Padding = new Thickness(8, 6)
+                    Padding = new Thickness(10, 8)
                 };
 
                 var flag = new Label
                 {
-                    FontSize = 20,
+                    FontSize = 22,
                     VerticalTextAlignment = TextAlignment.Center,
                     IsVisible = showFlags
                 };
@@ -45,17 +45,8 @@ public class CountryPicker : ContentView
                 };
                 name.SetBinding(Label.TextProperty, nameof(Country.Name));
 
-                var dial = new Label
-                {
-                    VerticalTextAlignment = TextAlignment.Center,
-                    FontSize = 12,
-                    TextColor = Colors.Grey
-                };
-                dial.SetBinding(Label.TextProperty, nameof(Country.DialCode));
-
                 grid.Add(flag, 0, 0);
                 grid.Add(name, 1, 0);
-                grid.Add(dial, 2, 0);
                 return grid;
             })
         };
@@ -144,6 +135,30 @@ public class CountryPicker : ContentView
     {
         get => (Color?)GetValue(DropDownBackgroundColorProperty);
         set => SetValue(DropDownBackgroundColorProperty, value);
+    }
+
+    public static readonly BindableProperty DropDownBorderColorProperty = BindableProperty.Create(
+        nameof(DropDownBorderColor),
+        typeof(Color),
+        typeof(CountryPicker),
+        null,
+        propertyChanged: (b, _, n) => { if (n is Color c) ((CountryPicker)b).autoComplete.DropDownBorderColor = c; });
+    public Color? DropDownBorderColor
+    {
+        get => (Color?)GetValue(DropDownBorderColorProperty);
+        set => SetValue(DropDownBorderColorProperty, value);
+    }
+
+    public static readonly BindableProperty SpinnerColorProperty = BindableProperty.Create(
+        nameof(SpinnerColor),
+        typeof(Color),
+        typeof(CountryPicker),
+        null,
+        propertyChanged: (b, _, n) => { if (n is Color c) ((CountryPicker)b).autoComplete.SpinnerColor = c; });
+    public Color? SpinnerColor
+    {
+        get => (Color?)GetValue(SpinnerColorProperty);
+        set => SetValue(SpinnerColorProperty, value);
     }
 
     public static readonly BindableProperty MaxDropDownHeightProperty = BindableProperty.Create(

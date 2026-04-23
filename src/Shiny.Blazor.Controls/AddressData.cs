@@ -16,6 +16,7 @@ public record Address(
     double Longitude
 )
 {
+    public string ShortDisplay => string.Join(", ", new[] { HouseNumber, Street, City, State }.Where(s => !string.IsNullOrWhiteSpace(s)));
     public override string ToString() => DisplayName;
 }
 

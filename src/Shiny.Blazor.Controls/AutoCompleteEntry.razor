@@ -74,7 +74,7 @@
     [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
     [Parameter] public string? TextMemberPath { get; set; }
 
-    [Parameter] public int DebounceInterval { get; set; } = 300;
+    [Parameter] public int DebounceInterval { get; set; } = 500;
     [Parameter] public int Threshold { get; set; } = 1;
     [Parameter] public double MaxDropDownHeight { get; set; } = 200;
 
@@ -82,6 +82,8 @@
     [Parameter] public string? DropDownBackgroundColor { get; set; }
     [Parameter] public string? DropDownBorderColor { get; set; }
     [Parameter] public string? SpinnerColor { get; set; }
+
+    [Parameter] public bool ShowAllOnFocus { get; set; }
 
     [Parameter] public double? FontSize { get; set; }
     [Parameter] public string? CssClass { get; set; }
@@ -131,7 +133,15 @@
 
         if (newText.Length < Threshold)
         {
-            isDropDownVisible = false;
+            if (ShowAllOnFocus && !SearchCommand.HasDelegate && ItemsSource is not null && ItemsSource.Count > 0)
+            {
+                filteredItems = ItemsSource;
+                isDropDownVisible = true;
+            }
+            else
+            {
+                isDropDownVisible = false;
+            }
             return;
         }
 
@@ -215,7 +225,20 @@
         await ItemSelected.InvokeAsync(item);
     }
 
-    void OnFocus() => isFocused = true;
+    void OnFocus()
+    {
+        isFocused = true;
+        if (ShowAllOnFocus && !SearchCommand.HasDelegate)
+        {
+            var searchText = Text ?? "";
+            if (searchText.Length < Threshold && ItemsSource is not null && ItemsSource.Count > 0)
+            {
+                filteredItems = ItemsSource;
+                isDropDownVisible = true;
+                return;
+            }
+        }
+    }
 
     async Task OnBlurDelayed()
     {

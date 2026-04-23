@@ -369,6 +369,8 @@ A full-featured color picker with spectrum, hue bar, opacity slider, hex input, 
 
 A text input with debounced search, dropdown suggestions, busy indicator, and custom item templates. Supports both local filtering and remote search via a command/callback. Available on both MAUI and Blazor with full styling control.
 
+![AutoCompleteEntry](assets/autocomplete1.png)
+
 ```xml
 <shiny:AutoCompleteEntry
     Text="{Binding SearchText}"
@@ -431,6 +433,10 @@ Events: `ItemSelected` fires when a suggestion is chosen.
 ### CountryPicker
 
 A country search control built on AutoCompleteEntry with flag emoji display, country name, and dial code. Searches all ISO 3166-1 countries.
+
+| Empty | With Selection |
+|:---:|:---:|
+| ![Country & Address](assets/countryaddress1.png) | ![Country Selected](assets/countryaddress2.png) |
 
 ```xml
 <shiny:CountryPicker SelectedCountry="{Binding Country}"

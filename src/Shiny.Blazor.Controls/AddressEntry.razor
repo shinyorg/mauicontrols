@@ -27,7 +27,7 @@
     SearchCommand="OnSearch">
     <ItemTemplate Context="item">
         @{ var addr = (Address)item; }
-        <div style="padding:4px 8px;font-size:13px;line-height:1.4;">@addr.DisplayName</div>
+        <div style="padding:4px 8px;font-size:13px;line-height:1.4;">@addr.ShortDisplay</div>
     </ItemTemplate>
 </AutoCompleteEntry>
 

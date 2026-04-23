@@ -1,10 +1,9 @@
 @namespace Shiny.Blazor.Controls
 @using Microsoft.AspNetCore.Components.Web
 @using System.Collections
-@using System.Runtime.InteropServices
 
 <div class="shiny-country-picker">
-    @if (showFlags && selectedCountry is not null)
+    @if (selectedCountry is not null)
     {
         <span class="shiny-country-flag">@selectedCountry.FlagEmoji</span>
     }
@@ -16,6 +15,7 @@
         SelectedItem="@selectedCountry"
         SelectedItemChanged="OnItemSelected"
         TextMemberPath="Name"
+        ShowAllOnFocus="true"
         MaxDropDownHeight="@MaxDropDownHeight"
         TextColor="@TextColor"
         DropDownBackgroundColor="@DropDownBackgroundColor"
@@ -27,20 +27,14 @@
         <ItemTemplate Context="item">
             @{ var c = (Country)item; }
             <div class="shiny-country-item">
-                @if (showFlags)
-                {
-                    <span class="shiny-country-item-flag">@c.FlagEmoji</span>
-                }
+                <span class="shiny-country-item-flag">@c.FlagEmoji</span>
                 <span class="shiny-country-item-name">@c.Name</span>
-                <span class="shiny-country-item-dial">@c.DialCode</span>
             </div>
         </ItemTemplate>
     </AutoCompleteEntry>
 </div>
 
 @code {
-    static readonly bool showFlags = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
     List<Country> countries = CountryData.All.ToList();
     Country? selectedCountry;
     string text = "";

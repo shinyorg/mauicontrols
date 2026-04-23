@@ -5,20 +5,22 @@ namespace Shiny.Maui.Controls;
 
 public class AutoCompleteEntry : ContentView
 {
-    const int DefaultDebounceMs = 300;
+    const int DefaultDebounceMs = 500;
     const double DefaultMaxDropDownHeight = 200;
     const double DefaultFontSize = 14;
     const double DefaultCornerRadius = 4;
 
     readonly BorderlessEntry entry;
     readonly ActivityIndicator spinner;
-    readonly CollectionView suggestionList;
+    readonly VerticalStackLayout suggestionStack;
+    readonly ScrollView dropDownScroll;
     readonly Border dropDownBorder;
     readonly Microsoft.Maui.Controls.Shapes.RoundRectangle dropDownShape;
     readonly Grid rootGrid;
 
     CancellationTokenSource? debounceCts;
     bool suppressTextChanged;
+    IList? currentFilteredItems;
 
     public AutoCompleteEntry()
     {
@@ -29,7 +31,7 @@ public class AutoCompleteEntry : ContentView
             FontSize = DefaultFontSize
         };
         entry.TextChanged += OnEntryTextChanged;
-        entry.Focused += (_, _) => ShowDropDown();
+        entry.Focused += (_, _) => OnEntryFocused();
         entry.Unfocused += (_, _) =>
         {
             // delay to allow tap on suggestion to register
@@ -59,13 +61,16 @@ public class AutoCompleteEntry : ContentView
         entryGrid.Add(entry, 0, 0);
         entryGrid.Add(spinner, 1, 0);
 
-        suggestionList = new CollectionView
+        suggestionStack = new VerticalStackLayout
         {
-            SelectionMode = SelectionMode.Single,
-            VerticalOptions = LayoutOptions.Start,
-            HorizontalOptions = LayoutOptions.Fill
+            Spacing = 0
         };
-        suggestionList.SelectionChanged += OnSuggestionSelected;
+
+        dropDownScroll = new ScrollView
+        {
+            Content = suggestionStack,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Default
+        };
 
         dropDownShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
         {
@@ -81,7 +86,7 @@ public class AutoCompleteEntry : ContentView
             Padding = 0,
             StrokeShape = dropDownShape,
             MaximumHeightRequest = DefaultMaxDropDownHeight,
-            Content = suggestionList,
+            Content = dropDownScroll,
             Shadow = new Shadow
             {
                 Brush = Brush.Black,
@@ -212,7 +217,13 @@ public class AutoCompleteEntry : ContentView
         typeof(DataTemplate),
         typeof(AutoCompleteEntry),
         null,
-        propertyChanged: (b, _, n) => ((AutoCompleteEntry)b).suggestionList.ItemTemplate = n as DataTemplate);
+        propertyChanged: (b, _, n) =>
+        {
+            var ctrl = (AutoCompleteEntry)b;
+            // Re-render if items are already showing
+            if (ctrl.currentFilteredItems != null)
+                ctrl.RenderDropDownItems(ctrl.currentFilteredItems);
+        });
     public DataTemplate? ItemTemplate
     {
         get => (DataTemplate?)GetValue(ItemTemplateProperty);
@@ -348,6 +359,17 @@ public class AutoCompleteEntry : ContentView
         set => SetValue(FontAttributesProperty, value);
     }
 
+    public static readonly BindableProperty ShowAllOnFocusProperty = BindableProperty.Create(
+        nameof(ShowAllOnFocus),
+        typeof(bool),
+        typeof(AutoCompleteEntry),
+        false);
+    public bool ShowAllOnFocus
+    {
+        get => (bool)GetValue(ShowAllOnFocusProperty);
+        set => SetValue(ShowAllOnFocusProperty, value);
+    }
+
     public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
         nameof(CornerRadius),
         typeof(double),
@@ -368,6 +390,29 @@ public class AutoCompleteEntry : ContentView
 
     // --- Private Methods ---
 
+    void OnEntryFocused()
+    {
+        if (ShowAllOnFocus && SearchCommand == null)
+        {
+            var searchText = Text ?? string.Empty;
+            if (searchText.Length < Threshold)
+            {
+                var source = ItemsSource;
+                if (source != null && source.Count > 0)
+                {
+                    var all = new List<object>();
+                    foreach (var item in source)
+                        all.Add(item);
+                    RenderDropDownItems(all);
+                    ShowDropDown();
+                }
+                return;
+            }
+        }
+
+        ShowDropDown();
+    }
+
     void OnEntryTextChanged(object? sender, TextChangedEventArgs e)
     {
         if (suppressTextChanged)
@@ -381,6 +426,19 @@ public class AutoCompleteEntry : ContentView
         var searchText = e.NewTextValue ?? string.Empty;
         if (searchText.Length < Threshold)
         {
+            if (ShowAllOnFocus && entry.IsFocused && SearchCommand == null)
+            {
+                var source = ItemsSource;
+                if (source != null && source.Count > 0)
+                {
+                    var all = new List<object>();
+                    foreach (var item in source)
+                        all.Add(item);
+                    RenderDropDownItems(all);
+                    ShowDropDown();
+                    return;
+                }
+            }
             HideDropDown();
             return;
         }
@@ -434,13 +492,66 @@ public class AutoCompleteEntry : ContentView
 
         if (filtered.Count > 0)
         {
-            suggestionList.ItemsSource = filtered;
+            RenderDropDownItems(filtered);
             ShowDropDown();
         }
         else
         {
             HideDropDown();
         }
+    }
+
+    void RenderDropDownItems(IList items)
+    {
+        currentFilteredItems = items;
+        suggestionStack.Children.Clear();
+
+        foreach (var item in items)
+        {
+            View itemView;
+
+            if (ItemTemplate != null)
+            {
+                var content = ItemTemplate.CreateContent();
+                if (content is View v)
+                {
+                    v.BindingContext = item;
+                    itemView = v;
+                }
+                else if (content is ViewCell cell)
+                {
+                    cell.BindingContext = item;
+                    itemView = cell.View;
+                }
+                else
+                {
+                    itemView = CreateDefaultItemView(item);
+                }
+            }
+            else
+            {
+                itemView = CreateDefaultItemView(item);
+            }
+
+            var tapGesture = new TapGestureRecognizer();
+            var capturedItem = item;
+            tapGesture.Tapped += (_, _) => OnItemTapped(capturedItem);
+            itemView.GestureRecognizers.Add(tapGesture);
+
+            suggestionStack.Children.Add(itemView);
+        }
+    }
+
+    View CreateDefaultItemView(object item)
+    {
+        var label = new Label
+        {
+            Text = GetDisplayText(item),
+            Padding = new Thickness(10, 8),
+            FontSize = 14,
+            VerticalTextAlignment = TextAlignment.Center
+        };
+        return label;
     }
 
     string GetDisplayText(object item)
@@ -458,31 +569,23 @@ public class AutoCompleteEntry : ContentView
         return item.ToString() ?? string.Empty;
     }
 
-    void OnSuggestionSelected(object? sender, SelectionChangedEventArgs e)
+    void OnItemTapped(object item)
     {
-        if (e.CurrentSelection.Count == 0)
-            return;
-
-        var selected = e.CurrentSelection[0];
-        SelectedItem = selected;
+        SelectedItem = item;
 
         suppressTextChanged = true;
-        var displayText = GetDisplayText(selected);
+        var displayText = GetDisplayText(item);
         entry.Text = displayText;
         Text = displayText;
         suppressTextChanged = false;
 
         HideDropDown();
-        suggestionList.SelectedItem = null;
-
-        ItemSelected?.Invoke(this, selected);
+        ItemSelected?.Invoke(this, item);
     }
 
     void ShowDropDown()
     {
-        if (suggestionList.ItemsSource is IList list && list.Count > 0)
-            dropDownBorder.IsVisible = true;
-        else if (suggestionList.ItemsSource is IEnumerable enumerable && enumerable.Cast<object>().Any())
+        if (currentFilteredItems != null && currentFilteredItems.Count > 0)
             dropDownBorder.IsVisible = true;
     }
 
@@ -498,7 +601,9 @@ public class AutoCompleteEntry : ContentView
         // When ItemsSource changes externally (e.g. from SearchCommand callback), update dropdown
         if (propertyName == nameof(ItemsSource))
         {
-            suggestionList.ItemsSource = ItemsSource;
+            if (ItemsSource != null)
+                RenderDropDownItems(ItemsSource);
+
             if (entry.IsFocused && !string.IsNullOrEmpty(Text) && Text.Length >= Threshold)
                 ShowDropDown();
         }

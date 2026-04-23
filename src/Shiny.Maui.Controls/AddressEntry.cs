@@ -16,6 +16,7 @@ public record Address(
     double Longitude
 )
 {
+    public string ShortDisplay => string.Join(", ", new[] { HouseNumber, Street, City, State }.Where(s => !string.IsNullOrWhiteSpace(s)));
     public override string ToString() => DisplayName;
 }
 
@@ -84,10 +85,10 @@ public class AddressEntry : ContentView
                 {
                     FontSize = 13,
                     LineBreakMode = LineBreakMode.TailTruncation,
-                    MaxLines = 2,
+                    MaxLines = 1,
                     Padding = new Thickness(8, 6)
                 };
-                label.SetBinding(Label.TextProperty, nameof(Address.DisplayName));
+                label.SetBinding(Label.TextProperty, nameof(Address.ShortDisplay));
                 return label;
             }),
             HorizontalOptions = LayoutOptions.Fill
@@ -184,6 +185,30 @@ public class AddressEntry : ContentView
     {
         get => (Color?)GetValue(DropDownBackgroundColorProperty);
         set => SetValue(DropDownBackgroundColorProperty, value);
+    }
+
+    public static readonly BindableProperty DropDownBorderColorProperty = BindableProperty.Create(
+        nameof(DropDownBorderColor),
+        typeof(Color),
+        typeof(AddressEntry),
+        null,
+        propertyChanged: (b, _, n) => { if (n is Color c) ((AddressEntry)b).autoComplete.DropDownBorderColor = c; });
+    public Color? DropDownBorderColor
+    {
+        get => (Color?)GetValue(DropDownBorderColorProperty);
+        set => SetValue(DropDownBorderColorProperty, value);
+    }
+
+    public static readonly BindableProperty SpinnerColorProperty = BindableProperty.Create(
+        nameof(SpinnerColor),
+        typeof(Color),
+        typeof(AddressEntry),
+        null,
+        propertyChanged: (b, _, n) => { if (n is Color c) ((AddressEntry)b).autoComplete.SpinnerColor = c; });
+    public Color? SpinnerColor
+    {
+        get => (Color?)GetValue(SpinnerColorProperty);
+        set => SetValue(SpinnerColorProperty, value);
     }
 
     public static readonly BindableProperty MaxDropDownHeightProperty = BindableProperty.Create(

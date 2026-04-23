@@ -5,100 +5,153 @@
              xmlns:shiny="http://shiny.net/maui/controls"
              x:Class="Sample.Features.CountryAddress.CountryAddressPage"
              x:DataType="local:CountryAddressViewModel"
-             Title="Country &amp; Address">
+             Title="Country &amp; Address"
+             BackgroundColor="#F5F7FA">
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="24">
+        <VerticalStackLayout Padding="20" Spacing="20">
 
-            <Label Text="Country &amp; Address Picker"
-                   FontSize="24"
-                   FontAttributes="Bold"
-                   HorizontalTextAlignment="Center" />
+            <!-- Header -->
+            <VerticalStackLayout Spacing="4" Padding="0,8,0,4">
+                <Label Text="&#x1F30E; Location"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="#1E293B"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="Pick a country and search for an address"
+                       FontSize="13"
+                       TextColor="#64748B"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
 
-            <!-- Country Picker -->
-            <Frame Padding="16" CornerRadius="8" BorderColor="LightGray" HasShadow="False">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Country"
-                           FontAttributes="Bold"
-                           FontSize="16" />
+            <!-- Country Picker Card -->
+            <Border StrokeShape="{RoundRectangle CornerRadius=16}"
+                    Stroke="#E2E8F0" StrokeThickness="1"
+                    BackgroundColor="White" Padding="20">
+                <VerticalStackLayout Spacing="14">
+                    <HorizontalStackLayout Spacing="8">
+                        <Border StrokeShape="{RoundRectangle CornerRadius=8}"
+                                Stroke="Transparent" BackgroundColor="#EEF2FF"
+                                Padding="8,6" VerticalOptions="Center">
+                            <Label Text="&#x1F3F3;&#xFE0F;" FontSize="16" />
+                        </Border>
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="Country"
+                                   FontSize="17" FontAttributes="Bold" TextColor="#1E293B" />
+                            <Label Text="Search from 250+ countries"
+                                   FontSize="11" TextColor="#94A3B8" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
 
-                    <shiny:CountryPicker SelectedCountry="{Binding SelectedCountry}" />
+                    <shiny:CountryPicker
+                        SelectedCountry="{Binding SelectedCountry}"
+                        Placeholder="Search countries..."
+                        FontSize="15"
+                        CornerRadius="10"
+                        DropDownBackgroundColor="White"
+                        DropDownBorderColor="#CBD5E1" />
 
-                    <BoxView HeightRequest="1" Color="LightGray" />
+                    <!-- Country Details -->
+                    <Border StrokeShape="{RoundRectangle CornerRadius=10}"
+                            Stroke="#E0E7FF" StrokeThickness="1"
+                            BackgroundColor="#F5F3FF" Padding="14"
+                            IsVisible="{Binding HasCountry}">
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto"
+                              ColumnSpacing="14" RowSpacing="8">
 
-                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto"
-                          ColumnSpacing="12" RowSpacing="4"
-                          IsVisible="{Binding HasCountry}">
-                        <Label Text="Name:" FontAttributes="Bold" />
-                        <Label Grid.Column="1" Text="{Binding SelectedCountry.Name}" />
+                            <Label Text="&#x1F3F7;&#xFE0F;" FontSize="14" VerticalTextAlignment="Center" />
+                            <HorizontalStackLayout Grid.Column="1" Spacing="6">
+                                <Label Text="{Binding SelectedCountry.FlagEmoji}" FontSize="20" VerticalTextAlignment="Center" />
+                                <Label Text="{Binding SelectedCountry.Name}" FontSize="14" FontAttributes="Bold" TextColor="#1E293B" VerticalTextAlignment="Center" />
+                            </HorizontalStackLayout>
 
-                        <Label Grid.Row="1" Text="Code:" FontAttributes="Bold" />
-                        <Label Grid.Row="1" Grid.Column="1"
-                               Text="{Binding CountryCodeDisplay}" />
+                            <Label Grid.Row="1" Text="&#x1F4C7;" FontSize="14" VerticalTextAlignment="Center" />
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding CountryCodeDisplay}" FontSize="13" TextColor="#475569" VerticalTextAlignment="Center" />
 
-                        <Label Grid.Row="2" Text="Dial:" FontAttributes="Bold" />
-                        <Label Grid.Row="2" Grid.Column="1"
-                               Text="{Binding SelectedCountry.DialCode}" />
-
-                        <Label Grid.Row="3" Text="Flag:" FontAttributes="Bold" />
-                        <Label Grid.Row="3" Grid.Column="1"
-                               Text="{Binding SelectedCountry.FlagEmoji}"
-                               FontSize="24" />
-                    </Grid>
+                            <Label Grid.Row="2" Text="&#x260E;&#xFE0F;" FontSize="14" VerticalTextAlignment="Center" />
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding SelectedCountry.DialCode}" FontSize="13" TextColor="#475569" VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Border>
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
 
-            <!-- Address Picker -->
-            <Frame Padding="16" CornerRadius="8" BorderColor="LightGray" HasShadow="False">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Address"
-                           FontAttributes="Bold"
-                           FontSize="16" />
-
-                    <Label Text="Powered by OpenStreetMap Nominatim (free, no API key)"
-                           FontSize="11"
-                           TextColor="Gray" />
+            <!-- Address Entry Card -->
+            <Border StrokeShape="{RoundRectangle CornerRadius=16}"
+                    Stroke="#E2E8F0" StrokeThickness="1"
+                    BackgroundColor="White" Padding="20">
+                <VerticalStackLayout Spacing="14">
+                    <HorizontalStackLayout Spacing="8">
+                        <Border StrokeShape="{RoundRectangle CornerRadius=8}"
+                                Stroke="Transparent" BackgroundColor="#ECFDF5"
+                                Padding="8,6" VerticalOptions="Center">
+                            <Label Text="&#x1F4CD;" FontSize="16" />
+                        </Border>
+                        <VerticalStackLayout VerticalOptions="Center">
+                            <Label Text="Address"
+                                   FontSize="17" FontAttributes="Bold" TextColor="#1E293B" />
+                            <Label Text="OpenStreetMap Nominatim (free, no API key)"
+                                   FontSize="11" TextColor="#94A3B8" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
 
                     <shiny:AddressEntry
                         SelectedAddress="{Binding SelectedAddress}"
                         CountryCodes="{Binding CountryCodeFilter}"
-                        Placeholder="Start typing an address..." />
+                        Placeholder="Start typing an address..."
+                        FontSize="15"
+                        CornerRadius="10"
+                        DropDownBackgroundColor="White"
+                        DropDownBorderColor="#CBD5E1"
+                        SpinnerColor="#10B981" />
 
-                    <BoxView HeightRequest="1" Color="LightGray" />
+                    <!-- Address Details -->
+                    <Border StrokeShape="{RoundRectangle CornerRadius=10}"
+                            Stroke="#D1FAE5" StrokeThickness="1"
+                            BackgroundColor="#ECFDF5" Padding="14"
+                            IsVisible="{Binding HasAddress}">
+                        <Grid ColumnDefinitions="Auto,*"
+                              RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                              ColumnSpacing="14" RowSpacing="8">
 
-                    <Grid ColumnDefinitions="Auto,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
-                          ColumnSpacing="12" RowSpacing="4"
-                          IsVisible="{Binding HasAddress}">
-                        <Label Text="Street:" FontAttributes="Bold" />
-                        <Label Grid.Column="1" Text="{Binding StreetDisplay}" />
+                            <Label Text="&#x1F3E0;" FontSize="14" VerticalTextAlignment="Center" />
+                            <Label Grid.Column="1" Text="{Binding StreetDisplay}"
+                                   FontSize="13" TextColor="#1E293B" FontAttributes="Bold" VerticalTextAlignment="Center" />
 
-                        <Label Grid.Row="1" Text="City:" FontAttributes="Bold" />
-                        <Label Grid.Row="1" Grid.Column="1"
-                               Text="{Binding SelectedAddress.City}" />
+                            <Label Grid.Row="1" Text="&#x1F3D9;&#xFE0F;" FontSize="14" VerticalTextAlignment="Center" />
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding SelectedAddress.City}" FontSize="13" TextColor="#475569" VerticalTextAlignment="Center" />
 
-                        <Label Grid.Row="2" Text="State:" FontAttributes="Bold" />
-                        <Label Grid.Row="2" Grid.Column="1"
-                               Text="{Binding SelectedAddress.State}" />
+                            <Label Grid.Row="2" Text="&#x1F3DB;&#xFE0F;" FontSize="14" VerticalTextAlignment="Center" />
+                            <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Spacing="8">
+                                <Label Text="{Binding SelectedAddress.State}" FontSize="13" TextColor="#475569" VerticalTextAlignment="Center" />
+                                <Label Text="{Binding SelectedAddress.PostalCode}" FontSize="13" TextColor="#94A3B8" VerticalTextAlignment="Center" />
+                            </HorizontalStackLayout>
 
-                        <Label Grid.Row="3" Text="Postal:" FontAttributes="Bold" />
-                        <Label Grid.Row="3" Grid.Column="1"
-                               Text="{Binding SelectedAddress.PostalCode}" />
+                            <Label Grid.Row="3" Text="&#x1F30D;" FontSize="14" VerticalTextAlignment="Center" />
+                            <Label Grid.Row="3" Grid.Column="1"
+                                   Text="{Binding SelectedAddress.Country}" FontSize="13" TextColor="#475569" VerticalTextAlignment="Center" />
 
-                        <Label Grid.Row="4" Text="Country:" FontAttributes="Bold" />
-                        <Label Grid.Row="4" Grid.Column="1"
-                               Text="{Binding SelectedAddress.Country}" />
-
-                        <Label Grid.Row="5" Text="Coords:" FontAttributes="Bold" />
-                        <Label Grid.Row="5" Grid.Column="1"
-                               Text="{Binding CoordsDisplay}" />
-                    </Grid>
+                            <Label Grid.Row="4" Text="&#x1F4CD;" FontSize="14" VerticalTextAlignment="Center" />
+                            <Label Grid.Row="4" Grid.Column="1"
+                                   Text="{Binding CoordsDisplay}" FontSize="12" TextColor="#94A3B8" VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Border>
                 </VerticalStackLayout>
-            </Frame>
+            </Border>
 
-            <Label Text="Tip: Select a country first to filter address results to that country"
-                   FontSize="11"
-                   TextColor="Gray"
-                   HorizontalTextAlignment="Center" />
+            <!-- Tip -->
+            <Border StrokeShape="{RoundRectangle CornerRadius=8}"
+                    Stroke="#FDE68A" StrokeThickness="1"
+                    BackgroundColor="#FFFBEB" Padding="12">
+                <HorizontalStackLayout Spacing="8">
+                    <Label Text="&#x1F4A1;" FontSize="14" VerticalTextAlignment="Center" />
+                    <Label Text="Select a country first to filter address results"
+                           FontSize="12" TextColor="#92400E" VerticalTextAlignment="Center" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <BoxView HeightRequest="20" Color="Transparent" />
 
         </VerticalStackLayout>
     </ScrollView>
