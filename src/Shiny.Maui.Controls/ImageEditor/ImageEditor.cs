@@ -13,6 +13,7 @@ public partial class ImageEditor : ContentView
     View? toolbarView;
     ColorPickerButton? drawColorButton;
     FontPickerButton? fontPickerButton;
+    FontSizePickerButton? fontSizePickerButton;
 
     public ImageEditor()
     {
@@ -121,6 +122,46 @@ public partial class ImageEditor : ContentView
         set => SetValue(AllowTextAnnotationProperty, value);
     }
 
+    public static readonly BindableProperty AllowLineProperty = BindableProperty.Create(
+        nameof(AllowLine), typeof(bool), typeof(ImageEditor), true,
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public bool AllowLine
+    {
+        get => (bool)GetValue(AllowLineProperty);
+        set => SetValue(AllowLineProperty, value);
+    }
+
+    public static readonly BindableProperty AllowArrowProperty = BindableProperty.Create(
+        nameof(AllowArrow), typeof(bool), typeof(ImageEditor), true,
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public bool AllowArrow
+    {
+        get => (bool)GetValue(AllowArrowProperty);
+        set => SetValue(AllowArrowProperty, value);
+    }
+
+    public static readonly BindableProperty AllowFontSelectionProperty = BindableProperty.Create(
+        nameof(AllowFontSelection), typeof(bool), typeof(ImageEditor), false,
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public bool AllowFontSelection
+    {
+        get => (bool)GetValue(AllowFontSelectionProperty);
+        set => SetValue(AllowFontSelectionProperty, value);
+    }
+
+    public static readonly BindableProperty AllowFontSizeSelectionProperty = BindableProperty.Create(
+        nameof(AllowFontSizeSelection), typeof(bool), typeof(ImageEditor), false,
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public bool AllowFontSizeSelection
+    {
+        get => (bool)GetValue(AllowFontSizeSelectionProperty);
+        set => SetValue(AllowFontSizeSelectionProperty, value);
+    }
+
     public static readonly BindableProperty AllowZoomProperty = BindableProperty.Create(
         nameof(AllowZoom), typeof(bool), typeof(ImageEditor), true);
 
@@ -176,12 +217,31 @@ public partial class ImageEditor : ContentView
     }
 
     public static readonly BindableProperty TextFontSizeProperty = BindableProperty.Create(
-        nameof(TextFontSize), typeof(double), typeof(ImageEditor), 16.0);
+        nameof(TextFontSize), typeof(double), typeof(ImageEditor), 16.0,
+        BindingMode.TwoWay,
+        propertyChanged: (b, _, n) =>
+        {
+            var editor = (ImageEditor)b;
+            if (editor.activeTextEntry != null)
+                editor.activeTextEntry.FontSize = (double)n;
+            if (editor.fontSizePickerButton != null)
+                editor.fontSizePickerButton.SelectedFontSize = (double)n;
+        });
 
     public double TextFontSize
     {
         get => (double)GetValue(TextFontSizeProperty);
         set => SetValue(TextFontSizeProperty, value);
+    }
+
+    public static readonly BindableProperty AvailableFontSizesProperty = BindableProperty.Create(
+        nameof(AvailableFontSizes), typeof(IList<double>), typeof(ImageEditor), null,
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public IList<double>? AvailableFontSizes
+    {
+        get => (IList<double>?)GetValue(AvailableFontSizesProperty);
+        set => SetValue(AvailableFontSizesProperty, value);
     }
 
     public static readonly BindableProperty AnnotationTextColorProperty = BindableProperty.Create(
@@ -441,6 +501,12 @@ public partial class ImageEditor : ContentView
             }
             drawable.ActiveStrokePoints = null;
         }
+
+        // Finalize in-progress line / arrow
+        if (drawable.ActiveLineStart.HasValue && drawable.ActiveLineEnd.HasValue)
+        {
+            CommitCurrentLine();
+        }
     }
 
     void ResetViewTransform()
@@ -508,11 +574,18 @@ public partial class ImageEditor : ContentView
             toolbar.Children.Add(CreateToolButton("\u270E", "Draw", ImageEditorToolMode.Draw));
             toolbar.Children.Add(CreateDrawColorButton());
         }
+        if (AllowLine) toolbar.Children.Add(CreateToolButton("\u2500", "Line", ImageEditorToolMode.Line));
+        if (AllowArrow) toolbar.Children.Add(CreateToolButton("\u2192", "Arrow", ImageEditorToolMode.Arrow));
         if (AllowTextAnnotation)
         {
             toolbar.Children.Add(CreateToolButton("\u0054", "Text", ImageEditorToolMode.Text));
-            if (CurrentToolMode == ImageEditorToolMode.Text && AvailableFonts is { Count: > 0 })
-                toolbar.Children.Add(CreateFontPickerButton());
+            if (CurrentToolMode == ImageEditorToolMode.Text)
+            {
+                if (AllowFontSelection && AvailableFonts is { Count: > 0 })
+                    toolbar.Children.Add(CreateFontPickerButton());
+                if (AllowFontSizeSelection && AvailableFontSizes is { Count: > 0 })
+                    toolbar.Children.Add(CreateFontSizePickerButton());
+            }
         }
 
         // Separator
@@ -628,6 +701,20 @@ public partial class ImageEditor : ContentView
         };
         fontPickerButton.FontChanged += (_, font) => TextFontFamily = font;
         return fontPickerButton;
+    }
+
+    FontSizePickerButton CreateFontSizePickerButton()
+    {
+        fontSizePickerButton = new FontSizePickerButton
+        {
+            AvailableFontSizes = AvailableFontSizes,
+            SelectedFontSize = TextFontSize,
+            CornerRadius = 8,
+            HeightRequest = 36,
+            VerticalOptions = LayoutOptions.Center
+        };
+        fontSizePickerButton.FontSizeChanged += (_, size) => TextFontSize = size;
+        return fontSizePickerButton;
     }
 
     static Button CreateBaseButton(string icon, string tooltip)

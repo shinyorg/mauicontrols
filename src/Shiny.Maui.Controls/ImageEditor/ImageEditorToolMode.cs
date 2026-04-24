@@ -6,5 +6,7 @@ public enum ImageEditorToolMode
     Move,
     Crop,
     Draw,
-    Text
+    Text,
+    Line,
+    Arrow
 }

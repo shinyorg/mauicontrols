@@ -18,6 +18,11 @@ internal sealed class ImageEditorDrawable : IDrawable
     public Color ActiveStrokeColor { get; set; } = Colors.White;
     public float ActiveStrokeWidth { get; set; } = 3f;
 
+    // In-progress line / arrow (absolute pixel coordinates)
+    public PointF? ActiveLineStart { get; set; }
+    public PointF? ActiveLineEnd { get; set; }
+    public bool ActiveLineIsArrow { get; set; }
+
     // Cached effective image bounds after applying all crop/rotate actions
     RectF imageRect;
 
@@ -47,6 +52,12 @@ internal sealed class ImageEditorDrawable : IDrawable
 
         if (ToolMode == ImageEditorToolMode.Draw && ActiveStrokePoints is { Count: >= 2 })
             DrawStroke(canvas, ActiveStrokePoints, ActiveStrokeColor, ActiveStrokeWidth);
+
+        if ((ToolMode == ImageEditorToolMode.Line || ToolMode == ImageEditorToolMode.Arrow)
+            && ActiveLineStart.HasValue && ActiveLineEnd.HasValue)
+        {
+            DrawLine(canvas, ActiveLineStart.Value, ActiveLineEnd.Value, ActiveStrokeColor, ActiveStrokeWidth, ActiveLineIsArrow);
+        }
 
         canvas.RestoreState();
     }
@@ -153,6 +164,16 @@ internal sealed class ImageEditorDrawable : IDrawable
                     DrawStroke(canvas, scaledPoints, stroke.StrokeColor, stroke.StrokeWidth);
                     break;
 
+                case LineAction line:
+                    var lineStart = new PointF(
+                        imageRect.X + line.Start.X * imageRect.Width,
+                        imageRect.Y + line.Start.Y * imageRect.Height);
+                    var lineEnd = new PointF(
+                        imageRect.X + line.End.X * imageRect.Width,
+                        imageRect.Y + line.End.Y * imageRect.Height);
+                    DrawLine(canvas, lineStart, lineEnd, line.StrokeColor, line.StrokeWidth, line.IsArrow);
+                    break;
+
                 case TextAnnotationAction text:
                     var textX = imageRect.X + text.Position.X * imageRect.Width;
                     var textY = imageRect.Y + text.Position.Y * imageRect.Height;
@@ -226,6 +247,45 @@ internal sealed class ImageEditorDrawable : IDrawable
     static void DrawHandle(ICanvas canvas, float x, float y, float halfSize)
     {
         canvas.FillRoundedRectangle(x - halfSize, y - halfSize, halfSize * 2, halfSize * 2, 2f);
+    }
+
+    static void DrawLine(ICanvas canvas, PointF start, PointF end, Color color, float width, bool arrow)
+    {
+        canvas.StrokeColor = color;
+        canvas.StrokeSize = width;
+        canvas.StrokeLineCap = LineCap.Round;
+        canvas.StrokeLineJoin = LineJoin.Round;
+        canvas.DrawLine(start, end);
+
+        if (!arrow)
+            return;
+
+        var dx = end.X - start.X;
+        var dy = end.Y - start.Y;
+        var len = MathF.Sqrt(dx * dx + dy * dy);
+        if (len < 0.5f)
+            return;
+
+        // Arrow head: lines back along the direction at +/-30°, length scaled with stroke width
+        var headLen = MathF.Max(width * 4f, 12f);
+        var ux = dx / len;
+        var uy = dy / len;
+        const float angle = 0.5236f; // ~30°
+        var cos = MathF.Cos(angle);
+        var sin = MathF.Sin(angle);
+
+        var leftX = end.X - headLen * (ux * cos + uy * sin);
+        var leftY = end.Y - headLen * (uy * cos - ux * sin);
+        var rightX = end.X - headLen * (ux * cos - uy * sin);
+        var rightY = end.Y - headLen * (uy * cos + ux * sin);
+
+        canvas.FillColor = color;
+        var path = new PathF();
+        path.MoveTo(end);
+        path.LineTo(leftX, leftY);
+        path.LineTo(rightX, rightY);
+        path.Close();
+        canvas.FillPath(path);
     }
 
     static void DrawStroke(ICanvas canvas, IList<PointF> points, Color color, float width)

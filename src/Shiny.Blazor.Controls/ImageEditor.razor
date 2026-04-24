@@ -28,10 +28,40 @@
                 <button class="shiny-imgeditor-btn @(currentMode == "draw" ? "active" : "")"
                         @onclick="ToggleDraw" title="Draw">&#9999;</button>
             }
+            @if (AllowLine)
+            {
+                <button class="shiny-imgeditor-btn @(currentMode == "line" ? "active" : "")"
+                        @onclick="ToggleLine" title="Line">&#x2500;</button>
+            }
+            @if (AllowArrow)
+            {
+                <button class="shiny-imgeditor-btn @(currentMode == "arrow" ? "active" : "")"
+                        @onclick="ToggleArrow" title="Arrow">&#x2192;</button>
+            }
             @if (AllowTextAnnotation)
             {
                 <button class="shiny-imgeditor-btn @(currentMode == "text" ? "active" : "")"
                         @onclick="ToggleText" title="Text">&#x0054;</button>
+
+                @if (currentMode == "text" && AllowFontSelection && AvailableFonts != null)
+                {
+                    <select class="shiny-imgeditor-select" @onchange="OnFontFamilySelected" title="Font">
+                        @foreach (var font in AvailableFonts)
+                        {
+                            <option value="@font" selected="@(font == TextFontFamily)" style="font-family:@font">@font</option>
+                        }
+                    </select>
+                }
+                @if (currentMode == "text" && AllowFontSizeSelection && AvailableFontSizes != null)
+                {
+                    <select class="shiny-imgeditor-select" @onchange="OnFontSizeSelected" title="Font size">
+                        @foreach (var size in AvailableFontSizes)
+                        {
+                            <option value="@size.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                    selected="@(System.Math.Abs(size - TextFontSize) < 0.001)">@size pt</option>
+                        }
+                    </select>
+                }
             }
 
             <span class="shiny-imgeditor-separator"></span>

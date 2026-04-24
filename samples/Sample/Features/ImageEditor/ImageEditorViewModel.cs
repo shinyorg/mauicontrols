@@ -31,8 +31,16 @@ public partial class ImageEditorViewModel(IDialogs dialogs) : ObservableObject
         "OpenSansSemibold"
     };
 
+    public IList<double> AvailableFontSizes { get; } = new List<double>
+    {
+        12, 14, 16, 18, 20, 24, 32, 40, 56
+    };
+
     [ObservableProperty]
     string? textFontFamily = "OpenSansRegular";
+
+    [ObservableProperty]
+    double textFontSize = 16;
 
     [RelayCommand]
     async Task PickImage()

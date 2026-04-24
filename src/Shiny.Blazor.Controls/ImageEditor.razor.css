@@ -65,3 +65,14 @@
     background: #666;
     margin: 0 4px;
 }
+
+.shiny-imgeditor-select {
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background: #2c2c2e;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+}

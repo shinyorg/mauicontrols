@@ -20,12 +20,20 @@ public partial class ImageEditor : IAsyncDisposable
     [Parameter] public bool AllowRotate { get; set; } = true;
     [Parameter] public bool AllowDraw { get; set; } = true;
     [Parameter] public bool AllowTextAnnotation { get; set; } = true;
+    [Parameter] public bool AllowLine { get; set; } = true;
+    [Parameter] public bool AllowArrow { get; set; } = true;
     [Parameter] public bool AllowZoom { get; set; } = true;
+    [Parameter] public bool AllowFontSelection { get; set; }
+    [Parameter] public bool AllowFontSizeSelection { get; set; }
     [Parameter] public string DrawStrokeColor { get; set; } = "#ff0000";
     [Parameter] public double DrawStrokeWidth { get; set; } = 3;
     [Parameter] public double TextFontSize { get; set; } = 16;
     [Parameter] public string TextColor { get; set; } = "#ffffff";
     [Parameter] public string TextFontFamily { get; set; } = "Arial";
+    [Parameter] public IEnumerable<string>? AvailableFonts { get; set; }
+    [Parameter] public IEnumerable<double>? AvailableFontSizes { get; set; }
+    [Parameter] public EventCallback<string> TextFontFamilyChanged { get; set; }
+    [Parameter] public EventCallback<double> TextFontSizeChanged { get; set; }
     [Parameter] public string ToolbarPosition { get; set; } = "bottom";
     [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
     [Parameter] public EventCallback<bool> CanUndoChanged { get; set; }
@@ -165,6 +173,38 @@ public partial class ImageEditor : IAsyncDisposable
     {
         var newMode = currentMode == "text" ? "none" : "text";
         await SetModeAsync(newMode);
+    }
+
+    async Task ToggleLine()
+    {
+        var newMode = currentMode == "line" ? "none" : "line";
+        await SetModeAsync(newMode);
+    }
+
+    async Task ToggleArrow()
+    {
+        var newMode = currentMode == "arrow" ? "none" : "arrow";
+        await SetModeAsync(newMode);
+    }
+
+    async Task OnFontFamilySelected(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? string.Empty;
+        TextFontFamily = value;
+        await TextFontFamilyChanged.InvokeAsync(value);
+        if (module != null)
+            await module.InvokeVoidAsync("updateTextSettings", rootEl, TextColor, TextFontSize, TextFontFamily);
+    }
+
+    async Task OnFontSizeSelected(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var size))
+        {
+            TextFontSize = size;
+            await TextFontSizeChanged.InvokeAsync(size);
+            if (module != null)
+                await module.InvokeVoidAsync("updateTextSettings", rootEl, TextColor, TextFontSize, TextFontFamily);
+        }
     }
 
     Task CancelCrop() => SetModeAsync("none").AsTask();

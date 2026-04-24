@@ -15,11 +15,17 @@
                        DrawStrokeWidth="{Binding DrawStrokeWidth}"
                        AvailableFonts="{Binding AvailableFonts}"
                        TextFontFamily="{Binding TextFontFamily}"
+                       AvailableFontSizes="{Binding AvailableFontSizes}"
+                       TextFontSize="{Binding TextFontSize}"
                        SaveCommand="{Binding SaveCommand}"
                        AllowCrop="True"
                        AllowRotate="True"
                        AllowDraw="True"
+                       AllowLine="True"
+                       AllowArrow="True"
                        AllowTextAnnotation="True"
+                       AllowFontSelection="True"
+                       AllowFontSizeSelection="True"
                        AllowZoom="True" />
 
 </ContentPage>

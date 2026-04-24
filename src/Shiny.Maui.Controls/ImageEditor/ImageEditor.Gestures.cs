@@ -192,7 +192,10 @@ public partial class ImageEditor
 
     void OnStartInteraction(object? sender, TouchEventArgs e)
     {
-        if (CurrentToolMode != ImageEditorToolMode.Draw && CurrentToolMode != ImageEditorToolMode.Crop)
+        if (CurrentToolMode != ImageEditorToolMode.Draw &&
+            CurrentToolMode != ImageEditorToolMode.Crop &&
+            CurrentToolMode != ImageEditorToolMode.Line &&
+            CurrentToolMode != ImageEditorToolMode.Arrow)
             return;
 
         var point = e.Touches[0];
@@ -212,6 +215,19 @@ public partial class ImageEditor
                 if (imageRect is not { Width: > 0, Height: > 0 } || !imageRect.Contains(point))
                     return;
                 drawable.ActiveStrokePoints = [point];
+                Invalidate();
+                break;
+            }
+
+            case ImageEditorToolMode.Line:
+            case ImageEditorToolMode.Arrow:
+            {
+                var imageRect = drawable.GetImageRect();
+                if (imageRect is not { Width: > 0, Height: > 0 } || !imageRect.Contains(point))
+                    return;
+                drawable.ActiveLineStart = point;
+                drawable.ActiveLineEnd = point;
+                drawable.ActiveLineIsArrow = CurrentToolMode == ImageEditorToolMode.Arrow;
                 Invalidate();
                 break;
             }
@@ -244,6 +260,24 @@ public partial class ImageEditor
                 Invalidate();
                 break;
             }
+
+            case ImageEditorToolMode.Line:
+            case ImageEditorToolMode.Arrow:
+            {
+                if (drawable.ActiveLineStart.HasValue)
+                {
+                    var imageRect = drawable.GetImageRect();
+                    if (imageRect is { Width: > 0, Height: > 0 })
+                    {
+                        var clamped = new PointF(
+                            Math.Clamp(point.X, imageRect.X, imageRect.Right),
+                            Math.Clamp(point.Y, imageRect.Y, imageRect.Bottom));
+                        drawable.ActiveLineEnd = clamped;
+                    }
+                    Invalidate();
+                }
+                break;
+            }
         }
     }
 
@@ -260,7 +294,45 @@ public partial class ImageEditor
             case ImageEditorToolMode.Draw:
                 CommitCurrentStroke();
                 break;
+
+            case ImageEditorToolMode.Line:
+            case ImageEditorToolMode.Arrow:
+                CommitCurrentLine();
+                break;
         }
+    }
+
+    void CommitCurrentLine()
+    {
+        if (drawable.ActiveLineStart is not { } start || drawable.ActiveLineEnd is not { } end)
+        {
+            drawable.ActiveLineStart = null;
+            drawable.ActiveLineEnd = null;
+            return;
+        }
+
+        var imageRect = drawable.GetImageRect();
+        if (imageRect is { Width: > 0, Height: > 0 })
+        {
+            var dx = end.X - start.X;
+            var dy = end.Y - start.Y;
+            // Ignore taps without drag
+            if (dx * dx + dy * dy >= 4f)
+            {
+                state.Push(new EditActions.LineAction
+                {
+                    Start = new PointF((start.X - imageRect.X) / imageRect.Width, (start.Y - imageRect.Y) / imageRect.Height),
+                    End = new PointF((end.X - imageRect.X) / imageRect.Width, (end.Y - imageRect.Y) / imageRect.Height),
+                    StrokeColor = DrawStrokeColor,
+                    StrokeWidth = (float)DrawStrokeWidth,
+                    IsArrow = drawable.ActiveLineIsArrow
+                });
+            }
+        }
+
+        drawable.ActiveLineStart = null;
+        drawable.ActiveLineEnd = null;
+        Invalidate();
     }
 
     #endregion

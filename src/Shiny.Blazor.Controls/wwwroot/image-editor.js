@@ -18,6 +18,8 @@ export function init(root, canvas, dotnetRef, options) {
         currentStroke: null,
         drawColor: options?.drawColor || '#ff0000',
         drawWidth: options?.drawWidth || 3,
+        // Line / arrow
+        activeLine: null, // { start: {x,y}, end: {x,y}, isArrow: bool }
         // Text
         textColor: options?.textColor || '#ffffff',
         textSize: options?.textSize || 16,
@@ -83,6 +85,7 @@ export function setMode(root, mode) {
     } else {
         state.cropRect = null;
     }
+    state.activeLine = null;
     redraw(state);
 }
 
@@ -259,6 +262,11 @@ function redraw(state) {
         drawStroke(ctx, state.currentStroke.points, state.drawColor, state.drawWidth);
     }
 
+    // Draw in-progress line / arrow
+    if ((state.mode === 'line' || state.mode === 'arrow') && state.activeLine) {
+        drawLine(ctx, state.activeLine.start, state.activeLine.end, state.drawColor, state.drawWidth, state.activeLine.isArrow);
+    }
+
     ctx.restore();
 }
 
@@ -334,6 +342,16 @@ function replayActions(ctx, image, actions, canvasW, canvasH, ir) {
             ctx.fillStyle = action.color;
             ctx.textBaseline = 'top';
             ctx.fillText(action.text, tx, ty);
+        } else if (action.type === 'line') {
+            const start = {
+                x: drawRect.x + action.start.x * drawRect.w,
+                y: drawRect.y + action.start.y * drawRect.h
+            };
+            const end = {
+                x: drawRect.x + action.end.x * drawRect.w,
+                y: drawRect.y + action.end.y * drawRect.h
+            };
+            drawLine(ctx, start, end, action.color, action.width, action.isArrow);
         }
     }
 }
@@ -382,6 +400,42 @@ function drawCropOverlay(ctx, crop, ir) {
     }
 }
 
+function drawLine(ctx, start, end, color, width, arrow) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+
+    if (!arrow) return;
+
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 0.5) return;
+
+    const headLen = Math.max(width * 4, 12);
+    const ux = dx / len, uy = dy / len;
+    const angle = Math.PI / 6; // 30°
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+
+    const leftX = end.x - headLen * (ux * cos + uy * sin);
+    const leftY = end.y - headLen * (uy * cos - ux * sin);
+    const rightX = end.x - headLen * (ux * cos - uy * sin);
+    const rightY = end.y - headLen * (uy * cos + ux * sin);
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(end.x, end.y);
+    ctx.lineTo(leftX, leftY);
+    ctx.lineTo(rightX, rightY);
+    ctx.closePath();
+    ctx.fill();
+}
+
 function drawStroke(ctx, points, color, width) {
     if (points.length < 2) return;
     ctx.strokeStyle = color;
@@ -404,6 +458,11 @@ function calculateFitRect(imgW, imgH, canvasW, canvasH) {
 }
 
 function finalizeOperation(state) {
+    // Commit in-progress line / arrow
+    if (state.activeLine) {
+        commitLine(state);
+    }
+
     // Commit in-progress stroke
     if (state.currentStroke && state.currentStroke.points.length >= 2) {
         const ir = state.imageRect;
@@ -464,6 +523,16 @@ function onPointerDown(state, e) {
         case 'text':
             handleTextPlacement(state, pt);
             break;
+        case 'line':
+        case 'arrow':
+        {
+            const ir = state.imageRect;
+            if (ir.w <= 0 || ir.h <= 0) break;
+            if (pt.x < ir.x || pt.x > ir.x + ir.w || pt.y < ir.y || pt.y > ir.y + ir.h) break;
+            state.activeLine = { start: pt, end: pt, isArrow: state.mode === 'arrow' };
+            redraw(state);
+            break;
+        }
     }
 }
 
@@ -500,6 +569,17 @@ function onPointerMove(state, e) {
                 redraw(state);
             }
             break;
+        case 'line':
+        case 'arrow':
+            if (state.activeLine) {
+                const ir = state.imageRect;
+                state.activeLine.end = {
+                    x: clamp(pt.x, ir.x, ir.x + ir.w),
+                    y: clamp(pt.y, ir.y, ir.y + ir.h)
+                };
+                redraw(state);
+            }
+            break;
     }
 }
 
@@ -528,7 +608,35 @@ function onPointerUp(state, e) {
                 state.currentStroke = null;
             }
             break;
+        case 'line':
+        case 'arrow':
+            commitLine(state);
+            redraw(state);
+            break;
     }
+}
+
+function commitLine(state) {
+    if (!state.activeLine) return;
+    const { start, end, isArrow } = state.activeLine;
+    state.activeLine = null;
+
+    const ir = state.imageRect;
+    if (ir.w <= 0 || ir.h <= 0) return;
+
+    const dx = end.x - start.x, dy = end.y - start.y;
+    if (dx * dx + dy * dy < 4) return; // ignore taps without drag
+
+    state.actions.push({
+        type: 'line',
+        start: { x: (start.x - ir.x) / ir.w, y: (start.y - ir.y) / ir.h },
+        end: { x: (end.x - ir.x) / ir.w, y: (end.y - ir.y) / ir.h },
+        color: state.drawColor,
+        width: state.drawWidth,
+        isArrow: isArrow
+    });
+    state.redoStack = [];
+    notifyUndoState(state);
 }
 
 // --- Crop drag ---

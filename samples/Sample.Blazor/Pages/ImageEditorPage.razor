@@ -31,10 +31,20 @@
                  AllowCrop="true"
                  AllowRotate="true"
                  AllowDraw="true"
+                 AllowLine="true"
+                 AllowArrow="true"
                  AllowTextAnnotation="true"
+                 AllowFontSelection="true"
+                 AllowFontSizeSelection="true"
                  AllowZoom="true"
                  DrawStrokeColor="@drawColor"
                  DrawStrokeWidth="@drawWidth"
+                 TextFontFamily="@textFont"
+                 TextFontSize="@textFontSize"
+                 AvailableFonts="@availableFonts"
+                 AvailableFontSizes="@availableFontSizes"
+                 TextFontFamilyChanged="v => textFont = v"
+                 TextFontSizeChanged="v => textFontSize = v"
                  CanUndoChanged="v => canUndo = v"
                  CanRedoChanged="v => canRedo = v" />
 </div>
@@ -55,9 +65,24 @@
     bool canUndo, canRedo;
     string drawColor = "#ff0000";
     double drawWidth = 3;
+    string textFont = "Arial";
+    double textFontSize = 16;
     int exportedSize;
 
     string[] colors = ["#ff0000", "#0000ff", "#00ff00", "#ffff00", "#ffffff", "#ff8800"];
+
+    string[] availableFonts =
+    [
+        "Arial",
+        "Helvetica",
+        "Georgia",
+        "Times New Roman",
+        "Courier New",
+        "Verdana",
+        "Impact"
+    ];
+
+    double[] availableFontSizes = [12, 14, 16, 18, 20, 24, 32, 40, 56];
 
     void LoadSample()
     {
