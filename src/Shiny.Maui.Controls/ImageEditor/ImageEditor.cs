@@ -221,7 +221,7 @@ public partial class ImageEditor : ContentView
     }
 
     public static readonly BindableProperty CropApplyTextProperty = BindableProperty.Create(
-        nameof(CropApplyText), typeof(string), typeof(ImageEditor), "Apply Crop",
+        nameof(CropApplyText), typeof(string), typeof(ImageEditor), "\u2714",
         propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
 
     public string CropApplyText
@@ -231,7 +231,7 @@ public partial class ImageEditor : ContentView
     }
 
     public static readonly BindableProperty CropCancelTextProperty = BindableProperty.Create(
-        nameof(CropCancelText), typeof(string), typeof(ImageEditor), "Cancel",
+        nameof(CropCancelText), typeof(string), typeof(ImageEditor), "\u2716",
         propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
 
     public string CropCancelText
@@ -251,7 +251,7 @@ public partial class ImageEditor : ContentView
     }
 
     public static readonly BindableProperty SaveTextProperty = BindableProperty.Create(
-        nameof(SaveText), typeof(string), typeof(ImageEditor), "Save",
+        nameof(SaveText), typeof(string), typeof(ImageEditor), "\u2713 Save",
         propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
 
     public string SaveText
@@ -470,22 +470,22 @@ public partial class ImageEditor : ContentView
             BackgroundColor = Color.FromRgba(0, 0, 0, 0.6f)
         };
 
-        if (AllowZoom) toolbar.Children.Add(CreateToolButton("\u21c5", "Move", ImageEditorToolMode.Move));
-        if (AllowCrop) toolbar.Children.Add(CreateToolButton("Crop", "Crop", ImageEditorToolMode.Crop));
-        if (AllowRotate) toolbar.Children.Add(CreateActionButton("Rot", "Rotate", () => Rotate(90)));
+        if (AllowZoom) toolbar.Children.Add(CreateToolButton("\u271B", "Move", ImageEditorToolMode.Move));
+        if (AllowCrop) toolbar.Children.Add(CreateToolButton("\u2702", "Crop", ImageEditorToolMode.Crop));
+        if (AllowRotate) toolbar.Children.Add(CreateActionButton("\u21BB", "Rotate", () => Rotate(90)));
         if (AllowDraw)
         {
-            toolbar.Children.Add(CreateToolButton("Draw", "Draw", ImageEditorToolMode.Draw));
+            toolbar.Children.Add(CreateToolButton("\u270E", "Draw", ImageEditorToolMode.Draw));
             toolbar.Children.Add(CreateDrawColorButton());
         }
-        if (AllowTextAnnotation) toolbar.Children.Add(CreateToolButton("Txt", "Text", ImageEditorToolMode.Text));
+        if (AllowTextAnnotation) toolbar.Children.Add(CreateToolButton("\u0054", "Text", ImageEditorToolMode.Text));
 
         // Separator
         toolbar.Children.Add(new BoxView { WidthRequest = 1, HeightRequest = 30, Color = Colors.Grey, VerticalOptions = LayoutOptions.Center });
 
-        toolbar.Children.Add(CreateActionButton("Undo", "Undo", Undo));
-        toolbar.Children.Add(CreateActionButton("Redo", "Redo", Redo));
-        toolbar.Children.Add(CreateActionButton("Reset", "Reset", Reset));
+        toolbar.Children.Add(CreateActionButton("\u21A9", "Undo", Undo));
+        toolbar.Children.Add(CreateActionButton("\u21AA", "Redo", Redo));
+        toolbar.Children.Add(CreateActionButton("\u27F2", "Reset", Reset));
 
         if (SaveCommand != null)
         {
