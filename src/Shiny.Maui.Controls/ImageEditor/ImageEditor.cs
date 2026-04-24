@@ -1,4 +1,5 @@
 using Shiny.Maui.Controls.ColorPicker;
+using Shiny.Maui.Controls.FontPicker;
 using Shiny.Maui.Controls.ImageEditor.EditActions;
 
 namespace Shiny.Maui.Controls.ImageEditor;
@@ -11,6 +12,7 @@ public partial class ImageEditor : ContentView
     readonly ImageEditorState state;
     View? toolbarView;
     ColorPickerButton? drawColorButton;
+    FontPickerButton? fontPickerButton;
 
     public ImageEditor()
     {
@@ -189,6 +191,34 @@ public partial class ImageEditor : ContentView
     {
         get => (Color)GetValue(AnnotationTextColorProperty);
         set => SetValue(AnnotationTextColorProperty, value);
+    }
+
+    public static readonly BindableProperty TextFontFamilyProperty = BindableProperty.Create(
+        nameof(TextFontFamily), typeof(string), typeof(ImageEditor), null,
+        BindingMode.TwoWay,
+        propertyChanged: (b, _, n) =>
+        {
+            var editor = (ImageEditor)b;
+            if (editor.activeTextEntry != null)
+                editor.activeTextEntry.FontFamily = n as string;
+            if (editor.fontPickerButton != null)
+                editor.fontPickerButton.SelectedFont = n as string;
+        });
+
+    public string? TextFontFamily
+    {
+        get => (string?)GetValue(TextFontFamilyProperty);
+        set => SetValue(TextFontFamilyProperty, value);
+    }
+
+    public static readonly BindableProperty AvailableFontsProperty = BindableProperty.Create(
+        nameof(AvailableFonts), typeof(IList<string>), typeof(ImageEditor), null,
+        propertyChanged: (b, _, _) => ((ImageEditor)b).BuildDefaultToolbar());
+
+    public IList<string>? AvailableFonts
+    {
+        get => (IList<string>?)GetValue(AvailableFontsProperty);
+        set => SetValue(AvailableFontsProperty, value);
     }
 
     public static readonly BindableProperty ToolbarTemplateProperty = BindableProperty.Create(
@@ -478,7 +508,12 @@ public partial class ImageEditor : ContentView
             toolbar.Children.Add(CreateToolButton("\u270E", "Draw", ImageEditorToolMode.Draw));
             toolbar.Children.Add(CreateDrawColorButton());
         }
-        if (AllowTextAnnotation) toolbar.Children.Add(CreateToolButton("\u0054", "Text", ImageEditorToolMode.Text));
+        if (AllowTextAnnotation)
+        {
+            toolbar.Children.Add(CreateToolButton("\u0054", "Text", ImageEditorToolMode.Text));
+            if (CurrentToolMode == ImageEditorToolMode.Text && AvailableFonts is { Count: > 0 })
+                toolbar.Children.Add(CreateFontPickerButton());
+        }
 
         // Separator
         toolbar.Children.Add(new BoxView { WidthRequest = 1, HeightRequest = 30, Color = Colors.Grey, VerticalOptions = LayoutOptions.Center });
@@ -579,6 +614,20 @@ public partial class ImageEditor : ContentView
         };
         drawColorButton.ColorChanged += (_, color) => DrawStrokeColor = color;
         return drawColorButton;
+    }
+
+    FontPickerButton CreateFontPickerButton()
+    {
+        fontPickerButton = new FontPickerButton
+        {
+            AvailableFonts = AvailableFonts,
+            SelectedFont = TextFontFamily,
+            CornerRadius = 8,
+            HeightRequest = 36,
+            VerticalOptions = LayoutOptions.Center
+        };
+        fontPickerButton.FontChanged += (_, font) => TextFontFamily = font;
+        return fontPickerButton;
     }
 
     static Button CreateBaseButton(string icon, string tooltip)

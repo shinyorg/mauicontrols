@@ -7,5 +7,5 @@ public sealed class TextAnnotationAction : IEditAction
     public required PointF Position { get; init; }
     public required float FontSize { get; init; }
     public required Color TextColor { get; init; }
-    public string FontFamily { get; init; } = "Arial";
+    public string? FontFamily { get; init; }
 }

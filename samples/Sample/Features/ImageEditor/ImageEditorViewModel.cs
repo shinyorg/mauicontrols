@@ -25,6 +25,15 @@ public partial class ImageEditorViewModel(IDialogs dialogs) : ObservableObject
     [ObservableProperty]
     double drawStrokeWidth = 3;
 
+    public IList<string> AvailableFonts { get; } = new List<string>
+    {
+        "OpenSansRegular",
+        "OpenSansSemibold"
+    };
+
+    [ObservableProperty]
+    string? textFontFamily = "OpenSansRegular";
+
     [RelayCommand]
     async Task PickImage()
     {

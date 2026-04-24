@@ -434,6 +434,7 @@ public partial class ImageEditor
         activeTextEntry = new Entry
         {
             FontSize = TextFontSize,
+            FontFamily = TextFontFamily,
             TextColor = DrawStrokeColor,
             BackgroundColor = Colors.Transparent,
             Placeholder = "Type here...",
@@ -486,7 +487,8 @@ public partial class ImageEditor
             Text = text,
             Position = normalized,
             FontSize = (float)TextFontSize,
-            TextColor = DrawStrokeColor
+            TextColor = DrawStrokeColor,
+            FontFamily = TextFontFamily
         });
     }
 

@@ -13,6 +13,8 @@
                        CanRedo="{Binding CanRedo}"
                        DrawStrokeColor="{Binding DrawColor}"
                        DrawStrokeWidth="{Binding DrawStrokeWidth}"
+                       AvailableFonts="{Binding AvailableFonts}"
+                       TextFontFamily="{Binding TextFontFamily}"
                        SaveCommand="{Binding SaveCommand}"
                        AllowCrop="True"
                        AllowRotate="True"

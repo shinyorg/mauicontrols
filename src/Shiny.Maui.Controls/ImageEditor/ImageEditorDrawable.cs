@@ -158,6 +158,10 @@ internal sealed class ImageEditorDrawable : IDrawable
                     var textY = imageRect.Y + text.Position.Y * imageRect.Height;
                     canvas.FontSize = text.FontSize;
                     canvas.FontColor = text.TextColor;
+                    if (!string.IsNullOrEmpty(text.FontFamily))
+                        canvas.Font = new Microsoft.Maui.Graphics.Font(text.FontFamily);
+                    else
+                        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
                     canvas.DrawString(
                         text.Text,
                         textX, textY,
