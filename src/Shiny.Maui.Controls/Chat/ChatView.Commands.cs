@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.Windows.Input;
+using Shiny.Maui.Controls.Chat.Internal;
 using Shiny.Maui.Controls.Infrastructure;
 
 namespace Shiny.Maui.Controls.Chat;
@@ -8,7 +9,6 @@ public partial class ChatView
 {
     void OnMessagesChanged()
     {
-        // Unsubscribe from old collection
         if (observedCollection is not null)
         {
             observedCollection.CollectionChanged -= OnMessagesCollectionChanged;
@@ -17,7 +17,6 @@ public partial class ChatView
 
         collectionView.ItemsSource = Messages;
 
-        // Subscribe to new collection
         if (Messages is INotifyCollectionChanged ncc)
         {
             ncc.CollectionChanged += OnMessagesCollectionChanged;
@@ -26,7 +25,7 @@ public partial class ChatView
 
         isNearBottom = true;
         unreadCount = 0;
-        newMessagesPill.IsVisible = false;
+        UpdateToastPill();
         PerformInitialScroll();
     }
 
@@ -35,30 +34,26 @@ public partial class ChatView
         if (e.Action != NotifyCollectionChangedAction.Add)
             return;
 
-        // Only handle appended messages (new messages), not prepended (load more)
         if (e.NewStartingIndex < 0 || Messages is not { Count: > 0 } || e.NewStartingIndex < Messages.Count - 1)
             return;
 
         var newMessage = Messages[e.NewStartingIndex];
 
-        // Always scroll to bottom for own messages
         if (newMessage.IsFromMe || isNearBottom)
         {
             unreadCount = 0;
-            UpdateNewMessagesPill();
-            PerformInitialScroll();
+            UpdateToastPill();
+            Dispatcher.Dispatch(() => ScrollToEnd(animate: true));
         }
         else
         {
-            // Incoming message while scrolled up — show "New Messages" pill
             unreadCount++;
-            UpdateNewMessagesPill();
+            UpdateToastPill();
         }
     }
 
     void OnCollectionViewScrolled(object? sender, ItemsViewScrolledEventArgs e)
     {
-        // Consider "near bottom" if within ~50px of the end or last item is visible
         var lastIndex = (Messages?.Count ?? 0) - 1;
         if (lastIndex < 0)
         {
@@ -72,32 +67,61 @@ public partial class ChatView
         if (isNearBottom && unreadCount > 0)
         {
             unreadCount = 0;
-            UpdateNewMessagesPill();
+            UpdateToastPill();
         }
-
-        // Refresh typing indicator placement when scroll position crosses the threshold
-        if (wasNearBottom != isNearBottom)
-            UpdateTypingIndicator();
+        else if (wasNearBottom != isNearBottom)
+        {
+            // Toggle typing bubble visibility based on scroll position
+            typingBubbleHost.IsVisible = isNearBottom && typingBubbleHost.Children.Count > 0;
+            UpdateToastPill();
+        }
     }
 
-    void UpdateNewMessagesPill()
+    void UpdateToastPill()
     {
-        if (unreadCount <= 0)
+        var hasUnread = unreadCount > 0;
+        var hasTyping = !isNearBottom && ShowTypingIndicator && TypingParticipants is { Count: > 0 };
+
+        if (!hasUnread && !hasTyping)
         {
-            newMessagesPill.IsVisible = false;
+            toastPill.IsVisible = false;
+            toastNewMessagesLabel.IsVisible = false;
+            toastTypingLabel.IsVisible = false;
             return;
         }
 
-        newMessagesPillLabel.Text = unreadCount == 1
-            ? "1 New Message"
-            : $"{unreadCount} New Messages";
-        newMessagesPill.IsVisible = true;
+        if (hasUnread)
+        {
+            toastNewMessagesLabel.Text = unreadCount == 1
+                ? "1 New Message"
+                : $"{unreadCount} New Messages";
+            toastNewMessagesLabel.IsVisible = true;
+        }
+        else
+        {
+            toastNewMessagesLabel.IsVisible = false;
+        }
+
+        if (hasTyping)
+        {
+            toastTypingLabel.Text = GetTypingText();
+            toastTypingLabel.IsVisible = true;
+        }
+        else
+        {
+            toastTypingLabel.IsVisible = false;
+        }
+
+        toastPill.IsVisible = true;
     }
 
-    void OnNewMessagesPillTapped(object? sender, TappedEventArgs e)
+    void OnToastPillTapped(object? sender, TappedEventArgs e)
     {
+        if (unreadCount <= 0)
+            return;
+
         unreadCount = 0;
-        newMessagesPill.IsVisible = false;
+        UpdateToastPill();
         ScrollToEnd(animate: true);
     }
 
@@ -118,7 +142,6 @@ public partial class ChatView
             }
             finally
             {
-                // Delay resetting the flag so the CollectionView can settle
                 Dispatcher.Dispatch(() => isLoadingMore = false);
             }
         });
@@ -155,7 +178,6 @@ public partial class ChatView
         if (Messages is not { Count: > 0 })
             return;
 
-        // Double-dispatch lets CollectionView finish its layout pass before we scroll
         Dispatcher.Dispatch(() =>
         {
             Dispatcher.Dispatch(() =>
@@ -196,66 +218,71 @@ public partial class ChatView
 
     void RefreshBubbles()
     {
-        // Must null in one frame and re-set in the next so CollectionView sees a real change
         collectionView.ItemsSource = null;
         Dispatcher.Dispatch(() => collectionView.ItemsSource = Messages);
     }
 
     void OnTypingParticipantsChanged()
     {
-        // Unsubscribe from old collection
         if (observedTypingCollection is not null)
         {
             observedTypingCollection.CollectionChanged -= OnTypingCollectionChanged;
             observedTypingCollection = null;
         }
 
-        // Subscribe to new collection
         if (TypingParticipants is INotifyCollectionChanged ncc)
         {
             ncc.CollectionChanged += OnTypingCollectionChanged;
             observedTypingCollection = ncc;
         }
 
-        UpdateTypingIndicator();
+        SyncTypingBubbles();
     }
 
     void OnTypingCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        UpdateTypingIndicator();
+        SyncTypingBubbles();
     }
 
-    void UpdateTypingIndicator()
+    string GetTypingText()
     {
-        if (!ShowTypingIndicator || TypingParticipants is not { Count: > 0 })
-        {
-            typingIndicator.IsVisible = false;
-            typingPill.IsVisible = false;
-            return;
-        }
-
-        var participants = TypingParticipants;
-        var text = participants.Count switch
+        var participants = TypingParticipants!;
+        return participants.Count switch
         {
             1 => $"{participants[0].DisplayName} is typing\u2026",
             2 => $"{participants[0].DisplayName}, {participants[1].DisplayName} are typing\u2026",
             3 => $"{participants[0].DisplayName}, {participants[1].DisplayName}, {participants[2].DisplayName} are typing\u2026",
             _ => "Multiple users are typing\u2026"
         };
+    }
 
-        if (isNearBottom)
+    void SyncTypingBubbles()
+    {
+        typingBubbleHost.Children.Clear();
+
+        if (ShowTypingIndicator && TypingParticipants is { Count: > 0 })
         {
-            // User can see the bottom — show inline indicator, hide toast
-            typingIndicator.Text = text;
-            typingIndicator.IsVisible = true;
-            typingPill.IsVisible = false;
+            foreach (var participant in TypingParticipants)
+            {
+                var msg = new ChatMessage
+                {
+                    SenderId = participant.Id,
+                    IsFromMe = false,
+                    IsTypingIndicator = true
+                };
+                var bubble = new ChatTypingBubbleView(this);
+                bubble.BindingContext = msg;
+                typingBubbleHost.Children.Add(bubble);
+            }
+
+            // Only show inline bubbles if user is near the bottom
+            typingBubbleHost.IsVisible = isNearBottom;
         }
         else
         {
-            // User is scrolled up — show toast pill, hide inline indicator
-            typingIndicator.IsVisible = false;
-            typingPillLabel.Text = text;
-            typingPill.IsVisible = true;
+            typingBubbleHost.IsVisible = false;
         }
+
+        UpdateToastPill();
     }
 }

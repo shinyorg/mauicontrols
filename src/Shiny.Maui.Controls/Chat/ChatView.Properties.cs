@@ -150,7 +150,7 @@ public partial class ChatView
         typeof(bool),
         typeof(ChatView),
         true,
-        propertyChanged: (b, _, _) => ((ChatView)b).UpdateTypingIndicator());
+        propertyChanged: (b, _, _) => ((ChatView)b).SyncTypingBubbles());
 
     public bool ShowTypingIndicator
     {

@@ -237,6 +237,12 @@ public partial class FloatingPanel : ContentView
     async Task OpenAsync()
     {
         if (isAnimating) return;
+
+        var overlayHost = GetOverlayHost()
+            ?? throw new InvalidOperationException(
+                "FloatingPanel must be placed inside an OverlayHost or ShinyContentPage. " +
+                "Wrap your page content and panels in an OverlayHost, or use ShinyContentPage as your page base class.");
+
         isAnimating = true;
 
         // Reset safe area margin from closed/peek state
@@ -273,7 +279,7 @@ public partial class FloatingPanel : ContentView
 
         // Show backdrop
         if (HasBackdrop)
-            GetOverlayHost()?.ShowBackdrop(this, (uint)AnimationDuration);
+            overlayHost.ShowBackdrop(this, (uint)AnimationDuration);
 
         var animation = new Animation(v => HeightRequest = v, startHeight, targetHeight);
         animation.Commit(this, "OpenPanel", length: (uint)AnimationDuration, easing: Easing.CubicOut,

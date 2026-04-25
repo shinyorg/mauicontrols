@@ -392,12 +392,12 @@ public class ImageViewer : ContentView
         overlayImage.Source = Source;
 
         // Find host and inject overlay
-        overlayParent = FindOverlayParent();
-        if (overlayParent != null)
-        {
-            overlayGrid.BindingContext = BindingContext;
-            overlayParent.Children.Add(overlayGrid);
-        }
+        overlayParent = FindOverlayParent()
+            ?? throw new InvalidOperationException(
+                "ImageViewer could not find a suitable parent layout. " +
+                "Place it inside an OverlayHost, ShinyContentPage, or a Grid that is the root content of a ContentPage.");
+        overlayGrid.BindingContext = BindingContext;
+        overlayParent.Children.Add(overlayGrid);
 
         var fadeTargets = new List<VisualElement> { backdrop, overlayImage, closeView };
         if (headerView != null) fadeTargets.Add(headerView);

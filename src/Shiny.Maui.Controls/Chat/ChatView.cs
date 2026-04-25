@@ -9,11 +9,10 @@ public partial class ChatView : ContentView
 
     readonly CollectionView collectionView;
     readonly ChatInputBar inputBar;
-    readonly ChatTypingIndicator typingIndicator;
-    readonly Border newMessagesPill;
-    readonly Label newMessagesPillLabel;
-    readonly Border typingPill;
-    readonly Label typingPillLabel;
+    readonly VerticalStackLayout typingBubbleHost;
+    readonly Border toastPill;
+    readonly Label toastNewMessagesLabel;
+    readonly Label toastTypingLabel;
 
     INotifyCollectionChanged? observedCollection;
     INotifyCollectionChanged? observedTypingCollection;
@@ -35,27 +34,27 @@ public partial class ChatView : ContentView
         collectionView.RemainingItemsThresholdReached += OnRemainingItemsThresholdReached;
         collectionView.Scrolled += OnCollectionViewScrolled;
 
-        typingIndicator = new ChatTypingIndicator
+        // Shared toast pill — shows new messages on top, typing below
+        toastNewMessagesLabel = new Label
         {
-            HorizontalOptions = LayoutOptions.Start,
-            Margin = new Thickness(16, 4, 0, 4),
+            TextColor = Colors.White,
+            FontSize = 13,
+            FontAttributes = FontAttributes.Bold,
+            HorizontalTextAlignment = TextAlignment.Center,
+            VerticalTextAlignment = TextAlignment.Center,
             IsVisible = false
         };
 
-        // CollectionView footer is just the typing indicator (inline at bottom of messages)
-        collectionView.Footer = typingIndicator;
-
-        // "New Messages" pill
-        newMessagesPillLabel = new Label
+        toastTypingLabel = new Label
         {
-            TextColor = Colors.White,
-            FontSize = 13,
-            FontAttributes = FontAttributes.Bold,
+            TextColor = Color.FromArgb("#D0E8FF"),
+            FontSize = 12,
             HorizontalTextAlignment = TextAlignment.Center,
-            VerticalTextAlignment = TextAlignment.Center
+            VerticalTextAlignment = TextAlignment.Center,
+            IsVisible = false
         };
 
-        newMessagesPill = new Border
+        toastPill = new Border
         {
             StrokeThickness = 0,
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 16 },
@@ -65,41 +64,29 @@ public partial class ChatView : ContentView
             VerticalOptions = LayoutOptions.End,
             Margin = new Thickness(0, 0, 0, 12),
             IsVisible = false,
-            Content = newMessagesPillLabel
+            Content = new VerticalStackLayout
+            {
+                Spacing = 2,
+                Children = { toastNewMessagesLabel, toastTypingLabel }
+            }
         };
 
         var pillTap = new TapGestureRecognizer();
-        pillTap.Tapped += OnNewMessagesPillTapped;
-        newMessagesPill.GestureRecognizers.Add(pillTap);
+        pillTap.Tapped += OnToastPillTapped;
+        toastPill.GestureRecognizers.Add(pillTap);
 
-        // "Typing" toast pill (shown when scrolled up and someone is typing)
-        typingPillLabel = new Label
-        {
-            TextColor = Colors.White,
-            FontSize = 13,
-            FontAttributes = FontAttributes.Bold,
-            HorizontalTextAlignment = TextAlignment.Center,
-            VerticalTextAlignment = TextAlignment.Center
-        };
-
-        typingPill = new Border
-        {
-            StrokeThickness = 0,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 16 },
-            BackgroundColor = Color.FromArgb("#007AFF"),
-            Padding = new Thickness(16, 8),
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.End,
-            Margin = new Thickness(0, 0, 0, 12),
-            IsVisible = false,
-            Content = typingPillLabel
-        };
-
-        // Messages area: CollectionView + pill overlays
+        // Messages area: CollectionView + toast pill overlay
         var messageArea = new Grid
         {
             IsClippedToBounds = true,
-            Children = { collectionView, typingPill, newMessagesPill }
+            Children = { collectionView, toastPill }
+        };
+
+        // Typing bubble host — sits between messages and input bar, outside the CollectionView
+        typingBubbleHost = new VerticalStackLayout
+        {
+            IsVisible = false,
+            Spacing = 0
         };
 
         // Input bar: always visible, pinned at bottom
@@ -107,17 +94,19 @@ public partial class ChatView : ContentView
         inputBar.SendRequested += OnSendRequested;
         inputBar.AttachRequested += OnAttachRequested;
 
-        // Root: messages fill available space, input bar is fixed at bottom
+        // Root: messages fill space, typing bubbles below, input bar at bottom
         var rootGrid = new Grid
         {
             RowDefinitions =
             {
                 new RowDefinition(GridLength.Star),
+                new RowDefinition(GridLength.Auto),
                 new RowDefinition(GridLength.Auto)
             }
         };
         rootGrid.Add(messageArea, 0, 0);
-        rootGrid.Add(inputBar, 0, 1);
+        rootGrid.Add(typingBubbleHost, 0, 1);
+        rootGrid.Add(inputBar, 0, 2);
 
         Content = rootGrid;
     }

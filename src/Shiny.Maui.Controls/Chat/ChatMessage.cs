@@ -8,4 +8,9 @@ public class ChatMessage
     public string SenderId { get; set; } = string.Empty;
     public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.Now;
     public bool IsFromMe { get; set; }
+
+    /// <summary>
+    /// Internal flag used by ChatView to render this message as a typing indicator bubble.
+    /// </summary>
+    internal bool IsTypingIndicator { get; set; }
 }

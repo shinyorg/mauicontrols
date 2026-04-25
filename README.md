@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, Fab/FabMenu, PillView, SecurityPin, ImageViewer, ImageEditor, ChatView, ColorPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, Fab/FabMenu, PillView, SecurityPin, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -215,8 +215,6 @@ A floating panel overlay system for MAUI. Panels slide in from the bottom or top
 | BackdropColor | Color | Forwarded to internal OverlayHost |
 | BackdropMaxOpacity | double | Forwarded to internal OverlayHost |
 
-> **Note:** Documentation for FloatingPanel/OverlayHost is not yet available on [shinylib.net](https://shinylib.net). See the Blazor `SheetView` component for the Blazor equivalent — Blazor uses CSS-based overlays natively and does not need OverlayHost.
-
 ### ImageViewer
 
 A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animated open/close transitions.
@@ -265,7 +263,7 @@ A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animat
 
 ### ImageEditor
 
-An inline image editor with cropping, rotation, freehand drawing, text annotations, and zoom. Includes a built-in undo/redo stack, reset-to-original, and export to PNG/JPEG/WEBP at configurable resolutions. Every feature can be toggled on/off, and the default toolbar can be replaced with a custom template.
+An inline image editor with cropping, rotation, freehand drawing, line and arrow drawing, text annotations with font family and font size selection, and zoom. Includes a built-in undo/redo stack, reset-to-original, and export to PNG/JPEG/WEBP at configurable resolutions. Every feature can be toggled on/off, and the default toolbar can be replaced with a custom template.
 
 | Editor | Crop Mode |
 |:---:|:---:|
@@ -285,18 +283,24 @@ An inline image editor with cropping, rotation, freehand drawing, text annotatio
 | Property | Type | Default | Description |
 |---|---|---|---|
 | Source | ImageSource? | null | Image to edit (supports file, stream, URI) |
-| CurrentToolMode | ImageEditorToolMode | Move | Active tool (Move, Crop, Draw, Text) — TwoWay |
+| CurrentToolMode | ImageEditorToolMode | Move | Active tool (Move, Crop, Draw, Text, Line, Arrow) — TwoWay |
 | AllowCrop | bool | true | Enable/disable crop tool |
 | AllowRotate | bool | true | Enable/disable rotate action |
 | AllowDraw | bool | true | Enable/disable freehand drawing |
 | AllowTextAnnotation | bool | true | Enable/disable text annotation |
+| AllowLine | bool | true | Enable/disable line drawing tool |
+| AllowFontSelection | bool | false | Show font picker button in text mode |
+| AllowFontSizeSelection | bool | false | Show font size picker button in text mode |
 | AllowZoom | bool | true | Enable/disable pinch-to-zoom |
 | CanUndo | bool | false | Whether undo is available (OneWayToSource) |
 | CanRedo | bool | false | Whether redo is available (OneWayToSource) |
 | DrawStrokeColor | Color | White | Drawing stroke color — TwoWay |
 | DrawStrokeWidth | double | 3 | Drawing stroke width |
 | TextFontSize | double | 16 | Text annotation font size |
+| TextFontFamily | string? | null | Font family for text annotations (TwoWay) |
 | AnnotationTextColor | Color | White | Text annotation color |
+| AvailableFonts | IList\<string\>? | null | Font families shown in font picker |
+| AvailableFontSizes | IList\<double\>? | null | Font sizes shown in font size picker |
 | SaveCommand | ICommand? | null | Invoked with `EditedImage` parameter on save |
 | SaveText | string | "Save" | Save button label |
 | CropApplyText | string | "Apply Crop" | Crop apply button label |
@@ -310,14 +314,16 @@ An inline image editor with cropping, rotation, freehand drawing, text annotatio
 - Crop with drag handles, rule-of-thirds grid, dimmed overlay, and dedicated Apply/Cancel toolbar
 - 90° rotation (or arbitrary angles)
 - Freehand drawing with configurable color and stroke width (constrained to image bounds)
-- Inline text annotations placed by tapping the image
+- Line and arrow drawing between two points with configurable color and width
+- Inline text annotations placed by tapping the image with optional font family and size selection
 - Integrated color picker for draw color
+- Font picker and font size picker integration (when `AllowFontSelection`/`AllowFontSizeSelection` enabled)
 - Undo/redo for every edit action
 - Reset to original image
 - Save via `SaveCommand` with `EditedImage` — call `ToStreamAsync(format)` to get PNG, JPEG, or WEBP
 - Image border showing the drawable surface area
 
-**Commands:** `UndoCommand`, `RedoCommand`, `RotateCommand`, `ResetCommand`, `CropCommand`, `DrawCommand`, `TextCommand`, `SaveCommand`
+**Commands:** `UndoCommand`, `RedoCommand`, `RotateCommand`, `ResetCommand`, `CropCommand`, `DrawCommand`, `TextCommand`, `LineCommand`, `SaveCommand`
 
 **Methods:** `Undo()`, `Redo()`, `Rotate(float)`, `Reset()`, `ApplyCrop()`, `GetEditedImage()`
 
@@ -399,6 +405,43 @@ A full-featured color picker with spectrum, hue bar, opacity slider, hex input, 
 | ColorChangedCommand | ICommand? | null | Fires when color changes |
 
 **Event:** `ColorChanged` (EventHandler\<Color\>)
+
+### FontPicker
+
+Font family and font size picker controls for MAUI. Includes inline list (`FontPicker`, `FontSizePicker`) and popup button (`FontPickerButton`, `FontSizePickerButton`) variants. Each font is rendered in its own typeface for instant visual preview.
+
+```xml
+<shiny:FontPickerButton AvailableFonts="{Binding Fonts}"
+                        SelectedFont="{Binding SelectedFont, Mode=TwoWay}"
+                        Placeholder="Font" />
+
+<shiny:FontSizePickerButton AvailableFontSizes="{Binding Sizes}"
+                            SelectedFontSize="{Binding SelectedSize, Mode=TwoWay}" />
+```
+
+**FontPicker / FontPickerButton:**
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| AvailableFonts | IList\<string\>? | null | Font family names to display |
+| SelectedFont | string? | null | Currently selected font (TwoWay) |
+| PreviewText | string | "The quick brown fox" | Text rendered in each font row |
+| PreviewFontSize | double | 18 | Size of preview text |
+| Placeholder | string | "Font" | Button placeholder (button only) |
+| CornerRadius | int | 8 | Button corner radius (button only) |
+| FontChangedCommand | ICommand? | null | Command on selection (button only) |
+
+**FontSizePicker / FontSizePickerButton:**
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| AvailableFontSizes | IList\<double\>? | null | Font sizes to display |
+| SelectedFontSize | double | 16 | Currently selected size (TwoWay) |
+| PreviewText | string | "Aa" | Text rendered at each size |
+| CornerRadius | int | 8 | Button corner radius (button only) |
+| FontSizeChangedCommand | ICommand? | null | Command on selection (button only) |
+
+These controls are also integrated into the **ImageEditor** toolbar when `AllowFontSelection` and `AllowFontSizeSelection` are enabled.
 
 ### AutoCompleteEntry
 

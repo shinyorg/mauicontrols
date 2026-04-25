@@ -139,7 +139,7 @@ partial class ChatBubbleView : ContentView
     void Configure(ChatMessage message)
     {
         var messages = chatView.Messages;
-        if (messages is null)
+        if (messages is null or { Count: 0 })
             return;
 
         var index = -1;
