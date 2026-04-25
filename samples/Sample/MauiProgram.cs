@@ -41,6 +41,7 @@ public static class MauiProgram
                 .Add<MinimizedSheetPage, MinimizedSheetViewModel>(registerRoute: false)
                 .Add<MinimizedSheetStandalonePage, MinimizedSheetViewModel>(registerRoute: false)
                 .Add<TopSheetPage, TopSheetViewModel>(registerRoute: false)
+                .Add<DualPanelPage, DualPanelViewModel>(registerRoute: false)
                 .Add<PillPage, PillViewModel>(registerRoute: false)
                 .Add<SecurityPinPage, SecurityPinViewModel>(registerRoute: false)
                 .Add<FabPage, FabViewModel>(registerRoute: false)

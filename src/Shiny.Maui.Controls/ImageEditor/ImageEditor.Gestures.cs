@@ -162,8 +162,8 @@ public partial class ImageEditor
         yOffset = ty;
 
         await Task.WhenAll(
-            graphicsView.ScaleTo(targetScale, 250, Easing.CubicOut),
-            graphicsView.TranslateTo(tx, ty, 250, Easing.CubicOut)
+            graphicsView.ScaleToAsync(targetScale, 250, Easing.CubicOut),
+            graphicsView.TranslateToAsync(tx, ty, 250, Easing.CubicOut)
         );
 
         if (!graphicsView.GestureRecognizers.Contains(panGesture))
@@ -175,8 +175,8 @@ public partial class ImageEditor
         graphicsView.GestureRecognizers.Remove(panGesture);
 
         await Task.WhenAll(
-            graphicsView.ScaleTo(1, 250, Easing.CubicOut),
-            graphicsView.TranslateTo(0, 0, 250, Easing.CubicOut)
+            graphicsView.ScaleToAsync(1, 250, Easing.CubicOut),
+            graphicsView.TranslateToAsync(0, 0, 250, Easing.CubicOut)
         );
 
         currentScale = 1;

@@ -66,6 +66,7 @@ public partial class ChatView
             return;
         }
 
+        var wasNearBottom = isNearBottom;
         isNearBottom = e.LastVisibleItemIndex >= lastIndex - 1;
 
         if (isNearBottom && unreadCount > 0)
@@ -73,6 +74,10 @@ public partial class ChatView
             unreadCount = 0;
             UpdateNewMessagesPill();
         }
+
+        // Refresh typing indicator placement when scroll position crosses the threshold
+        if (wasNearBottom != isNearBottom)
+            UpdateTypingIndicator();
     }
 
     void UpdateNewMessagesPill()
@@ -150,15 +155,19 @@ public partial class ChatView
         if (Messages is not { Count: > 0 })
             return;
 
+        // Double-dispatch lets CollectionView finish its layout pass before we scroll
         Dispatcher.Dispatch(() =>
         {
-            if (Messages is not { Count: > 0 })
-                return;
+            Dispatcher.Dispatch(() =>
+            {
+                if (Messages is not { Count: > 0 })
+                    return;
 
-            if (ScrollToFirstUnread && FirstUnreadMessageId is not null)
-                ScrollToMessage(FirstUnreadMessageId);
-            else
-                ScrollToEnd();
+                if (ScrollToFirstUnread && FirstUnreadMessageId is not null)
+                    ScrollToMessage(FirstUnreadMessageId);
+                else
+                    ScrollToEnd();
+            });
         });
     }
 
@@ -221,18 +230,32 @@ public partial class ChatView
         if (!ShowTypingIndicator || TypingParticipants is not { Count: > 0 })
         {
             typingIndicator.IsVisible = false;
+            typingPill.IsVisible = false;
             return;
         }
 
         var participants = TypingParticipants;
-        typingIndicator.IsVisible = true;
-
-        typingIndicator.Text = participants.Count switch
+        var text = participants.Count switch
         {
             1 => $"{participants[0].DisplayName} is typing\u2026",
             2 => $"{participants[0].DisplayName}, {participants[1].DisplayName} are typing\u2026",
             3 => $"{participants[0].DisplayName}, {participants[1].DisplayName}, {participants[2].DisplayName} are typing\u2026",
             _ => "Multiple users are typing\u2026"
         };
+
+        if (isNearBottom)
+        {
+            // User can see the bottom — show inline indicator, hide toast
+            typingIndicator.Text = text;
+            typingIndicator.IsVisible = true;
+            typingPill.IsVisible = false;
+        }
+        else
+        {
+            // User is scrolled up — show toast pill, hide inline indicator
+            typingIndicator.IsVisible = false;
+            typingPillLabel.Text = text;
+            typingPill.IsVisible = true;
+        }
     }
 }

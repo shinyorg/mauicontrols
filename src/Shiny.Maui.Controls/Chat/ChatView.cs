@@ -12,6 +12,8 @@ public partial class ChatView : ContentView
     readonly ChatTypingIndicator typingIndicator;
     readonly Border newMessagesPill;
     readonly Label newMessagesPillLabel;
+    readonly Border typingPill;
+    readonly Label typingPillLabel;
 
     INotifyCollectionChanged? observedCollection;
     INotifyCollectionChanged? observedTypingCollection;
@@ -70,11 +72,34 @@ public partial class ChatView : ContentView
         pillTap.Tapped += OnNewMessagesPillTapped;
         newMessagesPill.GestureRecognizers.Add(pillTap);
 
-        // Messages area: CollectionView + pill overlay
+        // "Typing" toast pill (shown when scrolled up and someone is typing)
+        typingPillLabel = new Label
+        {
+            TextColor = Colors.White,
+            FontSize = 13,
+            FontAttributes = FontAttributes.Bold,
+            HorizontalTextAlignment = TextAlignment.Center,
+            VerticalTextAlignment = TextAlignment.Center
+        };
+
+        typingPill = new Border
+        {
+            StrokeThickness = 0,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 16 },
+            BackgroundColor = Color.FromArgb("#007AFF"),
+            Padding = new Thickness(16, 8),
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.End,
+            Margin = new Thickness(0, 0, 0, 12),
+            IsVisible = false,
+            Content = typingPillLabel
+        };
+
+        // Messages area: CollectionView + pill overlays
         var messageArea = new Grid
         {
             IsClippedToBounds = true,
-            Children = { collectionView, newMessagesPill }
+            Children = { collectionView, typingPill, newMessagesPill }
         };
 
         // Input bar: always visible, pinned at bottom

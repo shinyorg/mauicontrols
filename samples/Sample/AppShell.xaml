@@ -274,6 +274,14 @@
         <ShellContent ContentTemplate="{DataTemplate sheet:TopSheetPage}" Route="topsheet" />
     </FlyoutItem>
 
+    <FlyoutItem Title="Dual Panels">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25A8;" Size="20"
+                             Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate sheet:DualPanelPage}" Route="dualpanel" />
+    </FlyoutItem>
+
     <!-- ============================================================ -->
     <!--  CONTROLS -->
     <!-- ============================================================ -->
