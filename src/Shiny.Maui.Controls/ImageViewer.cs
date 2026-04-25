@@ -1,3 +1,4 @@
+using Shiny.Maui.Controls.FloatingPanel;
 using Shiny.Maui.Controls.Infrastructure;
 
 namespace Shiny.Maui.Controls;
@@ -8,9 +9,13 @@ public class ImageViewer : ContentView
     const double DefaultMaxZoom = 5.0;
     const uint AnimationDuration = 250;
 
-    readonly Grid rootGrid;
+    // Thumbnail — visible when IsOpen=false
+    readonly Image thumbnailImage;
+
+    // Overlay elements — injected into OverlayHost when IsOpen=true
+    readonly Grid overlayGrid;
     readonly BoxView backdrop;
-    readonly Image image;
+    readonly Image overlayImage;
     View closeView;
     View? headerView;
     View? footerView;
@@ -27,19 +32,42 @@ public class ImageViewer : ContentView
     bool isAnimating;
     bool isPinching;
 
+    // Track where the overlay is hosted
+    Layout? overlayParent;
+
     public ImageViewer()
     {
-        IsVisible = false;
-        InputTransparent = false;
+        // When no source is set, the viewer should not intercept touches
+        InputTransparent = true;
 
+        // Thumbnail: standard Image with tap-to-open
+        thumbnailImage = new Image
+        {
+            Aspect = Aspect.AspectFit,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill
+        };
+        var tapToOpen = new TapGestureRecognizer();
+        tapToOpen.Tapped += (_, _) =>
+        {
+            if (!IsOpen && Source != null && OpenViewerOnTap)
+                IsOpen = true;
+        };
+        thumbnailImage.GestureRecognizers.Add(tapToOpen);
+
+        Content = thumbnailImage;
+
+        // Build overlay (not in the visual tree until opened)
         backdrop = new BoxView
         {
             Color = Colors.Black,
             Opacity = 0,
             InputTransparent = false
         };
+        // Swallow touches on backdrop
+        backdrop.GestureRecognizers.Add(new TapGestureRecognizer());
 
-        image = new Image
+        overlayImage = new Image
         {
             Aspect = Aspect.AspectFit,
             HorizontalOptions = LayoutOptions.Fill,
@@ -56,33 +84,35 @@ public class ImageViewer : ContentView
         panGesture = new PanGestureRecognizer();
         panGesture.PanUpdated += OnPanUpdated;
 
-        // Pinch and double-tap directly on the image.
-        // Pan is added only after zoom completes.
-        image.GestureRecognizers.Add(pinchGesture);
-        image.GestureRecognizers.Add(doubleTapGesture);
-
-        // Swallow touches on backdrop so nothing falls
-        // through to the page behind the overlay
-        backdrop.GestureRecognizers.Add(new TapGestureRecognizer());
+        overlayImage.GestureRecognizers.Add(pinchGesture);
+        overlayImage.GestureRecognizers.Add(doubleTapGesture);
 
         closeView = CreateDefaultCloseButton();
 
-        rootGrid = new Grid
+        overlayGrid = new Grid
         {
             InputTransparent = false,
             CascadeInputTransparent = false,
-            Children = { backdrop, image, closeView }
+            Children = { backdrop, overlayImage, closeView }
         };
-
-        Content = rootGrid;
     }
+
+    #region Bindable Properties
 
     public static readonly BindableProperty SourceProperty = BindableProperty.Create(
         nameof(Source),
         typeof(ImageSource),
         typeof(ImageViewer),
         null,
-        propertyChanged: (b, _, n) => ((ImageViewer)b).image.Source = (ImageSource?)n);
+        propertyChanged: (b, _, n) =>
+        {
+            var viewer = (ImageViewer)b;
+            var source = (ImageSource?)n;
+            viewer.thumbnailImage.Source = source;
+            viewer.overlayImage.Source = source;
+            // Only intercept touches when there's an image to show
+            viewer.InputTransparent = source == null;
+        });
 
     public ImageSource? Source
     {
@@ -95,12 +125,25 @@ public class ImageViewer : ContentView
         typeof(Aspect),
         typeof(ImageViewer),
         Aspect.AspectFit,
-        propertyChanged: (b, _, n) => ((ImageViewer)b).image.Aspect = (Aspect)n);
+        propertyChanged: (b, _, n) => ((ImageViewer)b).thumbnailImage.Aspect = (Aspect)n);
 
     public Aspect Aspect
     {
         get => (Aspect)GetValue(AspectProperty);
         set => SetValue(AspectProperty, value);
+    }
+
+    public static readonly BindableProperty OverlayAspectProperty = BindableProperty.Create(
+        nameof(OverlayAspect),
+        typeof(Aspect),
+        typeof(ImageViewer),
+        Aspect.AspectFit,
+        propertyChanged: (b, _, n) => ((ImageViewer)b).overlayImage.Aspect = (Aspect)n);
+
+    public Aspect OverlayAspect
+    {
+        get => (Aspect)GetValue(OverlayAspectProperty);
+        set => SetValue(OverlayAspectProperty, value);
     }
 
     public static readonly BindableProperty MaxZoomProperty = BindableProperty.Create(
@@ -187,9 +230,25 @@ public class ImageViewer : ContentView
         set => SetValue(UseHapticFeedbackProperty, value);
     }
 
+    public static readonly BindableProperty OpenViewerOnTapProperty = BindableProperty.Create(
+        nameof(OpenViewerOnTap),
+        typeof(bool),
+        typeof(ImageViewer),
+        true);
+
+    public bool OpenViewerOnTap
+    {
+        get => (bool)GetValue(OpenViewerOnTapProperty);
+        set => SetValue(OpenViewerOnTapProperty, value);
+    }
+
+    #endregion
+
+    #region Template Application
+
     void ApplyCloseButtonTemplate()
     {
-        rootGrid.Children.Remove(closeView);
+        overlayGrid.Children.Remove(closeView);
 
         if (CloseButtonTemplate != null)
         {
@@ -209,13 +268,13 @@ public class ImageViewer : ContentView
             closeView = CreateDefaultCloseButton();
         }
 
-        rootGrid.Children.Add(closeView);
+        overlayGrid.Children.Add(closeView);
     }
 
     void ApplyHeaderTemplate()
     {
         if (headerView != null)
-            rootGrid.Children.Remove(headerView);
+            overlayGrid.Children.Remove(headerView);
 
         if (HeaderTemplate != null)
         {
@@ -224,7 +283,7 @@ public class ImageViewer : ContentView
             {
                 view.VerticalOptions = LayoutOptions.Start;
                 headerView = view;
-                rootGrid.Children.Add(headerView);
+                overlayGrid.Children.Add(headerView);
             }
         }
         else
@@ -240,12 +299,13 @@ public class ImageViewer : ContentView
             footerView.BindingContext = BindingContext;
         if (headerView != null)
             headerView.BindingContext = BindingContext;
+        overlayGrid.BindingContext = BindingContext;
     }
 
     void ApplyFooterTemplate()
     {
         if (footerView != null)
-            rootGrid.Children.Remove(footerView);
+            overlayGrid.Children.Remove(footerView);
 
         if (FooterTemplate != null)
         {
@@ -255,7 +315,7 @@ public class ImageViewer : ContentView
                 view.VerticalOptions = LayoutOptions.End;
                 view.BindingContext = BindingContext;
                 footerView = view;
-                rootGrid.Children.Add(footerView);
+                overlayGrid.Children.Add(footerView);
             }
         }
         else
@@ -284,15 +344,62 @@ public class ImageViewer : ContentView
         return btn;
     }
 
+    #endregion
+
+    #region Open / Close
+
+    Layout? FindOverlayParent()
+    {
+        // Walk up the tree looking for an OverlayHost
+        Element? current = Parent;
+        while (current is not null)
+        {
+            if (current is OverlayHost host)
+                return host;
+            current = current.Parent;
+        }
+
+        // Fallback: find the page's root layout
+        current = Parent;
+        while (current is not null)
+        {
+            if (current is Page page)
+            {
+                // ShinyContentPage — use its OverlayHost
+                if (page is ShinyContentPage scp)
+                    return scp.OverlayHost;
+
+                // Regular page — try to find a Grid as root content
+                if (page is ContentPage cp && cp.Content is Grid grid)
+                    return grid;
+
+                break;
+            }
+            current = current.Parent;
+        }
+
+        return null;
+    }
+
     async Task OpenAsync()
     {
         if (isAnimating) return;
         isAnimating = true;
 
         ResetTransform();
-        IsVisible = true;
 
-        var fadeTargets = new List<VisualElement> { backdrop, image, closeView };
+        // Sync source to overlay image
+        overlayImage.Source = Source;
+
+        // Find host and inject overlay
+        overlayParent = FindOverlayParent();
+        if (overlayParent != null)
+        {
+            overlayGrid.BindingContext = BindingContext;
+            overlayParent.Children.Add(overlayGrid);
+        }
+
+        var fadeTargets = new List<VisualElement> { backdrop, overlayImage, closeView };
         if (headerView != null) fadeTargets.Add(headerView);
         if (footerView != null) fadeTargets.Add(footerView);
 
@@ -307,13 +414,16 @@ public class ImageViewer : ContentView
         if (isAnimating) return;
         isAnimating = true;
 
-        var fadeTargets = new List<VisualElement> { backdrop, image, closeView };
+        var fadeTargets = new List<VisualElement> { backdrop, overlayImage, closeView };
         if (headerView != null) fadeTargets.Add(headerView);
         if (footerView != null) fadeTargets.Add(footerView);
 
         await Task.WhenAll(fadeTargets.Select(v => v.FadeTo(0, AnimationDuration)));
 
-        IsVisible = false;
+        // Remove overlay from host
+        overlayParent?.Children.Remove(overlayGrid);
+        overlayParent = null;
+
         ResetTransform();
         isAnimating = false;
     }
@@ -323,11 +433,15 @@ public class ImageViewer : ContentView
         currentScale = 1;
         xOffset = 0;
         yOffset = 0;
-        image.Scale = 1;
-        image.TranslationX = 0;
-        image.TranslationY = 0;
-        image.GestureRecognizers.Remove(panGesture);
+        overlayImage.Scale = 1;
+        overlayImage.TranslationX = 0;
+        overlayImage.TranslationY = 0;
+        overlayImage.GestureRecognizers.Remove(panGesture);
     }
+
+    #endregion
+
+    #region Gestures
 
     void OnPinchUpdated(object? sender, PinchGestureUpdatedEventArgs e)
     {
@@ -342,30 +456,28 @@ public class ImageViewer : ContentView
                 currentScale += (e.Scale - 1) * startScale;
                 currentScale = Math.Clamp(currentScale, MinScale, MaxZoom);
 
-                // ScaleOrigin is 0-1 relative to the view that owns the gesture (image).
-                // With center anchor, offset the translation so the pinch origin stays fixed.
-                var pinchX = (e.ScaleOrigin.X - 0.5) * image.Width;
-                var pinchY = (e.ScaleOrigin.Y - 0.5) * image.Height;
+                var pinchX = (e.ScaleOrigin.X - 0.5) * overlayImage.Width;
+                var pinchY = (e.ScaleOrigin.Y - 0.5) * overlayImage.Height;
                 var scaleDelta = currentScale - startScale;
 
                 var targetX = xOffset - pinchX * scaleDelta;
                 var targetY = yOffset - pinchY * scaleDelta;
 
-                image.TranslationX = ClampX(targetX);
-                image.TranslationY = ClampY(targetY);
-                image.Scale = currentScale;
+                overlayImage.TranslationX = ClampX(targetX);
+                overlayImage.TranslationY = ClampY(targetY);
+                overlayImage.Scale = currentScale;
                 break;
 
             case GestureStatus.Completed:
             case GestureStatus.Canceled:
                 isPinching = false;
-                xOffset = image.TranslationX;
-                yOffset = image.TranslationY;
+                xOffset = overlayImage.TranslationX;
+                yOffset = overlayImage.TranslationY;
 
                 if (currentScale <= MinScale)
                     _ = AnimateResetAsync();
-                else if (!image.GestureRecognizers.Contains(panGesture))
-                    image.GestureRecognizers.Add(panGesture);
+                else if (!overlayImage.GestureRecognizers.Contains(panGesture))
+                    overlayImage.GestureRecognizers.Add(panGesture);
                 break;
         }
     }
@@ -382,13 +494,13 @@ public class ImageViewer : ContentView
                 break;
 
             case GestureStatus.Running:
-                image.TranslationX = ClampX(startX + e.TotalX);
-                image.TranslationY = ClampY(startY + e.TotalY);
+                overlayImage.TranslationX = ClampX(startX + e.TotalX);
+                overlayImage.TranslationY = ClampY(startY + e.TotalY);
                 break;
 
             case GestureStatus.Completed:
-                xOffset = image.TranslationX;
-                yOffset = image.TranslationY;
+                xOffset = overlayImage.TranslationX;
+                yOffset = overlayImage.TranslationY;
                 break;
         }
     }
@@ -411,17 +523,13 @@ public class ImageViewer : ContentView
         isAnimating = true;
 
         var targetScale = Math.Min(2.5, MaxZoom);
-        var point = e.GetPosition(image);
+        var point = e.GetPosition(overlayImage);
 
         double tx = 0, ty = 0;
         if (point.HasValue)
         {
-            // With center anchor: translate so tap point ends up at viewport center.
-            // screenPos = viewCenter + (tapPos - viewCenter) * scale + translation
-            // We want screenPos = viewCenter, so:
-            // translation = -(tapPos - viewCenter) * scale
-            tx = -(point.Value.X - image.Width / 2) * (targetScale - 1);
-            ty = -(point.Value.Y - image.Height / 2) * (targetScale - 1);
+            tx = -(point.Value.X - overlayImage.Width / 2) * (targetScale - 1);
+            ty = -(point.Value.Y - overlayImage.Height / 2) * (targetScale - 1);
         }
 
         currentScale = targetScale;
@@ -431,12 +539,12 @@ public class ImageViewer : ContentView
         yOffset = ty;
 
         await Task.WhenAll(
-            image.ScaleTo(targetScale, AnimationDuration, Easing.CubicOut),
-            image.TranslateTo(tx, ty, AnimationDuration, Easing.CubicOut)
+            overlayImage.ScaleTo(targetScale, AnimationDuration, Easing.CubicOut),
+            overlayImage.TranslateTo(tx, ty, AnimationDuration, Easing.CubicOut)
         );
 
-        if (!image.GestureRecognizers.Contains(panGesture))
-            image.GestureRecognizers.Add(panGesture);
+        if (!overlayImage.GestureRecognizers.Contains(panGesture))
+            overlayImage.GestureRecognizers.Add(panGesture);
 
         isAnimating = false;
     }
@@ -444,11 +552,11 @@ public class ImageViewer : ContentView
     async Task AnimateResetAsync()
     {
         isAnimating = true;
-        image.GestureRecognizers.Remove(panGesture);
+        overlayImage.GestureRecognizers.Remove(panGesture);
 
         await Task.WhenAll(
-            image.ScaleTo(1, AnimationDuration, Easing.CubicOut),
-            image.TranslateTo(0, 0, AnimationDuration, Easing.CubicOut)
+            overlayImage.ScaleTo(1, AnimationDuration, Easing.CubicOut),
+            overlayImage.TranslateTo(0, 0, AnimationDuration, Easing.CubicOut)
         );
 
         currentScale = 1;
@@ -460,14 +568,16 @@ public class ImageViewer : ContentView
     double ClampX(double x)
     {
         if (currentScale <= MinScale) return 0;
-        var maxX = image.Width * (currentScale - 1) / 2;
+        var maxX = overlayImage.Width * (currentScale - 1) / 2;
         return Math.Clamp(x, -maxX, maxX);
     }
 
     double ClampY(double y)
     {
         if (currentScale <= MinScale) return 0;
-        var maxY = image.Height * (currentScale - 1) / 2;
+        var maxY = overlayImage.Height * (currentScale - 1) / 2;
         return Math.Clamp(y, -maxY, maxY);
     }
+
+    #endregion
 }

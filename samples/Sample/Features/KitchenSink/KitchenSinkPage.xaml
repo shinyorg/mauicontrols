@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
+<shiny:ShinyContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:shiny="http://shiny.net/maui/controls"
@@ -8,6 +8,7 @@
     x:DataType="local:KitchenSinkViewModel"
     Title="Kitchen Sink">
 
+  <shiny:ShinyContentPage.PageContent>
     <Grid>
 
         <!-- Main content -->
@@ -45,41 +46,10 @@
                                CommandParameter="carol" />
         </shiny:FabMenu>
 
-        <!-- Sheet: chat window -->
-        <shiny:SheetView IsOpen="{Binding IsChatOpen}"
-                         HasBackdrop="True"
-                         CloseOnBackdropTap="True"
-                         HandleColor="Gray"
-                         SheetBackgroundColor="White"
-                         SheetCornerRadius="20"
-                         FitContent="True">
-            <shiny:SheetView.HeaderTemplate>
-                <Border BackgroundColor="#6C63FF"
-                        Padding="16,12"
-                        StrokeThickness="0">
-                    <Label Text="{Binding ChatTitle}"
-                           FontSize="18"
-                           FontAttributes="Bold"
-                           TextColor="White" />
-                </Border>
-            </shiny:SheetView.HeaderTemplate>
-
-            <shiny:ChatView Messages="{Binding Messages}"
-                            Participants="{Binding Participants}"
-                            TypingParticipants="{Binding TypingParticipants}"
-                            IsMultiPerson="False"
-                            ShowAvatarsInSingleChat="True"
-                            SendCommand="{Binding SendCommand}"
-                            MessageTappedCommand="{Binding MessageTappedCommand}"
-                            MyBubbleColor="#DCF8C6"
-                            OtherBubbleColor="White"
-                            PlaceholderText="Type a message..."
-                            HeightRequest="500"/>
-        </shiny:SheetView>
-
         <!-- ImageViewer overlay with Edit footer -->
         <shiny:ImageViewer Source="{Binding ViewerImageSource}"
-                           IsOpen="{Binding IsImageViewerOpen}">
+                           IsOpen="{Binding IsImageViewerOpen}"
+                           OpenViewerOnTap="False">
             <shiny:ImageViewer.FooterTemplate>
                 <DataTemplate x:DataType="local:KitchenSinkViewModel">
                     <HorizontalStackLayout HorizontalOptions="Center"
@@ -98,5 +68,40 @@
         </shiny:ImageViewer>
 
     </Grid>
+  </shiny:ShinyContentPage.PageContent>
 
-</ContentPage>
+  <shiny:ShinyContentPage.Panels>
+    <!-- Sheet: chat window -->
+    <shiny:FloatingPanel IsOpen="{Binding IsChatOpen}"
+                         HasBackdrop="True"
+                         CloseOnBackdropTap="True"
+                         HandleColor="Gray"
+                         PanelBackgroundColor="White"
+                         PanelCornerRadius="20"
+                         FitContent="True">
+        <shiny:FloatingPanel.HeaderTemplate>
+            <Border BackgroundColor="#6C63FF"
+                    Padding="16,12"
+                    StrokeThickness="0">
+                <Label Text="{Binding ChatTitle}"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="White" />
+            </Border>
+        </shiny:FloatingPanel.HeaderTemplate>
+
+        <shiny:ChatView Messages="{Binding Messages}"
+                        Participants="{Binding Participants}"
+                        TypingParticipants="{Binding TypingParticipants}"
+                        IsMultiPerson="False"
+                        ShowAvatarsInSingleChat="True"
+                        SendCommand="{Binding SendCommand}"
+                        MessageTappedCommand="{Binding MessageTappedCommand}"
+                        MyBubbleColor="#DCF8C6"
+                        OtherBubbleColor="White"
+                        PlaceholderText="Type a message..."
+                        HeightRequest="500"/>
+    </shiny:FloatingPanel>
+  </shiny:ShinyContentPage.Panels>
+
+</shiny:ShinyContentPage>

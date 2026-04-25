@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<shiny:ShinyContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Sample.Features.Sheet"
-             xmlns:bs="clr-namespace:Shiny.Maui.Controls;assembly=Shiny.Maui.Controls"
+             xmlns:shiny="http://shiny.net/maui/controls"
              x:Class="Sample.Features.Sheet.TopSheetPage"
              x:DataType="local:TopSheetViewModel">
-  <Grid>
-
-    <!-- Main page content -->
+  <shiny:ShinyContentPage.PageContent>
     <ScrollView>
         <VerticalStackLayout Padding="30,0" Spacing="25">
             <Label
@@ -40,17 +38,19 @@
                 Command="{Binding CloseSheetCommand}" />
         </VerticalStackLayout>
     </ScrollView>
+  </shiny:ShinyContentPage.PageContent>
 
+  <shiny:ShinyContentPage.Panels>
     <!-- Top: Weather Widget -->
-    <bs:SheetView IsOpen="{Binding IsSheetOpen}"
-                  Location="Top"
+    <shiny:FloatingPanel IsOpen="{Binding IsSheetOpen}"
+                  Position="Top"
                   HasBackdrop="True"
                   CloseOnBackdropTap="True"
                   HandleColor="#CBD5E1"
-                  SheetBackgroundColor="#EFF6FF"
-                  SheetCornerRadius="20"
-                  ShowHeaderWhenMinimized="True">
-        <bs:SheetView.HeaderTemplate>
+                  PanelBackgroundColor="#EFF6FF"
+                  PanelCornerRadius="20"
+                  ShowHeaderWhenClosed="True">
+        <shiny:FloatingPanel.HeaderTemplate>
             <Border BackgroundColor="#3B82F6"
                     Padding="16,10"
                     StrokeThickness="0">
@@ -74,7 +74,7 @@
                            VerticalOptions="Center" />
                 </Grid>
             </Border>
-        </bs:SheetView.HeaderTemplate>
+        </shiny:FloatingPanel.HeaderTemplate>
 
         <VerticalStackLayout Padding="20" Spacing="15">
             <!-- Current conditions -->
@@ -284,7 +284,6 @@
                     Command="{Binding CloseSheetCommand}"
                     Margin="0,10,0,0" />
         </VerticalStackLayout>
-    </bs:SheetView>
-
-  </Grid>
-</ContentPage>
+    </shiny:FloatingPanel>
+  </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>

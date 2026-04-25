@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<shiny:ShinyContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Sample.Features.Sheet"
-             xmlns:bs="clr-namespace:Shiny.Maui.Controls;assembly=Shiny.Maui.Controls"
+             xmlns:shiny="http://shiny.net/maui/controls"
              x:Class="Sample.Features.Sheet.MinimizedSheetStandalonePage"
              x:DataType="local:MinimizedSheetViewModel"
              Title="Music Player (No Tabs)">
-  <Grid>
-
-    <!-- Main page content -->
+  <shiny:ShinyContentPage.PageContent>
     <ScrollView>
         <VerticalStackLayout Padding="30,0" Spacing="25">
             <Label
@@ -41,16 +39,19 @@
                 Command="{Binding CloseSheetCommand}" />
         </VerticalStackLayout>
     </ScrollView>
+  </shiny:ShinyContentPage.PageContent>
 
-    <!-- Bottom: Music Player -->
-    <bs:SheetView IsOpen="{Binding IsSheetOpen}"
+  <shiny:ShinyContentPage.Panels>
+    <!-- Bottom: Music Player (no tabs - uses Bottom position) -->
+    <shiny:FloatingPanel IsOpen="{Binding IsSheetOpen}"
+                  Position="Bottom"
                   HasBackdrop="True"
                   CloseOnBackdropTap="True"
                   HandleColor="Gray"
-                  SheetBackgroundColor="#1E1E2E"
-                  SheetCornerRadius="20"
-                  ShowHeaderWhenMinimized="True">
-        <bs:SheetView.HeaderTemplate>
+                  PanelBackgroundColor="#1E1E2E"
+                  PanelCornerRadius="20"
+                  ShowHeaderWhenClosed="True">
+        <shiny:FloatingPanel.HeaderTemplate>
             <Border BackgroundColor="#1E1E2E"
                     Padding="16,12"
                     StrokeThickness="0">
@@ -60,7 +61,7 @@
                             HeightRequest="44"
                             StrokeThickness="0"
                             StrokeShape="RoundRectangle 8">
-                        <Label Text="♪"
+                        <Label Text="&#9834;"
                                FontSize="22"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"
@@ -87,7 +88,7 @@
                            VerticalOptions="Center" />
                 </Grid>
             </Border>
-        </bs:SheetView.HeaderTemplate>
+        </shiny:FloatingPanel.HeaderTemplate>
 
         <VerticalStackLayout Padding="20" Spacing="15">
             <!-- Album Art -->
@@ -100,7 +101,7 @@
                 <Border.Shadow>
                     <Shadow Brush="#6C63FF" Offset="0,8" Radius="20" Opacity="0.4" />
                 </Border.Shadow>
-                <Label Text="♪"
+                <Label Text="&#9834;"
                        FontSize="90"
                        HorizontalOptions="Center"
                        VerticalOptions="Center"
@@ -142,7 +143,6 @@
                     Command="{Binding CloseSheetCommand}"
                     Margin="0,15,0,0" />
         </VerticalStackLayout>
-    </bs:SheetView>
-
-  </Grid>
-</ContentPage>
+    </shiny:FloatingPanel>
+  </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>

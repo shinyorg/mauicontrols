@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<shiny:ShinyContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Sample.Features.Sheet"
-             xmlns:bs="clr-namespace:Shiny.Maui.Controls;assembly=Shiny.Maui.Controls"
+             xmlns:shiny="http://shiny.net/maui/controls"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="Sample.Features.Sheet.SheetPage"
              x:DataType="local:SheetViewModel">
-  <Grid>
-
-    <!-- Main page content -->
+  <shiny:ShinyContentPage.PageContent>
     <ScrollView>
         <VerticalStackLayout Padding="30,0" Spacing="25">
             <Label
@@ -80,21 +78,23 @@
                    IsVisible="{Binding HasSelection}" />
         </VerticalStackLayout>
     </ScrollView>
+  </shiny:ShinyContentPage.PageContent>
 
+  <shiny:ShinyContentPage.Panels>
     <!-- Sheet overlay -->
-    <bs:SheetView IsOpen="{Binding IsSheetOpen}"
+    <shiny:FloatingPanel IsOpen="{Binding IsSheetOpen}"
                   HasBackdrop="True"
                   CloseOnBackdropTap="True"
                   HandleColor="Gray"
-                  SheetBackgroundColor="White"
-                  SheetCornerRadius="20"
+                  PanelBackgroundColor="White"
+                  PanelCornerRadius="20"
                   ExpandOnInputFocus="True">
         <VerticalStackLayout Padding="20" Spacing="15">
             <Label Text="Sheet Content"
                    FontSize="22"
                    FontAttributes="Bold" />
 
-            <Label Text="Swipe up or down to move between detents. Swipe down past the lowest snap point to dismiss."
+            <Label Text="Drag the handle to move between detents. Drag down past the lowest snap point to dismiss."
                    FontSize="14" />
 
             <BoxView HeightRequest="1" Color="LightGray" />
@@ -124,14 +124,14 @@
             <Button Text="Close from inside"
                     Command="{Binding CloseSheetCommand}" />
         </VerticalStackLayout>
-    </bs:SheetView>
+    </shiny:FloatingPanel>
 
     <!-- Locked: Signature sheet -->
-    <bs:SheetView IsOpen="{Binding IsSignatureOpen}"
+    <shiny:FloatingPanel IsOpen="{Binding IsSignatureOpen}"
                   IsLocked="True"
                   FitContent="True"
                   HasBackdrop="True"
-                  SheetCornerRadius="20">
+                  PanelCornerRadius="20">
         <VerticalStackLayout Padding="20" Spacing="15">
             <Label Text="Draw your signature below"
                    FontSize="18"
@@ -162,22 +162,22 @@
                         CommandParameter="{x:Reference drawingView}" />
             </Grid>
         </VerticalStackLayout>
-    </bs:SheetView>
+    </shiny:FloatingPanel>
 
     <!-- Top sheet -->
-    <bs:SheetView IsOpen="{Binding IsTopSheetOpen}"
-                  Location="Top"
+    <shiny:FloatingPanel IsOpen="{Binding IsTopSheetOpen}"
+                  Position="Top"
                   HasBackdrop="True"
                   CloseOnBackdropTap="True"
                   HandleColor="Gray"
-                  SheetBackgroundColor="White"
-                  SheetCornerRadius="20">
+                  PanelBackgroundColor="White"
+                  PanelCornerRadius="20">
         <VerticalStackLayout Padding="20" Spacing="15">
             <Label Text="Top Sheet"
                    FontSize="22"
                    FontAttributes="Bold" />
 
-            <Label Text="This sheet slides down from the top. Swipe up past the lowest snap point to dismiss."
+            <Label Text="This sheet slides down from the top. Drag the handle past the lowest snap point to dismiss."
                    FontSize="14" />
 
             <BoxView HeightRequest="1" Color="LightGray" />
@@ -194,13 +194,13 @@
             <Button Text="Close"
                     Command="{Binding CloseTopSheetCommand}" />
         </VerticalStackLayout>
-    </bs:SheetView>
+    </shiny:FloatingPanel>
 
     <!-- Locked: Country selector sheet -->
-    <bs:SheetView IsOpen="{Binding IsSelectorOpen}"
+    <shiny:FloatingPanel IsOpen="{Binding IsSelectorOpen}"
                   IsLocked="True"
                   HasBackdrop="True"
-                  SheetCornerRadius="20"
+                  PanelCornerRadius="20"
                   Detents="{Binding SelectorDetents}">
         <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="20" RowSpacing="10">
             <Label Text="Select a Country"
@@ -237,7 +237,6 @@
                     TextColor="White"
                     Command="{Binding CancelSelectorCommand}" />
         </Grid>
-    </bs:SheetView>
-
-  </Grid>
-</ContentPage>
+    </shiny:FloatingPanel>
+  </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>

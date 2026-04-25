@@ -194,6 +194,19 @@ public class SecurityPin : ContentView
         set => SetValue(CellBackgroundColorProperty, value);
     }
 
+    public static readonly BindableProperty CellFocusedBackgroundColorProperty = BindableProperty.Create(
+        nameof(CellFocusedBackgroundColor),
+        typeof(Color),
+        typeof(SecurityPin),
+        null,
+        propertyChanged: (b, _, _) => ((SecurityPin)b).ApplyCellStyle()
+    );
+    public Color? CellFocusedBackgroundColor
+    {
+        get => (Color?)GetValue(CellFocusedBackgroundColorProperty);
+        set => SetValue(CellFocusedBackgroundColorProperty, value);
+    }
+
     public static readonly BindableProperty CellTextColorProperty = BindableProperty.Create(
         nameof(CellTextColor),
         typeof(Color),
@@ -311,20 +324,23 @@ public class SecurityPin : ContentView
                 CornerRadius = new CornerRadius(CellCornerRadius)
             };
 
-            if (CellBackgroundColor is Color bg)
-                border.BackgroundColor = bg;
-
-            ApplyBorderStroke(border, i);
+            ApplyActiveCellStyle(border, i);
         }
     }
 
-    void ApplyBorderStroke(Border border, int index)
+    void ApplyActiveCellStyle(Border border, int index)
     {
         var isCurrent = index == CurrentIndex && hiddenEntry.IsFocused;
-        if (isCurrent && CellFocusedBorderColor is Color focused)
-            border.Stroke = focused;
+
+        if (isCurrent && CellFocusedBorderColor is Color focusedBorder)
+            border.Stroke = focusedBorder;
         else if (CellBorderColor is Color normal)
             border.Stroke = normal;
+
+        if (isCurrent && CellFocusedBackgroundColor is Color focusedBg)
+            border.BackgroundColor = focusedBg;
+        else if (CellBackgroundColor is Color bg)
+            border.BackgroundColor = bg;
     }
 
     int CurrentIndex => Math.Min(Value?.Length ?? 0, cellBorders.Count - 1);
@@ -344,7 +360,7 @@ public class SecurityPin : ContentView
         }
 
         for (var i = 0; i < cellBorders.Count; i++)
-            ApplyBorderStroke(cellBorders[i], i);
+            ApplyActiveCellStyle(cellBorders[i], i);
     }
 
     void OnHiddenEntryTextChanged(object? sender, TextChangedEventArgs e)

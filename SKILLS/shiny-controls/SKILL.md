@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, SheetView (bottom/top) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, and haptic feedback support across all interactive controls
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, FloatingPanel/OverlayHost/ShinyContentPage (bottom/top overlay panels) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, and haptic feedback support across all interactive controls
 auto_invoke: true
 triggers:
   - tableview
@@ -12,6 +12,12 @@ triggers:
   - sheetview
   - bottom sheet
   - bottomsheet
+  - floating panel
+  - floatingpanel
+  - overlay host
+  - overlayhost
+  - shiny content page
+  - shinycontentpage
   - pill
   - badge
   - status badge
@@ -58,6 +64,7 @@ triggers:
   - blazor tableview
   - blazor sheetview
   - blazor bottomsheet
+  - blazor floating panel
   - blazor fab
   - blazor pillview
   - blazor imageviewer
@@ -106,7 +113,7 @@ Every control below is available on **both** MAUI and Blazor. The feature set (p
 
 The library contains:
 - **TableView**: A pure MAUI settings-style TableView with 14 cell types, cascading styles, sections, drag-sort reordering, and full MVVM/binding support
-- **SheetView**: A draggable sheet overlay (bottom or top) with configurable detents, header peek when minimized, backdrop, animations, keyboard handling, and haptic feedback
+- **FloatingPanel + OverlayHost**: A floating panel overlay system (MAUI only). Panels slide from bottom or top with configurable detents, header peek when closed, backdrop dimming, and haptic feedback. Multiple panels coexist without blocking touches. Use with `OverlayHost` (manual Grid setup) or `ShinyContentPage` (convenience ContentPage with built-in overlay). Blazor uses `SheetView` with CSS-based overlays instead
 - **PillView**: A status badge/label control with 6 preset themes, custom colors, and WCAG-accessible contrast
 - **ImageViewer**: A full-screen image overlay with pinch-to-zoom, pan when zoomed, double-tap to toggle zoom, animated open/close, and a close button
 - **ImageEditor**: An inline image editor with cropping (drag-handle selection with dimmed overlay), rotation, freehand drawing with color, text annotations, undo/redo, reset, and export to PNG/JPEG/WEBP at configurable resolutions
@@ -134,7 +141,7 @@ Invoke this skill when the user wants to:
 - Bind cell properties to a ViewModel using MVVM
 - Create radio button groups, date/time pickers, number pickers, or multi-select pickers
 - Build any form-like or list-based settings UI
-- Add a bottom sheet / sliding panel to a page
+- Add a bottom sheet / sliding panel / floating panel to a page
 - Show status badges, tags, or labels (pill views)
 - Display categorized status indicators (success, warning, critical, etc.)
 - Add a zoomable image viewer / photo viewer overlay
@@ -231,7 +238,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 | `shiny:TableRoot`       | *(omitted)*       | Sections go directly inside `<TableView>`       |
 | `shiny:TableSection`    | `<TableSection>`  |                                                 |
 | `shiny:PillView`        | `<Pill>`          | Renamed to just `Pill` on Blazor                |
-| `shiny:SheetView` | `<SheetView>` | Content goes in `<SheetContent>` named slot   |
+| `shiny:FloatingPanel` in `shiny:OverlayHost` | `<SheetView>` | MAUI uses FloatingPanel+OverlayHost; Blazor uses SheetView with CSS overlay. Content goes in `<SheetContent>` named slot on Blazor |
 | `shiny:Fab`             | `<Fab>`           | `Icon` takes inline SVG/text string, not `ImageSource` |
 | `shiny:FabMenu`         | `<FabMenu>`       | Items passed via `Items` parameter (List<FabMenuItem>), not as children |
 | `shiny:ImageViewer`     | `<ImageViewer>`   | `Source` is a URL string                        |
@@ -256,7 +263,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 | `FontAttributes="Bold"` (PillView)                   | `Bold="true"`                                    |
 | `Color="DodgerBlue"` (MAUI `Color`)                  | `Color="#1E90FF"` (CSS color strings)            |
 | `ItemsSource` + `ItemTemplate` (DataTemplate)        | `ItemsSource` + `ItemTemplate` (`RenderFragment<object>`) |
-| `<shiny:SheetView>` content goes in default slot | `<SheetContent>…</SheetContent>` named slot    |
+| `<shiny:FloatingPanel>` content is `[ContentProperty]` PanelContent | `<SheetContent>…</SheetContent>` named slot (Blazor SheetView)    |
 | `<shiny:FabMenu><shiny:FabMenuItem /></shiny:FabMenu>` | `Items="List<FabMenuItem>"` parameter         |
 
 ### Blazor-specific notes
@@ -284,7 +291,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 </TableView>
 ```
 
-**SheetView**
+**SheetView (Blazor only — MAUI uses FloatingPanel+OverlayHost)**
 ```razor
 <button @onclick="() => isOpen = true">Open Sheet</button>
 
@@ -868,42 +875,98 @@ await tableView.ScrollToBottomAsync();
 
 ---
 
-# SheetView
+# FloatingPanel + OverlayHost (MAUI)
 
-A draggable sheet overlay that slides in from the bottom or top edge of the page. Supports multiple snap points (detents), backdrop dimming, pan gestures, automatic keyboard handling, header peek when minimized, and haptic feedback.
+A floating panel overlay system for .NET MAUI. Panels slide in from the bottom or top edge of the page with configurable detents, header peek when closed, backdrop dimming, drag-handle gestures, keyboard handling, and haptic feedback. Multiple panels can coexist on the same page without blocking touches on content underneath.
 
-## Basic Usage
+**Architecture:**
+- **OverlayHost**: A transparent `Grid` layer with `InputTransparent=true, CascadeInputTransparent=false` — touches pass through to content underneath, but panels and backdrop still receive input on their visible areas. Manages a shared backdrop.
+- **FloatingPanel**: A `ContentView` that lives inside an `OverlayHost`. Animates height (not translation) so the panel only occupies the space it needs. Pan gesture is restricted to the drag handle only — no scroll conflicts with content.
+- **ShinyContentPage**: A `ContentPage` with a built-in `OverlayHost`. Set page content via `PageContent` and add panels via `Panels`.
+
+> **Blazor note:** Blazor does not use FloatingPanel/OverlayHost. It retains `SheetView` which uses CSS `position: fixed`, `z-index`, and `pointer-events: none` for overlay behavior natively.
+
+## Basic Usage with ShinyContentPage
 
 ```xml
-<shiny:SheetView IsOpen="{Binding IsSheetOpen, Mode=TwoWay}">
-    <VerticalStackLayout Padding="20" Spacing="10">
-        <Label Text="Sheet Content" FontSize="18" FontAttributes="Bold" />
-        <Label Text="Drag the handle or tap the backdrop to close." />
-        <Button Text="Close" Command="{Binding CloseSheetCommand}" />
-    </VerticalStackLayout>
-</shiny:SheetView>
+<shiny:ShinyContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                         xmlns:shiny="http://shiny.net/maui/controls"
+                         x:Class="MyApp.MainPage">
+    <shiny:ShinyContentPage.PageContent>
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="10">
+                <Button Text="Open Panel" Command="{Binding OpenCommand}" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </shiny:ShinyContentPage.PageContent>
+    <shiny:ShinyContentPage.Panels>
+        <shiny:FloatingPanel IsOpen="{Binding IsOpen, Mode=TwoWay}">
+            <VerticalStackLayout Padding="20" Spacing="10">
+                <Label Text="Panel Content" FontSize="18" FontAttributes="Bold" />
+                <Button Text="Close" Command="{Binding CloseCommand}" />
+            </VerticalStackLayout>
+        </shiny:FloatingPanel>
+    </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>
 ```
 
-## SheetView Properties
+## Basic Usage with OverlayHost (manual)
+
+```xml
+<ContentPage>
+    <Grid>
+        <ScrollView>
+            <!-- page content -->
+        </ScrollView>
+
+        <shiny:OverlayHost>
+            <shiny:FloatingPanel IsOpen="{Binding IsOpen, Mode=TwoWay}">
+                <!-- panel content -->
+            </shiny:FloatingPanel>
+        </shiny:OverlayHost>
+    </Grid>
+</ContentPage>
+```
+
+## FloatingPanel Properties
 
 | Property | Type | Default | Description |
 |---|---|---|---|
-| `IsOpen` | `bool` | `false` | Opens/closes the sheet (two-way bindable) |
-| `Location` | `SheetLocation` | `Bottom` | Where the sheet slides from (`Bottom`, `BottomTabs`, or `Top`). Use `BottomTabs` when inside a Shell TabBar to clip the sheet above the tab bar |
-| `SheetContent` | `View?` | `null` | The content displayed inside the sheet (ContentProperty) |
-| `HeaderTemplate` | `View?` | `null` | Optional header view; shown inside the sheet when open and as a peek bar when minimized |
-| `ShowHeaderWhenMinimized` | `bool` | `false` | When true, the header peeks from the edge when the sheet is closed |
+| `IsOpen` | `bool` | `false` | Opens/closes the panel (two-way bindable) |
+| `Position` | `FloatingPanelPosition` | `Bottom` | Where the panel slides from (`Bottom`, `BottomTabs`, or `Top`). Use `BottomTabs` when inside a Shell TabBar to clip the panel above the tab bar |
+| `PanelContent` | `View?` | `null` | The content displayed inside the panel (`[ContentProperty]`) |
+| `HeaderTemplate` | `View?` | `null` | Optional header view at the screen edge; shown as a peek bar when closed |
+| `ShowHeaderWhenClosed` | `bool` | `false` | When true, the header peeks from the edge when the panel is closed |
 | `Detents` | `ObservableCollection<DetentValue>` | Quarter, Half, Full | Snap points as ratios of available height |
-| `SheetBackgroundColor` | `Color` | `White` | Background color of the sheet panel |
+| `PanelBackgroundColor` | `Color` | `White` | Background color of the panel |
 | `HandleColor` | `Color` | `Grey` | Color of the drag handle indicator |
-| `SheetCornerRadius` | `double` | `16` | Top corner radius of the sheet |
-| `HasBackdrop` | `bool` | `true` | Shows a dimming backdrop behind the sheet |
-| `CloseOnBackdropTap` | `bool` | `true` | Tapping the backdrop closes the sheet |
+| `ShowHandle` | `bool` | `true` | Show/hide the drag handle bar |
+| `PanelCornerRadius` | `double` | `16` | Corner radius of the panel |
+| `HasBackdrop` | `bool` | `true` | Shows a dimming backdrop behind the panel |
+| `CloseOnBackdropTap` | `bool` | `true` | Tapping the backdrop closes the panel |
 | `AnimationDuration` | `double` | `250` | Animation duration in milliseconds |
 | `ExpandOnInputFocus` | `bool` | `true` | Auto-expands to highest detent when an input is focused |
-| `IsLocked` | `bool` | `false` | Prevents swipe, pan, and backdrop tap dismiss; sheet can only be controlled programmatically |
+| `IsLocked` | `bool` | `false` | Prevents drag dismiss; panel can only be controlled programmatically |
 | `FitContent` | `bool` | `false` | Measures content and auto-computes a single detent to fit it (ignores Detents when true) |
 | `UseHapticFeedback` | `bool` | `true` | Haptic feedback on open, close, and detent snap |
+
+## OverlayHost Properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `BackdropColor` | `Color` | `Black` | Backdrop color |
+| `BackdropMaxOpacity` | `double` | `0.5` | Maximum backdrop opacity |
+
+## ShinyContentPage Properties
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `PageContent` | `View?` | `null` | Main page content (`[ContentProperty]`) |
+| `Panels` | `IList<IView>` | — | Collection of FloatingPanels |
+| `OverlayHost` | `OverlayHost` | — | The internal OverlayHost (read-only) |
+| `BackdropColor` | `Color` | `Black` | Forwarded to internal OverlayHost |
+| `BackdropMaxOpacity` | `double` | `0.5` | Forwarded to internal OverlayHost |
 
 ## DetentValue
 
@@ -918,13 +981,13 @@ Predefined snap points (or create custom ones):
 
 Custom detent: `new DetentValue(0.33)` for 33% height.
 
-## SheetView Events
+## FloatingPanel Events
 
 | Event | Args | Description |
 |---|---|---|
-| `Opened` | `EventArgs` | Sheet finished opening animation |
-| `Closed` | `EventArgs` | Sheet finished closing animation |
-| `DetentChanged` | `DetentValue` | Sheet snapped to a different detent |
+| `Opened` | `EventArgs` | Panel finished opening animation |
+| `Closed` | `EventArgs` | Panel finished closing animation |
+| `DetentChanged` | `DetentValue` | Panel snapped to a different detent |
 
 ## Public Methods
 
@@ -932,65 +995,72 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
 |---|---|
 | `AnimateToDetentAsync(DetentValue)` | Programmatically animate to a specific detent |
 
-## SheetView Features
+## FloatingPanel Features
 
-- **Pan gesture**: Drag the sheet up/down between detents; swipe down past lowest detent to close
-- **Keyboard handling**: Automatically expands when an Entry/Editor is focused (Android AdjustResize), restores when keyboard dismissed
-- **ScrollView integration**: Scroll is enabled only at the highest detent; disabled at lower detents to allow pan gestures
-- **Backdrop**: Semi-transparent overlay that dims proportionally to sheet position
-- **Locked mode**: When `IsLocked="True"`, the drag handle is hidden, pan gestures are disabled, and backdrop tap is ignored — the sheet can only be opened/closed via code (ideal for signature capture, selectors, or confirmation dialogs)
-- **Fit content**: When `FitContent="True"`, the sheet measures its content and auto-computes a single detent to fit it, ignoring the Detents collection
-- **Location**: Slides from bottom (`Location="Bottom"`, default), top (`Location="Top"`), or bottom with tabs (`Location="BottomTabs"` — clips the sheet above the tab bar on iOS)
-- **Header peek**: Set `ShowHeaderWhenMinimized="True"` with a `HeaderTemplate` to show a persistent header bar when the sheet is closed — tapping it opens the sheet
+- **Drag handle gesture**: Pan gesture restricted to the drag handle only — content scrolls normally with no gesture conflicts
+- **Height animation**: Panel animates `HeightRequest` instead of `TranslationY`, so it only occupies the space it needs — no phantom touch areas
+- **Keyboard handling**: Automatically expands when an Entry/Editor is focused, restores when keyboard dismissed
+- **Backdrop**: Shared backdrop managed by OverlayHost; dims proportionally to panel position
+- **Multiple panels**: Multiple FloatingPanels can coexist in the same OverlayHost without blocking each other or content underneath
+- **Locked mode**: When `IsLocked="True"`, the drag handle is hidden and drag gestures are disabled — the panel can only be opened/closed via code
+- **Fit content**: When `FitContent="True"`, the panel measures its content and auto-computes a single detent to fit it
+- **Position**: Slides from bottom (`Position="Bottom"`, default), top (`Position="Top"`), or bottom with tabs (`Position="BottomTabs"` — clips above the tab bar)
+- **Header peek**: Set `ShowHeaderWhenClosed="True"` with a `HeaderTemplate` to show a persistent header bar when the panel is closed — tapping it opens the panel
 - **Haptic feedback**: Subtle haptic on open, close, and detent snap; disable with `UseHapticFeedback="False"`
 
-## SheetView Locked Sheet Example
+## FloatingPanel Locked Example
 
 ```xml
-<!-- Signature capture: locked + auto-sized -->
-<shiny:SheetView IsOpen="{Binding IsSignatureOpen}"
-                       IsLocked="True"
-                       FitContent="True"
-                       HasBackdrop="True"
-                       SheetCornerRadius="20">
-    <VerticalStackLayout Padding="20" Spacing="15">
-        <Label Text="Draw your signature" FontSize="18" FontAttributes="Bold" />
-        <!-- signature content -->
-        <Button Text="Done" Command="{Binding DoneCommand}" />
-    </VerticalStackLayout>
-</shiny:SheetView>
+<shiny:ShinyContentPage>
+    <shiny:ShinyContentPage.PageContent>
+        <!-- page content -->
+    </shiny:ShinyContentPage.PageContent>
+    <shiny:ShinyContentPage.Panels>
+        <!-- Signature capture: locked + auto-sized -->
+        <shiny:FloatingPanel IsOpen="{Binding IsSignatureOpen}"
+                             IsLocked="True"
+                             FitContent="True"
+                             HasBackdrop="True"
+                             PanelCornerRadius="20">
+            <VerticalStackLayout Padding="20" Spacing="15">
+                <Label Text="Draw your signature" FontSize="18" FontAttributes="Bold" />
+                <Button Text="Done" Command="{Binding DoneCommand}" />
+            </VerticalStackLayout>
+        </shiny:FloatingPanel>
 
-<!-- Selector: locked with explicit detent -->
-<shiny:SheetView IsOpen="{Binding IsSelectorOpen}"
-                       IsLocked="True"
-                       HasBackdrop="True"
-                       SheetCornerRadius="20">
-    <shiny:SheetView.Detents>
-        <shiny:DetentValue Ratio="0.5" />
-    </shiny:SheetView.Detents>
-    <CollectionView ItemsSource="{Binding Items}" />
-</shiny:SheetView>
+        <!-- Selector: locked with explicit detent -->
+        <shiny:FloatingPanel IsOpen="{Binding IsSelectorOpen}"
+                             IsLocked="True"
+                             HasBackdrop="True"
+                             PanelCornerRadius="20">
+            <shiny:FloatingPanel.Detents>
+                <shiny:DetentValue Ratio="0.5" />
+            </shiny:FloatingPanel.Detents>
+            <CollectionView ItemsSource="{Binding Items}" />
+        </shiny:FloatingPanel>
+    </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>
 ```
 
-## SheetView Example with Custom Detents
+## FloatingPanel with Custom Detents
 
 ```xml
-<shiny:SheetView IsOpen="{Binding IsOpen, Mode=TwoWay}"
-                       SheetBackgroundColor="#1E1E1E"
-                       HandleColor="#888888"
-                       SheetCornerRadius="24"
-                       HasBackdrop="True"
-                       CloseOnBackdropTap="True"
-                       AnimationDuration="300">
-    <shiny:SheetView.Detents>
+<shiny:FloatingPanel IsOpen="{Binding IsOpen, Mode=TwoWay}"
+                     PanelBackgroundColor="#1E1E1E"
+                     HandleColor="#888888"
+                     PanelCornerRadius="24"
+                     HasBackdrop="True"
+                     CloseOnBackdropTap="True"
+                     AnimationDuration="300">
+    <shiny:FloatingPanel.Detents>
         <shiny:DetentValue Ratio="0.33" />
         <shiny:DetentValue Ratio="0.66" />
         <shiny:DetentValue Ratio="1.0" />
-    </shiny:SheetView.Detents>
+    </shiny:FloatingPanel.Detents>
     <VerticalStackLayout Padding="20">
-        <Label Text="Custom Sheet" TextColor="White" />
+        <Label Text="Custom Panel" TextColor="White" />
     </VerticalStackLayout>
-</shiny:SheetView>
+</shiny:FloatingPanel>
 ```
 
 ---
@@ -1076,7 +1146,7 @@ Example override in `App.xaml`:
 
 # ImageViewer
 
-A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to toggle zoom, animated fade open/close, and a close button. Designed to overlay page content like SheetView.
+A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to toggle zoom, animated fade open/close, and a close button. Designed to overlay page content.
 
 ## Basic Usage
 
@@ -1125,7 +1195,7 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 
 ## ImageViewer Placement
 
-Like SheetView, ImageViewer must be placed inside a Grid that fills the page so it overlays correctly:
+ImageViewer must be placed inside a Grid that fills the page so it overlays correctly:
 
 ```xml
 <ContentPage>
@@ -1589,7 +1659,7 @@ Material-style floating action button (`Fab`) and an expanding multi-action menu
 
 ## Placement (important)
 
-Place the `Fab` / `FabMenu` inside a `Grid` that fills the page — same pattern as `SheetView` / `ImageViewer`:
+Place the `Fab` / `FabMenu` inside a `Grid` that fills the page — same pattern as `ImageViewer`:
 
 ```xml
 <ContentPage>
@@ -1680,7 +1750,7 @@ Events: `Clicked`.
 ## Code Generation Guidance
 
 - Use `Fab` for a single primary action (e.g., "Add") and `FabMenu` for multiple related actions (speed dial)
-- Always place `Fab` / `FabMenu` inside a Grid that fills the page so the FabMenu backdrop overlays everything
+- Always place `Fab` / `FabMenu` inside a Grid that fills the page so the FabMenu backdrop overlays everything (or use `ShinyContentPage` with `OverlayHost`)
 - Default to `HorizontalOptions="End"` + `VerticalOptions="End"` + `Margin="24"` for the canonical Material bottom-right placement
 - Bind `IsOpen` TwoWay when the ViewModel needs to drive the menu state; otherwise omit it and let taps control it
 - Keep `FabMenuItem` icons monochrome/filled for best visual contrast against the colored circles
@@ -1906,7 +1976,8 @@ When generating code with Shiny.Maui.Controls:
 - Always add `xmlns:shiny="http://shiny.net/maui/controls"` to the page
 - For Markdown controls: add `xmlns:md="http://shiny.net/maui/markdown"` to the page
 - For TableView: wrap content in `shiny:TableView > shiny:TableRoot > shiny:TableSection`
-- For SheetView: place `shiny:SheetView` inside a Grid that fills the page (it overlays on top); supports `Location="Bottom"` (default), `Location="Top"`, or `Location="BottomTabs"` (for use inside Shell TabBar)
+- For FloatingPanel (MAUI): use `shiny:ShinyContentPage` as the page base class with `PageContent` for main content and `Panels` for FloatingPanels. Alternatively, place `shiny:OverlayHost` with `shiny:FloatingPanel` children inside a Grid. Supports `Position="Bottom"` (default), `Position="Top"`, or `Position="BottomTabs"` (for use inside Shell TabBar)
+- For SheetView (Blazor only): use `<SheetView>` with `<SheetContent>` child
 - For ImageViewer: place `shiny:ImageViewer` inside a Grid that fills the page (it overlays on top, same pattern as SheetView)
 - For ImageEditor: use `shiny:ImageEditor` with `Source` bound to `byte[]` image data. Set `AllowX` properties to toggle features. Use `CurrentToolMode` (TwoWay) to control the active tool. Use `CanUndo`/`CanRedo` (OneWayToSource) to observe undo state. Call `ExportAsync()` to save.
 - For PillView: use inline within any layout
@@ -1936,23 +2007,37 @@ When generating code with Shiny.Maui.Controls:
 - Commands use default `Mode=OneWay`
 - RadioCell selection binds at section level: `shiny:RadioCell.SelectedValue="{Binding Prop, Mode=TwoWay}"`
 
-### 4. SheetView Placement
-The SheetView must be placed inside a Grid that fills the page so it can overlay correctly:
+### 4. FloatingPanel Placement (MAUI)
+Use `ShinyContentPage` for the simplest setup:
+
+```xml
+<shiny:ShinyContentPage xmlns:shiny="http://shiny.net/maui/controls">
+    <shiny:ShinyContentPage.PageContent>
+        <ScrollView>
+            <VerticalStackLayout>
+                <Button Text="Open Panel" Command="{Binding OpenCommand}" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </shiny:ShinyContentPage.PageContent>
+    <shiny:ShinyContentPage.Panels>
+        <shiny:FloatingPanel IsOpen="{Binding IsOpen, Mode=TwoWay}">
+            <Label Text="Panel content" />
+        </shiny:FloatingPanel>
+    </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>
+```
+
+Or use `OverlayHost` manually in a Grid:
 
 ```xml
 <ContentPage>
     <Grid>
-        <!-- Main page content -->
-        <ScrollView>
-            <VerticalStackLayout>
-                <Button Text="Open Sheet" Command="{Binding OpenCommand}" />
-            </VerticalStackLayout>
-        </ScrollView>
-
-        <!-- Sheet overlays on top -->
-        <shiny:SheetView IsOpen="{Binding IsOpen, Mode=TwoWay}">
-            <Label Text="Sheet content" />
-        </shiny:SheetView>
+        <ScrollView><!-- page content --></ScrollView>
+        <shiny:OverlayHost>
+            <shiny:FloatingPanel IsOpen="{Binding IsOpen, Mode=TwoWay}">
+                <Label Text="Panel content" />
+            </shiny:FloatingPanel>
+        </shiny:OverlayHost>
     </Grid>
 </ContentPage>
 ```
@@ -2018,16 +2103,16 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
 </ContentPage>
 ```
 
-## Complete SheetView + PillView Example
+## Complete FloatingPanel + PillView Example
 
 ```xml
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:shiny="http://shiny.net/maui/controls"
-             x:Class="MyApp.StatusPage"
-             Title="Status">
+<shiny:ShinyContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                         xmlns:shiny="http://shiny.net/maui/controls"
+                         x:Class="MyApp.StatusPage"
+                         Title="Status">
 
-    <Grid>
+    <shiny:ShinyContentPage.PageContent>
         <ScrollView>
             <VerticalStackLayout Padding="20" Spacing="10">
                 <Label Text="System Status" FontSize="24" FontAttributes="Bold" />
@@ -2041,9 +2126,11 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
                 <Button Text="View Details" Command="{Binding OpenDetailsCommand}" />
             </VerticalStackLayout>
         </ScrollView>
+    </shiny:ShinyContentPage.PageContent>
 
-        <shiny:SheetView IsOpen="{Binding IsDetailsOpen, Mode=TwoWay}"
-                               SheetCornerRadius="20">
+    <shiny:ShinyContentPage.Panels>
+        <shiny:FloatingPanel IsOpen="{Binding IsDetailsOpen, Mode=TwoWay}"
+                             PanelCornerRadius="20">
             <VerticalStackLayout Padding="20" Spacing="12">
                 <Label Text="Service Details" FontSize="18" FontAttributes="Bold" />
 
@@ -2062,9 +2149,9 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
                     <Label Text="Message Queue" VerticalOptions="Center" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
-        </shiny:SheetView>
-    </Grid>
-</ContentPage>
+        </shiny:FloatingPanel>
+    </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>
 ```
 
 ## Best Practices
@@ -2079,7 +2166,7 @@ The SheetView must be placed inside a Grid that fills the page so it can overlay
 8. **Use RadioCell for exclusive choices** - Bind `SelectedValue` at the section level
 9. **Use PickerCell for long lists** - Full-page picker is better than inline for more than 4-5 items
 10. **Use ItemTemplate for dynamic content** - Bind `ItemsSource` on sections for data-driven cells
-11. **Place SheetView and ImageViewer in a Grid** - They must overlay page content, so use a Grid as the page root
+11. **Use ShinyContentPage or OverlayHost for FloatingPanels** - Use `ShinyContentPage` as the page base class, or place `OverlayHost` in a Grid for overlay panels. Place ImageViewer in a Grid as before
 12. **Use PillView for status indicators** - Prefer preset types for consistency; use custom colors for brand-specific needs
 13. **Use AOT-safe bindings for scheduler templates** - Always use `static (T item) => item.Property` lambda bindings, never string-based
 14. **Leave MarkdownView/MarkdownEditor Theme as null** - It auto-resolves Light/Dark based on the app theme

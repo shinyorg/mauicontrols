@@ -2,9 +2,8 @@ namespace Sample.Features.Chat;
 
 public partial class ChatPage : ContentPage
 {
-    public ChatPage(ChatViewModel viewModel)
+    public ChatPage()
     {
         InitializeComponent();
-        BindingContext = viewModel;
     }
 }

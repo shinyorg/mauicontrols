@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<shiny:ShinyContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:shiny="http://shiny.net/maui/controls"
              xmlns:local="clr-namespace:Sample.Features.ImageViewer"
@@ -7,7 +7,7 @@
              x:DataType="local:ImageViewerViewModel"
              Title="Image Viewer">
 
-    <Grid>
+    <shiny:ShinyContentPage.PageContent>
         <ScrollView>
             <VerticalStackLayout Padding="20" Spacing="16">
                 <Label Text="Tap an image to open the viewer"
@@ -20,31 +20,24 @@
                        HorizontalTextAlignment="Center"
                        TextColor="Gray" />
 
-                <Image Source="dotnet_bot.png"
-                       HeightRequest="200"
-                       Aspect="AspectFit">
-                    <Image.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding OpenViewerCommand}"
-                                              CommandParameter="dotnet_bot.png" />
-                    </Image.GestureRecognizers>
-                </Image>
+                <shiny:ImageViewer Source="dotnet_bot.png"
+                                   IsOpen="{Binding IsViewerOpen}"
+                                   HeightRequest="200"
+                                   Aspect="AspectFit">
+                    <shiny:ImageViewer.FooterTemplate>
+                        <DataTemplate x:DataType="local:ImageViewerViewModel">
+                            <Button Text="Close"
+                                    Command="{Binding CloseViewerCommand}"
+                                    TextColor="White"
+                                    BackgroundColor="{x:Static Colors.DimGray}"
+                                    CornerRadius="20"
+                                    HorizontalOptions="Center"
+                                    Margin="0,0,0,40" />
+                        </DataTemplate>
+                    </shiny:ImageViewer.FooterTemplate>
+                </shiny:ImageViewer>
             </VerticalStackLayout>
         </ScrollView>
+    </shiny:ShinyContentPage.PageContent>
 
-        <shiny:ImageViewer Source="{Binding SelectedImage}"
-                           IsOpen="{Binding IsViewerOpen}">
-            <shiny:ImageViewer.FooterTemplate>
-                <DataTemplate x:DataType="local:ImageViewerViewModel">
-                    <Button Text="Close"
-                            Command="{Binding CloseViewerCommand}"
-                            TextColor="White"
-                            BackgroundColor="{x:Static Colors.DimGray}"
-                            CornerRadius="20"
-                            HorizontalOptions="Center"
-                            Margin="0,0,0,40" />
-                </DataTemplate>
-            </shiny:ImageViewer.FooterTemplate>
-        </shiny:ImageViewer>
-    </Grid>
-
-</ContentPage>
+</shiny:ShinyContentPage>

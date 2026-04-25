@@ -458,11 +458,27 @@ public partial class ImageEditor : ContentView
             drawable.ActiveCropRect = null;
         }
 
-        // Enable/disable move gestures
+        // Enable/disable move gestures and touch interaction
         if (mode == ImageEditorToolMode.Move)
+        {
             EnableMoveGestures();
+        }
         else
+        {
             DisableMoveGestures();
+
+            // Attach StartInteraction for modes that need direct touch (Draw, Crop, Line, Arrow, Text)
+            if (mode == ImageEditorToolMode.Draw || mode == ImageEditorToolMode.Crop ||
+                mode == ImageEditorToolMode.Line || mode == ImageEditorToolMode.Arrow ||
+                mode == ImageEditorToolMode.Text)
+            {
+                EnableTouchInteraction();
+            }
+            else
+            {
+                DisableTouchInteraction();
+            }
+        }
 
         BuildDefaultToolbar();
         Invalidate();
@@ -558,48 +574,69 @@ public partial class ImageEditor : ContentView
             return;
         }
 
-        var toolbar = new HorizontalStackLayout
+        var toolRow = new HorizontalStackLayout
         {
             Spacing = 4,
+            HorizontalOptions = LayoutOptions.Center
+        };
+
+        if (AllowZoom) toolRow.Children.Add(CreateToolButton("\u271B", "Move", ImageEditorToolMode.Move));
+        if (AllowCrop) toolRow.Children.Add(CreateToolButton("\u2702", "Crop", ImageEditorToolMode.Crop));
+        if (AllowRotate) toolRow.Children.Add(CreateActionButton("\u21BB", "Rotate", () => Rotate(90)));
+        if (AllowDraw)
+        {
+            toolRow.Children.Add(CreateToolButton("\u270E", "Draw", ImageEditorToolMode.Draw));
+            toolRow.Children.Add(CreateDrawColorButton());
+        }
+        if (AllowLine) toolRow.Children.Add(CreateToolButton("\u2500", "Line", ImageEditorToolMode.Line));
+        if (AllowArrow) toolRow.Children.Add(CreateToolButton("\u2192", "Arrow", ImageEditorToolMode.Arrow));
+        if (AllowTextAnnotation)
+            toolRow.Children.Add(CreateToolButton("\u0054", "Text", ImageEditorToolMode.Text));
+
+        // Font pickers on their own row when in Text mode
+        HorizontalStackLayout? fontRow = null;
+        if (AllowTextAnnotation && CurrentToolMode == ImageEditorToolMode.Text)
+        {
+            var hasFontPicker = AllowFontSelection && AvailableFonts is { Count: > 0 };
+            var hasSizePicker = AllowFontSizeSelection && AvailableFontSizes is { Count: > 0 };
+            if (hasFontPicker || hasSizePicker)
+            {
+                fontRow = new HorizontalStackLayout
+                {
+                    Spacing = 8,
+                    HorizontalOptions = LayoutOptions.Center
+                };
+                if (hasFontPicker) fontRow.Children.Add(CreateFontPickerButton());
+                if (hasSizePicker) fontRow.Children.Add(CreateFontSizePickerButton());
+            }
+        }
+
+        var actionRow = new HorizontalStackLayout
+        {
+            Spacing = 4,
+            HorizontalOptions = LayoutOptions.Center
+        };
+
+        actionRow.Children.Add(CreateActionButton("\u21A9", "Undo", Undo));
+        actionRow.Children.Add(CreateActionButton("\u21AA", "Redo", Redo));
+        actionRow.Children.Add(CreateActionButton("\u27F2", "Reset", Reset));
+
+        if (SaveCommand != null)
+        {
+            actionRow.Children.Add(new BoxView { WidthRequest = 1, HeightRequest = 30, Color = Colors.Grey, VerticalOptions = LayoutOptions.Center });
+            actionRow.Children.Add(CreateActionButton(SaveText, "Save", ExecuteSave));
+        }
+
+        var toolbar = new VerticalStackLayout
+        {
+            Spacing = 2,
             HorizontalOptions = LayoutOptions.Center,
             Padding = new Thickness(8, 4),
             BackgroundColor = Color.FromRgba(0, 0, 0, 0.6f)
         };
-
-        if (AllowZoom) toolbar.Children.Add(CreateToolButton("\u271B", "Move", ImageEditorToolMode.Move));
-        if (AllowCrop) toolbar.Children.Add(CreateToolButton("\u2702", "Crop", ImageEditorToolMode.Crop));
-        if (AllowRotate) toolbar.Children.Add(CreateActionButton("\u21BB", "Rotate", () => Rotate(90)));
-        if (AllowDraw)
-        {
-            toolbar.Children.Add(CreateToolButton("\u270E", "Draw", ImageEditorToolMode.Draw));
-            toolbar.Children.Add(CreateDrawColorButton());
-        }
-        if (AllowLine) toolbar.Children.Add(CreateToolButton("\u2500", "Line", ImageEditorToolMode.Line));
-        if (AllowArrow) toolbar.Children.Add(CreateToolButton("\u2192", "Arrow", ImageEditorToolMode.Arrow));
-        if (AllowTextAnnotation)
-        {
-            toolbar.Children.Add(CreateToolButton("\u0054", "Text", ImageEditorToolMode.Text));
-            if (CurrentToolMode == ImageEditorToolMode.Text)
-            {
-                if (AllowFontSelection && AvailableFonts is { Count: > 0 })
-                    toolbar.Children.Add(CreateFontPickerButton());
-                if (AllowFontSizeSelection && AvailableFontSizes is { Count: > 0 })
-                    toolbar.Children.Add(CreateFontSizePickerButton());
-            }
-        }
-
-        // Separator
-        toolbar.Children.Add(new BoxView { WidthRequest = 1, HeightRequest = 30, Color = Colors.Grey, VerticalOptions = LayoutOptions.Center });
-
-        toolbar.Children.Add(CreateActionButton("\u21A9", "Undo", Undo));
-        toolbar.Children.Add(CreateActionButton("\u21AA", "Redo", Redo));
-        toolbar.Children.Add(CreateActionButton("\u27F2", "Reset", Reset));
-
-        if (SaveCommand != null)
-        {
-            toolbar.Children.Add(new BoxView { WidthRequest = 1, HeightRequest = 30, Color = Colors.Grey, VerticalOptions = LayoutOptions.Center });
-            toolbar.Children.Add(CreateActionButton(SaveText, "Save", ExecuteSave));
-        }
+        toolbar.Children.Add(toolRow);
+        if (fontRow != null) toolbar.Children.Add(fontRow);
+        toolbar.Children.Add(actionRow);
 
         toolbarView = toolbar;
         AddToolbarToGrid();
@@ -680,7 +717,7 @@ public partial class ImageEditor : ContentView
         drawColorButton = new ColorPickerButton
         {
             SelectedColor = DrawStrokeColor,
-            CornerRadius = 22,
+            CornerRadius = 4,
             HeightRequest = 36,
             WidthRequest = 36,
             VerticalOptions = LayoutOptions.Center

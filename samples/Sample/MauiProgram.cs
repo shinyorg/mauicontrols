@@ -53,6 +53,7 @@ public static class MauiProgram
                 .Add<AgendaCalendarPickerPage, AgendaCalendarPickerViewModel>(registerRoute: false)
                 .Add<CalendarListPage, CalendarListViewModel>(registerRoute: false)
                 .Add<ImageViewerPage, ImageViewerViewModel>(registerRoute: false)
+                .Add<ImageGalleryPage, ImageGalleryViewModel>(registerRoute: false)
                 .Add<ImageEditorPage, ImageEditorViewModel>()
                 .Add<ChatPage, ChatViewModel>(registerRoute: false)
                 .Add<KitchenSinkPage, KitchenSinkViewModel>(registerRoute: false)

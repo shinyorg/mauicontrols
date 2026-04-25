@@ -20,25 +20,241 @@
     xmlns:colorpicker="clr-namespace:Sample.Features.ColorPicker"
     xmlns:autocomplete="clr-namespace:Sample.Features.AutoComplete"
     xmlns:countryaddress="clr-namespace:Sample.Features.CountryAddress"
-    Title="Sample">
+    Title="Shiny Controls"
+    FlyoutBackgroundColor="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}"
+    FlyoutWidth="310"
+    Shell.BackgroundColor="{AppThemeBinding Light=#7C3AED, Dark=#2D1B69}"
+    Shell.ForegroundColor="White"
+    Shell.TitleColor="White"
+    Shell.UnselectedColor="#C4B5FD"
+    FlyoutHeaderBehavior="CollapseOnScroll">
 
+    <!-- ============================================================ -->
+    <!-- FLYOUT HEADER — Logo + gradient hero -->
+    <!-- ============================================================ -->
+    <Shell.FlyoutHeader>
+        <Grid HeightRequest="200">
+            <!-- Gradient background -->
+            <BoxView>
+                <BoxView.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#7C3AED" Offset="0.0" />
+                        <GradientStop Color="#4F46E5" Offset="0.5" />
+                        <GradientStop Color="#2563EB" Offset="1.0" />
+                    </LinearGradientBrush>
+                </BoxView.Background>
+            </BoxView>
+
+            <!-- Decorative circles for depth -->
+            <BoxView CornerRadius="80"
+                     WidthRequest="160" HeightRequest="160"
+                     Color="#FFFFFF" Opacity="0.06"
+                     HorizontalOptions="End" VerticalOptions="Start"
+                     Margin="0,-30,-40,0" />
+            <BoxView CornerRadius="50"
+                     WidthRequest="100" HeightRequest="100"
+                     Color="#FFFFFF" Opacity="0.04"
+                     HorizontalOptions="Start" VerticalOptions="End"
+                     Margin="-20,0,0,-20" />
+
+            <!-- Logo + text -->
+            <VerticalStackLayout VerticalOptions="Center"
+                                 HorizontalOptions="Center"
+                                 Spacing="8"
+                                 Padding="24,52,24,24">
+                <!-- Logo with glow shadow -->
+                <Border StrokeThickness="0"
+                        BackgroundColor="Transparent"
+                        HorizontalOptions="Center"
+                        WidthRequest="72" HeightRequest="72">
+                    <Border.Shadow>
+                        <Shadow Brush="#8B5CF6"
+                                Offset="0,4"
+                                Radius="20"
+                                Opacity="0.6" />
+                    </Border.Shadow>
+                    <Image Source="shiny_logo.png"
+                           HeightRequest="72"
+                           WidthRequest="72" />
+                </Border>
+
+                <Label Text="Shiny Controls"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalTextAlignment="Center">
+                    <Label.Shadow>
+                        <Shadow Brush="#000000"
+                                Offset="0,2"
+                                Radius="8"
+                                Opacity="0.3" />
+                    </Label.Shadow>
+                </Label>
+
+                <Border BackgroundColor="#FFFFFF"
+                        Opacity="0.2"
+                        StrokeThickness="0"
+                        HeightRequest="2"
+                        WidthRequest="60"
+                        HorizontalOptions="Center">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="1" />
+                    </Border.StrokeShape>
+                </Border>
+
+                <Label Text="MAUI &amp; Blazor Component Gallery"
+                       FontSize="11"
+                       TextColor="#DDD6FE"
+                       HorizontalTextAlignment="Center"
+                       CharacterSpacing="0.5" />
+            </VerticalStackLayout>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <!-- ============================================================ -->
+    <!-- ITEM TEMPLATE — Icon + Title with accent styling -->
+    <!-- ============================================================ -->
+    <Shell.ItemTemplate>
+        <DataTemplate>
+            <Grid Padding="8,2" HeightRequest="42">
+                <Border Padding="10,6"
+                        StrokeThickness="0"
+                        BackgroundColor="Transparent">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="28,*" ColumnSpacing="10">
+                        <Image Source="{Binding FlyoutIcon}"
+                               HeightRequest="18" WidthRequest="18"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="{Binding Title}"
+                               FontSize="14"
+                               TextColor="{AppThemeBinding Light=#1E1B4B, Dark=#E0E7FF}"
+                               VerticalTextAlignment="Center" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
+    <!-- ============================================================ -->
+    <!-- SECTION HEADER TEMPLATE — Category labels -->
+    <!-- ============================================================ -->
+    <Shell.MenuItemTemplate>
+        <DataTemplate>
+            <Grid Padding="20,14,20,4" HeightRequest="36">
+                <Label Text="{Binding Text}"
+                       FontSize="11"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light=#7C3AED, Dark=#6D28D9}"
+                       VerticalTextAlignment="End"
+                       CharacterSpacing="1.5" />
+            </Grid>
+        </DataTemplate>
+    </Shell.MenuItemTemplate>
+
+    <!-- ============================================================ -->
+    <!-- FLYOUT FOOTER — Branding -->
+    <!-- ============================================================ -->
+    <Shell.FlyoutFooter>
+        <Grid Padding="16,8,16,12" RowDefinitions="Auto,Auto" RowSpacing="4"
+              BackgroundColor="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}">
+            <!-- Accent line -->
+            <BoxView HeightRequest="1" Margin="20,0,20,2">
+                <BoxView.Background>
+                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                        <GradientStop Color="Transparent" Offset="0.0" />
+                        <GradientStop Color="{AppThemeBinding Light=#7C3AED, Dark=#6D28D9}" Offset="0.5" />
+                        <GradientStop Color="Transparent" Offset="1.0" />
+                    </LinearGradientBrush>
+                </BoxView.Background>
+            </BoxView>
+
+            <!-- Tappable badge — opens shinylib.net -->
+            <Border x:Name="footerBadge"
+                    Grid.Row="1"
+                    BackgroundColor="{AppThemeBinding Light=#EDE9FE, Dark=#1E1B4B}"
+                    StrokeThickness="0"
+                    Padding="12,6"
+                    HorizontalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnFooterTapped" />
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
+                    <Label Text="shinylib.net"
+                           FontSize="11"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#6D28D9, Dark=#A78BFA}"
+                           VerticalTextAlignment="Center"
+                           TextDecorations="Underline" />
+                    <BoxView WidthRequest="3" HeightRequest="3" CornerRadius="2"
+                             Color="{AppThemeBinding Light=#6D28D9, Dark=#A78BFA}"
+                             VerticalOptions="Center" />
+                    <Label Text=".NET MAUI &amp; Blazor"
+                           FontSize="11"
+                           TextColor="{AppThemeBinding Light=#7C3AED, Dark=#8B5CF6}"
+                           VerticalTextAlignment="Center" />
+                </HorizontalStackLayout>
+            </Border>
+        </Grid>
+    </Shell.FlyoutFooter>
+
+    <!-- ============================================================ -->
+    <!--  HOME -->
+    <!-- ============================================================ -->
     <FlyoutItem Title="Home">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2302;" Size="20"
+                             Color="{AppThemeBinding Light=#7C3AED, Dark=#A78BFA}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate home:HomePage}" Route="home" />
     </FlyoutItem>
 
     <FlyoutItem Title="Kitchen Sink">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2699;" Size="20"
+                             Color="{AppThemeBinding Light=#7C3AED, Dark=#A78BFA}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate kitchensink:KitchenSinkPage}" Route="kitchensinkchat" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Sheet">
+    <!-- ============================================================ -->
+    <!--  FLOATING PANELS -->
+    <!-- ============================================================ -->
+    <MenuItem Text="FLOATING PANELS"
+              StyleClass="SectionHeader"
+              IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
+
+    <FlyoutItem Title="Basic">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25A3;" Size="20"
+                             Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate sheet:SheetPage}" Route="sheet" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Sheet - Minimized">
+    <FlyoutItem Title="Header Peek">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25A5;" Size="20"
+                             Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate sheet:MinimizedSheetStandalonePage}" Route="minimizedsheetstandalone" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Sheet - Minimized (Tabs)">
+    <FlyoutItem Title="Bottom Tabs">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25A7;" Size="20"
+                             Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
+        </FlyoutItem.FlyoutIcon>
         <Tab Title="Now Playing">
             <ShellContent ContentTemplate="{DataTemplate sheet:MinimizedSheetPage}" Route="minimizedsheet" />
         </Tab>
@@ -50,108 +266,304 @@
         </Tab>
     </FlyoutItem>
 
-    <FlyoutItem Title="Sheet - Top Weather">
+    <FlyoutItem Title="Top Panel">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25A4;" Size="20"
+                             Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate sheet:TopSheetPage}" Route="topsheet" />
     </FlyoutItem>
 
+    <!-- ============================================================ -->
+    <!--  CONTROLS -->
+    <!-- ============================================================ -->
+    <MenuItem Text="CONTROLS"
+              StyleClass="SectionHeader"
+              IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
+
     <FlyoutItem Title="Pills">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25CF;" Size="20"
+                             Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate pills:PillPage}" Route="pills" />
     </FlyoutItem>
 
     <FlyoutItem Title="Security Pin">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2731;" Size="20"
+                             Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate securitypin:SecurityPinPage}" Route="securitypin" />
     </FlyoutItem>
 
     <FlyoutItem Title="FAB &amp; FabMenu">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2795;" Size="20"
+                             Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate fab:FabPage}" Route="fab" />
     </FlyoutItem>
 
-    <FlyoutItem Title="TableView - Basic Settings">
-        <ShellContent ContentTemplate="{DataTemplate tv:BasicSettingsPage}" Route="basic" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="TableView - Dynamic Sections">
-        <ShellContent ContentTemplate="{DataTemplate tv:DynamicSectionsPage}" Route="dynamic" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="TableView - Drag &amp; Sort">
-        <ShellContent ContentTemplate="{DataTemplate tv:DragSortPage}" Route="dragsort" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="TableView - Picker Demo">
-        <ShellContent ContentTemplate="{DataTemplate tv:PickerDemoPage}" Route="picker" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="TableView - Styling">
-        <ShellContent ContentTemplate="{DataTemplate tv:StylingPage}" Route="styling" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Scheduler - Calendar">
-        <ShellContent ContentTemplate="{DataTemplate scheduler:CalendarPage}" Route="calendar" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Scheduler - Agenda">
-        <ShellContent ContentTemplate="{DataTemplate scheduler:AgendaPage}" Route="agenda" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Scheduler - Agenda Calendar Picker">
-        <ShellContent ContentTemplate="{DataTemplate scheduler:AgendaCalendarPickerPage}" Route="agendacalendarpicker" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Scheduler - Event List">
-        <ShellContent ContentTemplate="{DataTemplate scheduler:CalendarListPage}" Route="calendarlist" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Image Viewer">
-        <ShellContent ContentTemplate="{DataTemplate imgviewer:ImageViewerPage}" Route="imageviewer" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Image Editor">
-        <ShellContent ContentTemplate="{DataTemplate imgeditor:ImageEditorPage}" Route="imageeditor" />
-    </FlyoutItem>
-
     <FlyoutItem Title="Color Picker">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25C9;" Size="20"
+                             Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate colorpicker:ColorPickerPage}" Route="colorpicker" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Chat">
-        <ShellContent ContentTemplate="{DataTemplate chat:ChatPage}" Route="chat" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Markdown - Viewer">
-        <ShellContent ContentTemplate="{DataTemplate markdown:MarkdownViewPage}" Route="markdownview" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Markdown - Editor">
-        <ShellContent ContentTemplate="{DataTemplate markdown:MarkdownEditorPage}" Route="markdowneditor" />
-    </FlyoutItem>
-
     <FlyoutItem Title="AutoComplete">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2263;" Size="20"
+                             Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate autocomplete:AutoCompletePage}" Route="autocomplete" />
     </FlyoutItem>
 
     <FlyoutItem Title="Country &amp; Address">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2691;" Size="20"
+                             Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate countryaddress:CountryAddressPage}" Route="countryaddress" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Diagrams - Basic Flowchart">
+    <!-- ============================================================ -->
+    <!--  TABLE VIEW -->
+    <!-- ============================================================ -->
+    <MenuItem Text="TABLE VIEW"
+              StyleClass="SectionHeader"
+              IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
+
+    <FlyoutItem Title="Basic">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2630;" Size="20"
+                             Color="{AppThemeBinding Light=#D97706, Dark=#FBBF24}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate tv:BasicSettingsPage}" Route="basic" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Dynamic">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2637;" Size="20"
+                             Color="{AppThemeBinding Light=#D97706, Dark=#FBBF24}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate tv:DynamicSectionsPage}" Route="dynamic" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Drag &amp; Sort">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2195;" Size="20"
+                             Color="{AppThemeBinding Light=#D97706, Dark=#FBBF24}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate tv:DragSortPage}" Route="dragsort" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Picker">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25BE;" Size="20"
+                             Color="{AppThemeBinding Light=#D97706, Dark=#FBBF24}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate tv:PickerDemoPage}" Route="picker" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Styling">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2726;" Size="20"
+                             Color="{AppThemeBinding Light=#D97706, Dark=#FBBF24}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate tv:StylingPage}" Route="styling" />
+    </FlyoutItem>
+
+    <!-- ============================================================ -->
+    <!--  SCHEDULER -->
+    <!-- ============================================================ -->
+    <MenuItem Text="SCHEDULER"
+              StyleClass="SectionHeader"
+              IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
+
+    <FlyoutItem Title="Calendar">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25A1;" Size="20"
+                             Color="{AppThemeBinding Light=#DC2626, Dark=#F87171}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate scheduler:CalendarPage}" Route="calendar" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Agenda">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2261;" Size="20"
+                             Color="{AppThemeBinding Light=#DC2626, Dark=#F87171}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate scheduler:AgendaPage}" Route="agenda" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Calendar Picker">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x29C9;" Size="20"
+                             Color="{AppThemeBinding Light=#DC2626, Dark=#F87171}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate scheduler:AgendaCalendarPickerPage}" Route="agendacalendarpicker" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Event List">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2637;" Size="20"
+                             Color="{AppThemeBinding Light=#DC2626, Dark=#F87171}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate scheduler:CalendarListPage}" Route="calendarlist" />
+    </FlyoutItem>
+
+    <!-- ============================================================ -->
+    <!--  MEDIA -->
+    <!-- ============================================================ -->
+    <MenuItem Text="MEDIA"
+              StyleClass="SectionHeader"
+              IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
+
+    <FlyoutItem Title="Image Viewer">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25A3;" Size="20"
+                             Color="{AppThemeBinding Light=#9333EA, Dark=#C084FC}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate imgviewer:ImageViewerPage}" Route="imageviewer" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Image Gallery">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2B1A;" Size="20"
+                             Color="{AppThemeBinding Light=#9333EA, Dark=#C084FC}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate imgviewer:ImageGalleryPage}" Route="imagegallery" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Image Editor">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x270E;" Size="20"
+                             Color="{AppThemeBinding Light=#9333EA, Dark=#C084FC}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate imgeditor:ImageEditorPage}" Route="imageeditor" />
+    </FlyoutItem>
+
+    <!-- ============================================================ -->
+    <!--  COMMUNICATION -->
+    <!-- ============================================================ -->
+    <MenuItem Text="COMMUNICATION"
+              StyleClass="SectionHeader"
+              IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
+
+    <FlyoutItem Title="Chat">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2709;" Size="20"
+                             Color="{AppThemeBinding Light=#0284C7, Dark=#38BDF8}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate chat:ChatPage}" Route="chat" />
+    </FlyoutItem>
+
+    <!-- ============================================================ -->
+    <!--  CONTENT -->
+    <!-- ============================================================ -->
+    <MenuItem Text="CONTENT"
+              StyleClass="SectionHeader"
+              IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
+
+    <FlyoutItem Title="Markdown Viewer">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2193;" Size="20"
+                             Color="{AppThemeBinding Light=#65A30D, Dark=#A3E635}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate markdown:MarkdownViewPage}" Route="markdownview" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Markdown Editor">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x270D;" Size="20"
+                             Color="{AppThemeBinding Light=#65A30D, Dark=#A3E635}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate markdown:MarkdownEditorPage}" Route="markdowneditor" />
+    </FlyoutItem>
+
+    <!-- ============================================================ -->
+    <!--  DIAGRAMS -->
+    <!-- ============================================================ -->
+    <MenuItem Text="DIAGRAMS"
+              StyleClass="SectionHeader"
+              IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
+
+    <FlyoutItem Title="Flowchart">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2B13;" Size="20"
+                             Color="{AppThemeBinding Light=#E11D48, Dark=#FB7185}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate diagrams:BasicFlowchartPage}" Route="flowchart" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Diagrams - Directions">
+    <FlyoutItem Title="Directions">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2794;" Size="20"
+                             Color="{AppThemeBinding Light=#E11D48, Dark=#FB7185}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate diagrams:DirectionsPage}" Route="directions" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Diagrams - Themes">
+    <FlyoutItem Title="Themes">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2726;" Size="20"
+                             Color="{AppThemeBinding Light=#E11D48, Dark=#FB7185}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate diagrams:ThemesPage}" Route="themes" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Diagrams - Subgraphs">
+    <FlyoutItem Title="Subgraphs">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x29C9;" Size="20"
+                             Color="{AppThemeBinding Light=#E11D48, Dark=#FB7185}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate diagrams:SubgraphsPage}" Route="subgraphs" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Diagrams - Editor">
+    <FlyoutItem Title="Editor">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x270E;" Size="20"
+                             Color="{AppThemeBinding Light=#E11D48, Dark=#FB7185}" />
+        </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate diagrams:InteractiveEditorPage}" Route="editor" />
     </FlyoutItem>
+
+    <!-- Spacer so footer doesn't overlap last items -->
+    <MenuItem Text=" " IsEnabled="False">
+        <MenuItem.IconImageSource>
+            <FontImageSource Glyph=" " Size="1" Color="Transparent" />
+        </MenuItem.IconImageSource>
+    </MenuItem>
 
 </shiny:ShinyShell>

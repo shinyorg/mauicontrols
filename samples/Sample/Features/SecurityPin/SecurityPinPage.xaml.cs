@@ -4,10 +4,9 @@ namespace Sample.Features.SecurityPin;
 
 public partial class SecurityPinPage : ContentPage
 {
-    public SecurityPinPage(SecurityPinViewModel vm)
+    public SecurityPinPage()
     {
         InitializeComponent();
-        BindingContext = vm;
     }
 
     void OnHiddenPinCompleted(object? sender, SecurityPinCompletedEventArgs e)

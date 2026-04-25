@@ -32,15 +32,13 @@ public partial class ImageEditor
         var tap = new TapGestureRecognizer { NumberOfTapsRequired = 1 };
         tap.Tapped += OnTapped;
         graphicsView.GestureRecognizers.Add(tap);
-
-        // StartInteraction/DragInteraction for Draw and Crop (absolute coordinates)
-        graphicsView.StartInteraction += OnStartInteraction;
-        graphicsView.DragInteraction += OnDragInteraction;
-        graphicsView.EndInteraction += OnEndInteraction;
     }
 
     void EnableMoveGestures()
     {
+        // Remove touch interaction handlers — they consume touches before gesture recognizers
+        DisableTouchInteraction();
+
         if (!graphicsView.GestureRecognizers.Contains(pinchGesture))
             graphicsView.GestureRecognizers.Add(pinchGesture);
     }
@@ -52,6 +50,20 @@ public partial class ImageEditor
 
         if (currentScale > MinScale)
             _ = AnimateResetZoomAsync();
+    }
+
+    void EnableTouchInteraction()
+    {
+        graphicsView.StartInteraction += OnStartInteraction;
+        graphicsView.DragInteraction += OnDragInteraction;
+        graphicsView.EndInteraction += OnEndInteraction;
+    }
+
+    void DisableTouchInteraction()
+    {
+        graphicsView.StartInteraction -= OnStartInteraction;
+        graphicsView.DragInteraction -= OnDragInteraction;
+        graphicsView.EndInteraction -= OnEndInteraction;
     }
 
     #region Pinch Zoom (Move mode — native view transforms like ImageViewer)
@@ -188,17 +200,25 @@ public partial class ImageEditor
 
     #endregion
 
-    #region Touch Interaction — Draw & Crop (Start/Drag/End)
+    #region Touch Interaction — Draw, Crop, Text (Start/Drag/End)
 
     void OnStartInteraction(object? sender, TouchEventArgs e)
     {
+        var point = e.Touches[0];
+
+        // Text mode — place text entry at touch point
+        if (CurrentToolMode == ImageEditorToolMode.Text)
+        {
+            HandleTextPlacement(new PointF(point.X, point.Y));
+            return;
+        }
+
         if (CurrentToolMode != ImageEditorToolMode.Draw &&
             CurrentToolMode != ImageEditorToolMode.Crop &&
             CurrentToolMode != ImageEditorToolMode.Line &&
             CurrentToolMode != ImageEditorToolMode.Arrow)
             return;
 
-        var point = e.Touches[0];
         touchStartPoint = point;
         isDragging = true;
 

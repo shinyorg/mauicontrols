@@ -1,9 +1,13 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, SheetView, Fab/FabMenu, PillView, SecurityPin, ImageViewer, ImageEditor, ChatView, ColorPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, Fab/FabMenu, PillView, SecurityPin, ImageViewer, ImageEditor, ChatView, ColorPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
+[![MAUI Markdown NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.Markdown.svg?label=Shiny.Maui.Controls.Markdown)](https://www.nuget.org/packages/Shiny.Maui.Controls.Markdown)
+[![Blazor Markdown NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.Markdown.svg?label=Shiny.Blazor.Controls.Markdown)](https://www.nuget.org/packages/Shiny.Blazor.Controls.Markdown)
+[![MAUI Mermaid NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.MermaidDiagrams.svg?label=Shiny.Maui.Controls.MermaidDiagrams)](https://www.nuget.org/packages/Shiny.Maui.Controls.MermaidDiagrams)
+[![Blazor Mermaid NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.MermaidDiagrams.svg?label=Shiny.Blazor.Controls.MermaidDiagrams)](https://www.nuget.org/packages/Shiny.Blazor.Controls.MermaidDiagrams)
 
 ## Getting Started
 
@@ -75,7 +79,7 @@ No DI registration is required — drop the components into any `.razor` page.
 |---|---|
 | `<shiny:TableView>` with `<shiny:TableRoot>` | `<TableView>` (no `TableRoot` wrapper) |
 | `<shiny:PillView>` | `<Pill>` |
-| `<shiny:SheetView>` with `SheetContent` property | `<SheetView>` with `<SheetContent>` child |
+| `<shiny:FloatingPanel>` in `<shiny:OverlayHost>` | `<SheetView>` with `<SheetContent>` child (Blazor uses CSS overlay) |
 | `Value="{Binding Pin}"` (TwoWay) | `@bind-Value="pin"` |
 | `IsOpen="{Binding IsOpen, Mode=TwoWay}"` | `@bind-IsOpen="isOpen"` |
 | `Command="{Binding DoCommand}"` | `OnClick="DoAsync"` / `Clicked="DoAsync"` |
@@ -139,48 +143,79 @@ public class MyEventProvider : ISchedulerEventProvider
 }
 ```
 
-### SheetView
+### FloatingPanel + OverlayHost
 
-A sheet overlay that slides in from the bottom or top of the screen with configurable snap positions (detents), optional header peek when minimized, and haptic feedback.
+A floating panel overlay system for MAUI. Panels slide in from the bottom or top of the screen with configurable snap positions (detents), optional header peek when closed, backdrop dimming, and haptic feedback. Multiple panels can coexist on the same page without blocking touches on content underneath.
 
-| Closed | Open | Header (Minimized) | Header (Open) | Top (Minimized) | Top (Open) |
+**OverlayHost** is a transparent Grid layer that manages backdrop and touch passthrough. **FloatingPanel** is a panel that lives inside an OverlayHost. **ShinyContentPage** is a convenience ContentPage with a built-in OverlayHost.
+
+| Closed | Open | Header (Closed) | Header (Open) | Top (Closed) | Top (Open) |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| ![Closed](assets/sheet1.png) | ![Open](assets/sheet2.png) | ![Header Minimized](assets/sheet3.png) | ![Header Open](assets/sheet4.png) | ![Top Minimized](assets/sheet5.png) | ![Top Open](assets/sheet6.png) |
+| ![Closed](assets/sheet1.png) | ![Open](assets/sheet2.png) | ![Header Closed](assets/sheet3.png) | ![Header Open](assets/sheet4.png) | ![Top Closed](assets/sheet5.png) | ![Top Open](assets/sheet6.png) |
 
 ```xml
-<shiny:SheetView
-    IsOpen="{Binding IsSheetOpen}"
-    Location="Bottom"
-    HasBackdrop="True"
-    CloseOnBackdropTap="True"
-    SheetCornerRadius="16">
-    <shiny:SheetView.Detents>
-        <shiny:DetentValue Value="Quarter" />
-        <shiny:DetentValue Value="Half" />
-        <shiny:DetentValue Value="Full" />
-    </shiny:SheetView.Detents>
-    <!-- Your content here -->
-</shiny:SheetView>
+<!-- Using ShinyContentPage (recommended) -->
+<shiny:ShinyContentPage xmlns:shiny="http://shiny.net/maui/controls">
+    <shiny:ShinyContentPage.PageContent>
+        <!-- Your page content here -->
+    </shiny:ShinyContentPage.PageContent>
+    <shiny:ShinyContentPage.Panels>
+        <shiny:FloatingPanel
+            IsOpen="{Binding IsSheetOpen}"
+            Position="Bottom"
+            HasBackdrop="True"
+            CloseOnBackdropTap="True"
+            PanelCornerRadius="16">
+            <shiny:FloatingPanel.Detents>
+                <shiny:DetentValue Value="Quarter" />
+                <shiny:DetentValue Value="Half" />
+                <shiny:DetentValue Value="Full" />
+            </shiny:FloatingPanel.Detents>
+            <!-- Your panel content here -->
+        </shiny:FloatingPanel>
+    </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>
 ```
+
+**FloatingPanel Properties:**
 
 | Property | Type | Description |
 |---|---|---|
-| IsOpen | bool | Show/hide the sheet (TwoWay) |
-| Location | SheetLocation | `Bottom`, `BottomTabs`, or `Top` — which edge the sheet slides from. Use `BottomTabs` when inside a Shell TabBar to clip the sheet above the tab bar |
+| IsOpen | bool | Show/hide the panel (TwoWay) |
+| Position | FloatingPanelPosition | `Bottom`, `BottomTabs`, or `Top` — which edge the panel slides from. Use `BottomTabs` when inside a Shell TabBar to clip above the tab bar |
 | Detents | ObservableCollection\<DetentValue\> | Snap positions (Quarter, Half, Full) |
-| SheetContent | View | Content displayed in the sheet |
-| HeaderTemplate | View | Optional header view shown inside the sheet (and as a peek bar when minimized) |
-| ShowHeaderWhenMinimized | bool | When true, the header peeks from the edge when the sheet is closed |
-| HasBackdrop | bool | Fade backdrop behind sheet |
+| PanelContent | View | Content displayed in the panel (`[ContentProperty]`) |
+| HeaderTemplate | View | Optional header view at the screen edge; shown as a peek bar when closed |
+| ShowHeaderWhenClosed | bool | When true, the header peeks from the edge when the panel is closed |
+| HasBackdrop | bool | Fade backdrop behind panel |
 | CloseOnBackdropTap | bool | Close when backdrop tapped |
-| SheetCornerRadius | double | Top corner radius |
+| PanelCornerRadius | double | Corner radius |
 | HandleColor | Color | Drag handle color |
-| SheetBackgroundColor | Color | Sheet background color |
+| ShowHandle | bool | Show/hide the drag handle bar |
+| PanelBackgroundColor | Color | Panel background color |
 | AnimationDuration | double | Animation speed (ms) |
 | ExpandOnInputFocus | bool | Auto-expand when input focused |
-| IsLocked | bool | Prevents swipe/backdrop dismiss; code-only control |
+| IsLocked | bool | Prevents drag dismiss; code-only control |
 | FitContent | bool | Auto-computes detent from content size |
-| UseHapticFeedback | bool | Enable/disable haptic feedback on open, close, and detent snap (default: true) |
+| UseHapticFeedback | bool | Haptic feedback on open, close, and detent snap (default: true) |
+
+**OverlayHost Properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| BackdropColor | Color | Backdrop color (default: Black) |
+| BackdropMaxOpacity | double | Maximum backdrop opacity (default: 0.5) |
+
+**ShinyContentPage Properties:**
+
+| Property | Type | Description |
+|---|---|---|
+| PageContent | View | Main page content |
+| Panels | IList\<IView\> | Collection of FloatingPanels |
+| BackdropColor | Color | Forwarded to internal OverlayHost |
+| BackdropMaxOpacity | double | Forwarded to internal OverlayHost |
+
+> **Note:** Documentation for FloatingPanel/OverlayHost is not yet available on [shinylib.net](https://shinylib.net). See the Blazor `SheetView` component for the Blazor equivalent — Blazor uses CSS-based overlays natively and does not need OverlayHost.
 
 ### ImageViewer
 
@@ -620,7 +655,7 @@ Methods: `Open()`, `Close()`, `Toggle()`.
 | IconSize | double | 20 | Icon image size |
 | UseHapticFeedback | bool | true | Haptic feedback on tap |
 
-**Placement tip**: `FabMenu` should live in a `Grid` that fills the page (the same placement pattern as `SheetView` / `ImageViewer`) so the backdrop can cover the page content.
+**Placement tip**: `FabMenu` should live in a `Grid` that fills the page (the same placement pattern as `ImageViewer`) so the backdrop can cover the page content. Alternatively, use `ShinyContentPage` with `OverlayHost` for easier overlay management.
 
 ### SecurityPin
 

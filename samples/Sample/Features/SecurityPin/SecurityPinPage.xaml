@@ -63,6 +63,7 @@
                                    CellBorderColor="LightGray"
                                    CellFocusedBorderColor="DodgerBlue"
                                    CellBackgroundColor="#F5F5F5"
+                                   CellFocusedBackgroundColor="#E0EDFF"
                                    CellTextColor="Black"
                                    FontSize="22"
                                    Completed="OnAlphaPinCompleted" />

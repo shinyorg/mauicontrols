@@ -6,9 +6,8 @@ public class ColorPickerButton : ContentView
 {
     readonly Border buttonBorder;
     readonly Label buttonLabel;
-    readonly Border popupBorder;
     readonly ColorPicker picker;
-    readonly Grid overlay;
+    readonly Grid overlayGrid;
 
     bool isOpen;
 
@@ -55,19 +54,17 @@ public class ColorPickerButton : ContentView
         };
         doneButton.Clicked += (_, _) => Close();
 
-        var pickerWithDone = new VerticalStackLayout
-        {
-            Children = { picker, doneButton }
-        };
-
-        popupBorder = new Border
+        var popupBorder = new Border
         {
             StrokeThickness = 1,
             Stroke = Colors.LightGray,
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
             BackgroundColor = Colors.White,
             Padding = 0,
-            Content = pickerWithDone,
+            Content = new VerticalStackLayout
+            {
+                Children = { picker, doneButton }
+            },
             Shadow = new Shadow
             {
                 Brush = new SolidColorBrush(Colors.Black),
@@ -75,32 +72,28 @@ public class ColorPickerButton : ContentView
                 Radius = 12,
                 Opacity = 0.25f
             },
-            IsVisible = false,
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center
         };
 
-        // Backdrop to close on outside tap
         var backdrop = new BoxView
         {
             Color = Colors.Black,
             Opacity = 0.3,
-            IsVisible = false,
             InputTransparent = false
         };
         var backdropTap = new TapGestureRecognizer();
         backdropTap.Tapped += (_, _) => Close();
         backdrop.GestureRecognizers.Add(backdropTap);
 
-        overlay = new Grid
+        overlayGrid = new Grid
         {
-            IsVisible = false,
             InputTransparent = false,
+            CascadeInputTransparent = false,
             Children = { backdrop, popupBorder }
         };
 
         Content = buttonBorder;
-
         UpdateButtonColor(SelectedColor);
     }
 
@@ -183,7 +176,6 @@ public class ColorPickerButton : ContentView
             Close();
             return;
         }
-
         Open();
     }
 
@@ -194,28 +186,23 @@ public class ColorPickerButton : ContentView
 
         picker.SelectedColor = SelectedColor;
 
-        // Add overlay to the nearest ContentPage's layout
-        var page = GetParentPage();
-        if (page is ContentPage cp)
-        {
-            if (cp.Content is Grid grid)
-            {
-                if (!grid.Children.Contains(overlay))
-                    grid.Children.Add(overlay);
-            }
-            else
-            {
-                // Wrap existing content in a Grid to overlay
-                var existing = cp.Content;
-                var wrapper = new Grid { Children = { existing, overlay } };
-                cp.Content = wrapper;
-            }
-        }
+        // Inject the overlay into the page's content
+        var page = FindPage();
+        if (page is not ContentPage cp) return;
 
-        overlay.IsVisible = true;
-        foreach (var child in overlay.Children)
-            ((View)child).IsVisible = true;
-        popupBorder.IsVisible = true;
+        if (cp.Content is Grid grid)
+        {
+            grid.Children.Add(overlayGrid);
+        }
+        else
+        {
+            var original = cp.Content;
+            var wrapper = new Grid();
+            cp.Content = wrapper;
+            if (original != null)
+                wrapper.Children.Add(original);
+            wrapper.Children.Add(overlayGrid);
+        }
     }
 
     void Close()
@@ -223,14 +210,21 @@ public class ColorPickerButton : ContentView
         if (!isOpen) return;
         isOpen = false;
 
-        // Fully remove overlay from visual tree to avoid input interception
-        if (overlay.Parent is Layout parent)
-            parent.Remove(overlay);
+        // Remove the overlay — clean break, no stale state
+        if (overlayGrid.Parent is Layout parent)
+        {
+            parent.Children.Remove(overlayGrid);
 
-        overlay.IsVisible = false;
-        popupBorder.IsVisible = false;
-        foreach (var child in overlay.Children)
-            ((View)child).IsVisible = false;
+            // Unwrap if we created a wrapper Grid
+            if (parent is Grid wrapper && parent != overlayGrid
+                && wrapper.Children.Count == 1
+                && FindPage() is ContentPage cp && cp.Content == wrapper)
+            {
+                var original = wrapper.Children[0];
+                wrapper.Children.Clear();
+                cp.Content = (View)original;
+            }
+        }
     }
 
     bool isUpdatingColor;
@@ -269,17 +263,16 @@ public class ColorPickerButton : ContentView
     {
         buttonBorder.BackgroundColor = color;
 
-        // Auto contrast: use white text on dark colors, black on light
         var luminance = 0.299 * color.Red + 0.587 * color.Green + 0.114 * color.Blue;
         buttonLabel.TextColor = luminance < 0.5 ? Colors.White : Colors.Black;
     }
 
-    ContentPage? GetParentPage()
+    Page? FindPage()
     {
         Element? current = this;
         while (current is not null)
         {
-            if (current is ContentPage page)
+            if (current is Page page)
                 return page;
             current = current.Parent;
         }

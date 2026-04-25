@@ -6,17 +6,7 @@ namespace Sample.Features.ImageViewer;
 public partial class ImageViewerViewModel : ObservableObject
 {
     [ObservableProperty]
-    ImageSource? selectedImage;
-
-    [ObservableProperty]
     bool isViewerOpen;
-
-    [RelayCommand]
-    void OpenViewer(string imageSource)
-    {
-        SelectedImage = imageSource;
-        IsViewerOpen = true;
-    }
 
     [RelayCommand]
     void CloseViewer() => IsViewerOpen = false;
