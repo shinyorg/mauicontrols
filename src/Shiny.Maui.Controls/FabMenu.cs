@@ -369,7 +369,7 @@ public class FabMenu : ContentView
 
                 var tasks = new List<Task>();
                 if (HasBackdrop)
-                    tasks.Add(backdrop.FadeTo(BackdropOpacity, duration, Easing.CubicOut));
+                    tasks.Add(backdrop.FadeToAsync(BackdropOpacity, duration, Easing.CubicOut));
 
                 // Stagger from bottom to top (closest to the main Fab animates first)
                 for (var i = items.Count - 1; i >= 0; i--)
@@ -385,7 +385,7 @@ public class FabMenu : ContentView
             {
                 var tasks = new List<Task>();
                 if (HasBackdrop)
-                    tasks.Add(backdrop.FadeTo(0, duration, Easing.CubicIn));
+                    tasks.Add(backdrop.FadeToAsync(0, duration, Easing.CubicIn));
 
                 // Animate top to bottom on close
                 for (var i = 0; i < items.Count; i++)
@@ -416,8 +416,8 @@ public class FabMenu : ContentView
             await Task.Delay((int)delayMs);
 
         await Task.WhenAll(
-            item.FadeTo(targetOpacity, duration, easing),
-            item.TranslateTo(0, targetTranslationY, duration, easing)
+            item.FadeToAsync(targetOpacity, duration, easing),
+            item.TranslateToAsync(0, targetTranslationY, duration, easing)
         );
     }
 }

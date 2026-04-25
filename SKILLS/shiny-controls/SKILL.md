@@ -947,7 +947,7 @@ A floating panel overlay system for .NET MAUI. Panels slide in from the bottom o
 | `CloseOnBackdropTap` | `bool` | `true` | Tapping the backdrop closes the panel |
 | `AnimationDuration` | `double` | `250` | Animation duration in milliseconds |
 | `ExpandOnInputFocus` | `bool` | `true` | Auto-expands to highest detent when an input is focused |
-| `IsLocked` | `bool` | `false` | Prevents drag dismiss; panel can only be controlled programmatically |
+| `IsLocked` | `bool` | `false` | Prevents all user dismissal (drag, header tap close, backdrop tap); panel can only be closed via code. Header tap still opens the panel |
 | `FitContent` | `bool` | `false` | Measures content and auto-computes a single detent to fit it (ignores Detents when true) |
 | `UseHapticFeedback` | `bool` | `true` | Haptic feedback on open, close, and detent snap |
 
@@ -1002,7 +1002,7 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
 - **Keyboard handling**: Automatically expands when an Entry/Editor is focused, restores when keyboard dismissed
 - **Backdrop**: Shared backdrop managed by OverlayHost; dims proportionally to panel position
 - **Multiple panels**: Multiple FloatingPanels can coexist in the same OverlayHost without blocking each other or content underneath
-- **Locked mode**: When `IsLocked="True"`, the drag handle is hidden and drag gestures are disabled — the panel can only be opened/closed via code
+- **Locked mode**: When `IsLocked="True"`, all user-initiated dismissal is blocked (drag, header tap to close, backdrop tap to close) — the panel can only be closed via code. Header tap still opens the panel
 - **Fit content**: When `FitContent="True"`, the panel measures its content and auto-computes a single detent to fit it
 - **Position**: Slides from bottom (`Position="Bottom"`, default), top (`Position="Top"`), or bottom with tabs (`Position="BottomTabs"` — clips above the tab bar)
 - **Header peek**: Set `ShowHeaderWhenClosed="True"` with a `HeaderTemplate` to show a persistent header bar when the panel is closed — tapping it opens the panel
@@ -1176,7 +1176,9 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 |---|---|---|---|---|
 | `Source` | `ImageSource?` | `null` | OneWay | The image to display |
 | `IsOpen` | `bool` | `false` | TwoWay | Opens/closes the viewer with fade animation |
-| `Aspect` | `Aspect` | `AspectFit` | OneWay | Image aspect ratio mode (MAUI only) |
+| `Aspect` | `Aspect` | `AspectFit` | OneWay | Aspect ratio mode for the thumbnail image (MAUI only) |
+| `OverlayAspect` | `Aspect` | `AspectFit` | OneWay | Aspect ratio mode for the full-screen overlay image (MAUI only) |
+| `OpenViewerOnTap` | `bool` | `true` | OneWay | When true, tapping the thumbnail opens the full-screen viewer; set to false to control opening via code only |
 | `MaxZoom` | `double` | `5.0` | OneWay | Maximum pinch zoom scale |
 | `CloseButtonTemplate` | `DataTemplate?` | `null` | OneWay | Custom close button template (tapping the templated view closes the viewer) |
 | `HeaderTemplate` | `DataTemplate?` | `null` | OneWay | Custom header overlay at the top of the viewer |
@@ -1192,6 +1194,8 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 - **Close button**: "✕" button in the top-right corner (customizable via `CloseButtonTemplate`)
 - **Header/Footer templates**: Optional overlays at the top/bottom of the viewer for custom UI
 - **Backdrop**: Black overlay that swallows touches so nothing falls through to the page behind
+- **Touch passthrough**: When `Source` is null, `InputTransparent` is automatically set to true so the viewer does not block touches on content underneath
+- **Tap-to-open control**: Set `OpenViewerOnTap="False"` to prevent the thumbnail from opening the viewer on tap — useful when you want to control opening via code only (e.g., from a button or command)
 
 ## ImageViewer Placement
 
@@ -1541,6 +1545,7 @@ A PIN/OTP entry control with individually rendered cells. Input is captured by a
 | `CellBorderColor` | `Color?` | `null` | OneWay | Border stroke color |
 | `CellFocusedBorderColor` | `Color?` | `null` | OneWay | Border stroke color for the currently active cell |
 | `CellBackgroundColor` | `Color?` | `null` | OneWay | Cell fill color |
+| `CellFocusedBackgroundColor` | `Color?` | `null` | OneWay | Background color for the currently active cell |
 | `CellTextColor` | `Color?` | `null` | OneWay | Color for the rendered digit/character |
 | `FontSize` | `double` | `24` | OneWay | Font size for the rendered character |
 | `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic click on digit entry, long press on completion |
@@ -1607,6 +1612,7 @@ void OnPinCompleted(object? sender, SecurityPinCompletedEventArgs e)
                    CellBorderColor="LightGray"
                    CellFocusedBorderColor="DodgerBlue"
                    CellBackgroundColor="#F5F5F5"
+                   CellFocusedBackgroundColor="#E0EDFF"
                    CellTextColor="Black"
                    FontSize="22"
                    Value="{Binding Pin}" />
@@ -2171,7 +2177,7 @@ Or use `OverlayHost` manually in a Grid:
 13. **Use AOT-safe bindings for scheduler templates** - Always use `static (T item) => item.Property` lambda bindings, never string-based
 14. **Leave MarkdownView/MarkdownEditor Theme as null** - It auto-resolves Light/Dark based on the app theme
 15. **Use MarkdownView for read-only content** - Documentation, notes, changelogs; use MarkdownEditor only when the user needs to edit
-16. **ImageViewer Source is set before IsOpen** - Always set the image source before opening the viewer
+16. **ImageViewer Source is set before IsOpen** - Always set the image source before opening the viewer. When Source is null, the viewer is automatically InputTransparent so it won't block touches. Use `OpenViewerOnTap="False"` when controlling the viewer programmatically
 17. **ImageEditor Source is byte[]** - Load image data as `byte[]` (not `ImageSource`) before assigning to `Source`
 18. **ImageEditor CanUndo/CanRedo are OneWayToSource** - Bind to ViewModel properties to observe undo/redo state; do not push values into them
 19. **ImageEditor export happens at original resolution by default** - Specify `Width`/`Height` in `ImageExportOptions` only when you need a different size
