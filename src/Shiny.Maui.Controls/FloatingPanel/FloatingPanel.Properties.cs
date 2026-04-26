@@ -240,6 +240,19 @@ public partial class FloatingPanel
         set => SetValue(ExpandOnInputFocusProperty, value);
     }
 
+    public static readonly BindableProperty IsContentScrollEnabledProperty = BindableProperty.Create(
+        nameof(IsContentScrollEnabled),
+        typeof(bool),
+        typeof(FloatingPanel),
+        true,
+        propertyChanged: (b, _, n) => ((FloatingPanel)b).UpdateScrollEnabled((bool)n));
+
+    public bool IsContentScrollEnabled
+    {
+        get => (bool)GetValue(IsContentScrollEnabledProperty);
+        set => SetValue(IsContentScrollEnabledProperty, value);
+    }
+
     // Events
     public event EventHandler? Opened;
     public event EventHandler? Closed;

@@ -274,8 +274,13 @@ public partial class SignaturePad
     {
         var pad = (SignaturePad)bindable;
         if (pad.isSyncing) return;
+
+        var isOpen = (bool)newValue;
+        if (isOpen)
+            pad.IsVisible = true;
+
         pad.isSyncing = true;
-        pad.floatingPanel.IsOpen = (bool)newValue;
+        pad.floatingPanel.IsOpen = isOpen;
         pad.isSyncing = false;
     }
 }

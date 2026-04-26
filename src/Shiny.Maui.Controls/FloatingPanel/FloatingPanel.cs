@@ -30,9 +30,10 @@ public partial class FloatingPanel : ContentView
 
     double GetAvailableHeight()
     {
-        if (Parent is OverlayHost host && host.Height > 0)
+        var host = GetOverlayHost();
+        if (host is not null && host.Height > 0)
             return host.Height;
-        if (Window?.Page is Page page)
+        if (Window?.Page is Page page && page.Height > 0)
             return page.Height;
         return 800;
     }
@@ -159,6 +160,28 @@ public partial class FloatingPanel : ContentView
         };
     }
 
+    View ContentRowView => IsContentScrollEnabled ? scrollView : contentHost;
+
+    void UpdateScrollEnabled(bool enabled)
+    {
+        var oldView = enabled ? (View)contentHost : scrollView;
+        var newView = enabled ? (View)scrollView : contentHost;
+
+        if (!sheetInnerGrid.Children.Contains(oldView))
+            return;
+
+        var row = Grid.GetRow(oldView);
+        sheetInnerGrid.Children.Remove(oldView);
+
+        if (enabled)
+            scrollView.Content = contentHost;
+        else
+            scrollView.Content = null;
+
+        sheetInnerGrid.Children.Add(newView);
+        Grid.SetRow(newView, row);
+    }
+
     bool safeAreaApplied;
 
     protected override void OnHandlerChanged()
@@ -186,13 +209,14 @@ public partial class FloatingPanel : ContentView
 
     void UpdateLayoutForPosition()
     {
+        var contentView = ContentRowView;
         if (IsBottom)
         {
             // Bottom: handle, header, content
             VerticalOptions = LayoutOptions.End;
             Grid.SetRow(dragHandleContainer, 0);
             Grid.SetRow(headerHost, 1);
-            Grid.SetRow(scrollView, 2);
+            Grid.SetRow(contentView, 2);
 
             sheetInnerGrid.RowDefinitions[0] = new RowDefinition(GridLength.Auto);
             sheetInnerGrid.RowDefinitions[1] = new RowDefinition(GridLength.Auto);
@@ -202,7 +226,7 @@ public partial class FloatingPanel : ContentView
         {
             // Top: content, header, handle
             VerticalOptions = LayoutOptions.Start;
-            Grid.SetRow(scrollView, 0);
+            Grid.SetRow(contentView, 0);
             Grid.SetRow(headerHost, 1);
             Grid.SetRow(dragHandleContainer, 2);
 

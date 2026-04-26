@@ -14,6 +14,10 @@ public partial class SignaturePad : ContentView
 
     public SignaturePad()
     {
+        // Hide the wrapper when the panel is closed so it doesn't block
+        // touches to the page content underneath.
+        IsVisible = false;
+
         drawable = new SignaturePadDrawable();
 
         graphicsView = new GraphicsView
@@ -112,6 +116,7 @@ public partial class SignaturePad : ContentView
             HasBackdrop = true,
             CloseOnBackdropTap = false,
             ShowHandle = false,
+            IsContentScrollEnabled = false,
             PanelBackgroundColor = Colors.White,
             PanelCornerRadius = 16,
             Position = FloatingPanelPosition.Bottom,
@@ -133,6 +138,7 @@ public partial class SignaturePad : ContentView
             isSyncing = true;
             SetValue(IsOpenProperty, false);
             isSyncing = false;
+            IsVisible = false;
             ResetCanvas();
         };
 
@@ -171,6 +177,7 @@ public partial class SignaturePad : ContentView
 
         ResetCanvas();
         IsOpen = false;
+        IsVisible = false;
     }
 
     void OnCancelClicked(object? sender, EventArgs e)
@@ -181,6 +188,7 @@ public partial class SignaturePad : ContentView
 
         ResetCanvas();
         IsOpen = false;
+        IsVisible = false;
     }
 
     void OnClearClicked(object? sender, EventArgs e)
