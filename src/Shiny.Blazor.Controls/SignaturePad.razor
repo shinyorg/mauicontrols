@@ -1,0 +1,37 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<SheetView @bind-IsOpen="isOpen"
+           IsLocked="@IsLocked"
+           Direction="@Direction"
+           Detents="@resolvedDetents"
+           SheetBackgroundColor="@PanelBackgroundColor"
+           SheetCornerRadius="@PanelCornerRadius"
+           HasBackdrop="@HasBackdrop"
+           CloseOnBackdropTap="false">
+    <SheetContent>
+        <div class="shiny-sigpad">
+            <div class="shiny-sigpad-title">Draw your signature below</div>
+
+            <div class="shiny-sigpad-canvas-host" @ref="canvasHost">
+                <canvas class="shiny-sigpad-canvas" @ref="canvasEl"></canvas>
+                <button class="shiny-sigpad-clear-btn" @onclick="OnClear">Clear</button>
+            </div>
+
+            <div class="shiny-sigpad-buttons">
+                @if (ShowCancelButton)
+                {
+                    <button class="shiny-sigpad-btn shiny-sigpad-btn-cancel"
+                            style="background:@CancelButtonColor;"
+                            @onclick="OnCancel">@CancelButtonText</button>
+                }
+                <button class="shiny-sigpad-btn shiny-sigpad-btn-sign"
+                        style="background:@SignButtonColor;"
+                        disabled="@(!hasSignature)"
+                        @onclick="OnSign">@SignButtonText</button>
+            </div>
+        </div>
+    </SheetContent>
+</SheetView>

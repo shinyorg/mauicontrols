@@ -17,6 +17,7 @@ using Sample.Features.SecurityPin;
 using Sample.Features.AutoComplete;
 using Sample.Features.CountryAddress;
 using Sample.Features.TableView;
+using Sample.Features.SignaturePad;
 using Shiny;
 using Shiny.Maui.Controls.Scheduler;
 #if IOS
@@ -63,6 +64,7 @@ public static class MauiProgram
                 .Add<MarkdownEditorPage, MarkdownEditorViewModel>(registerRoute: false)
                 .Add<AutoCompletePage, AutoCompleteViewModel>(registerRoute: false)
                 .Add<CountryAddressPage, CountryAddressViewModel>(registerRoute: false)
+                .Add<SignaturePadPage, SignaturePadViewModel>(registerRoute: false)
             )
             .ConfigureFonts(fonts =>
             {

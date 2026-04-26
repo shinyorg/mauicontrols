@@ -20,6 +20,7 @@
     xmlns:colorpicker="clr-namespace:Sample.Features.ColorPicker"
     xmlns:autocomplete="clr-namespace:Sample.Features.AutoComplete"
     xmlns:countryaddress="clr-namespace:Sample.Features.CountryAddress"
+    xmlns:sigpad="clr-namespace:Sample.Features.SignaturePad"
     Title="Shiny Controls"
     FlyoutBackgroundColor="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}"
     FlyoutWidth="310"
@@ -280,6 +281,14 @@
                              Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
         </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate sheet:DualPanelPage}" Route="dualpanel" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Signature Pad">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x270D;" Size="20"
+                             Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate sigpad:SignaturePadPage}" Route="signaturepad" />
     </FlyoutItem>
 
     <!-- ============================================================ -->

@@ -1,0 +1,55 @@
+@page "/signaturepad"
+
+<PageTitle>Signature Pad</PageTitle>
+
+<h1>Signature Pad</h1>
+
+<div class="demo-section">
+    <p>Capture a signature using the sheet panel. The Sign button is disabled until you draw something.</p>
+
+    <button @onclick="() => isOpen = true">Capture Signature</button>
+
+    @if (signatureDataUrl != null)
+    {
+        <div style="margin-top:16px;">
+            <img src="@signatureDataUrl" alt="Captured signature"
+                 style="max-width:100%;border:1px solid #E5E7EB;border-radius:8px;" />
+        </div>
+        <button style="margin-top:8px;background:#EF4444;color:white;" @onclick="ClearSignature">Clear Signature</button>
+    }
+
+    <div class="state" style="margin-top:12px;">Status: <code>@status</code></div>
+</div>
+
+<SignaturePad @bind-IsOpen="isOpen"
+              StrokeColor="#000000"
+              SignatureBackgroundColor="#F8F8F8"
+              StrokeWidth="3"
+              SignButtonColor="#6C63FF"
+              CancelButtonColor="#94A3B8"
+              Signed="OnSigned"
+              Cancelled="OnCancelled" />
+
+@code {
+    bool isOpen;
+    string? signatureDataUrl;
+    string status = "No signature captured";
+
+    void OnSigned(byte[] pngBytes)
+    {
+        var base64 = Convert.ToBase64String(pngBytes);
+        signatureDataUrl = $"data:image/png;base64,{base64}";
+        status = "Signature captured!";
+    }
+
+    void OnCancelled()
+    {
+        status = "Signature cancelled";
+    }
+
+    void ClearSignature()
+    {
+        signatureDataUrl = null;
+        status = "Signature cleared";
+    }
+}

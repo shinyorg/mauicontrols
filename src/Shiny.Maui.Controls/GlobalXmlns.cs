@@ -9,4 +9,5 @@
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.ColorPicker")]
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.FontPicker")]
 [assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.FloatingPanel")]
+[assembly: Microsoft.Maui.Controls.XmlnsDefinition("http://shiny.net/maui/controls", "Shiny.Maui.Controls.SignaturePad")]
 [assembly: Microsoft.Maui.Controls.XmlnsPrefix("http://shiny.net/maui/controls", "shiny")]
