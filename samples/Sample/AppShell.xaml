@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:shiny="clr-namespace:Shiny;assembly=Shiny.Maui.Shell"
     xmlns:home="clr-namespace:Sample.Features.Home"
-    xmlns:sheet="clr-namespace:Sample.Features.Sheet"
+    xmlns:fp="clr-namespace:Sample.Features.FloatingPanel"
     xmlns:pills="clr-namespace:Sample.Features.Pills"
     xmlns:tv="clr-namespace:Sample.Features.TableView"
     xmlns:scheduler="clr-namespace:Sample.Features.Scheduler"
@@ -240,7 +240,7 @@
             <FontImageSource Glyph="&#x25A3;" Size="20"
                              Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
         </FlyoutItem.FlyoutIcon>
-        <ShellContent ContentTemplate="{DataTemplate sheet:SheetPage}" Route="sheet" />
+        <ShellContent ContentTemplate="{DataTemplate fp:SheetPage}" Route="sheet" />
     </FlyoutItem>
 
     <FlyoutItem Title="Header Peek">
@@ -248,7 +248,7 @@
             <FontImageSource Glyph="&#x25A5;" Size="20"
                              Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
         </FlyoutItem.FlyoutIcon>
-        <ShellContent ContentTemplate="{DataTemplate sheet:MinimizedSheetStandalonePage}" Route="minimizedsheetstandalone" />
+        <ShellContent ContentTemplate="{DataTemplate fp:MinimizedSheetStandalonePage}" Route="minimizedsheetstandalone" />
     </FlyoutItem>
 
     <FlyoutItem Title="Bottom Tabs">
@@ -257,13 +257,13 @@
                              Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
         </FlyoutItem.FlyoutIcon>
         <Tab Title="Now Playing">
-            <ShellContent ContentTemplate="{DataTemplate sheet:MinimizedSheetPage}" Route="minimizedsheet" />
+            <ShellContent ContentTemplate="{DataTemplate fp:MinimizedSheetPage}" Route="minimizedsheet" />
         </Tab>
         <Tab Title="Browse">
-            <ShellContent ContentTemplate="{DataTemplate sheet:MusicBrowsePage}" Route="musicbrowse" />
+            <ShellContent ContentTemplate="{DataTemplate fp:MusicBrowsePage}" Route="musicbrowse" />
         </Tab>
         <Tab Title="Library">
-            <ShellContent ContentTemplate="{DataTemplate sheet:MusicLibraryPage}" Route="musiclibrary" />
+            <ShellContent ContentTemplate="{DataTemplate fp:MusicLibraryPage}" Route="musiclibrary" />
         </Tab>
     </FlyoutItem>
 
@@ -272,7 +272,7 @@
             <FontImageSource Glyph="&#x25A4;" Size="20"
                              Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
         </FlyoutItem.FlyoutIcon>
-        <ShellContent ContentTemplate="{DataTemplate sheet:TopSheetPage}" Route="topsheet" />
+        <ShellContent ContentTemplate="{DataTemplate fp:TopSheetPage}" Route="topsheet" />
     </FlyoutItem>
 
     <FlyoutItem Title="Dual Panels">
@@ -280,7 +280,7 @@
             <FontImageSource Glyph="&#x25A8;" Size="20"
                              Color="{AppThemeBinding Light=#0891B2, Dark=#22D3EE}" />
         </FlyoutItem.FlyoutIcon>
-        <ShellContent ContentTemplate="{DataTemplate sheet:DualPanelPage}" Route="dualpanel" />
+        <ShellContent ContentTemplate="{DataTemplate fp:DualPanelPage}" Route="dualpanel" />
     </FlyoutItem>
 
     <FlyoutItem Title="Signature Pad">

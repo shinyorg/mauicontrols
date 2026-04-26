@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace Sample.Features.Sheet;
+namespace Sample.Features.FloatingPanel;
 
 public partial class DualPanelViewModel : ObservableObject
 {

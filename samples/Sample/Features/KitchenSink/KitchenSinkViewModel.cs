@@ -122,7 +122,20 @@ public partial class KitchenSinkViewModel(INavigator navigator) : ObservableObje
         IsImageViewerOpen = false;
 
         var imageUri = ViewerImageSource;
-        await navigator.NavigateTo<ImageEditor.ImageEditorViewModel>(vm => vm.ImageSource = ImageSource.FromUri(new Uri(imageUri)));
+        await navigator.NavigateTo<ImageEditor.ImageEditorViewModel>(vm =>
+        {
+            vm.ImageSource = ImageSource.FromUri(new Uri(imageUri));
+            vm.OnImageSaved = filePath =>
+            {
+                Messages.Add(new ChatMessage
+                {
+                    ImageUrl = filePath,
+                    SenderId = myId,
+                    IsFromMe = true,
+                    Timestamp = DateTimeOffset.Now
+                });
+            };
+        });
     }
 
     async Task SimulateReplyAsync()

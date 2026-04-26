@@ -5,7 +5,7 @@
              xmlns:local="clr-namespace:Sample.Features.Home"
              x:Class="Sample.Features.Home.HomePage"
              x:DataType="local:HomeViewModel"
-             Title="Shiny Controls">
+             Title="Home">
 
     <md:MarkdownView Markdown="{Binding Markdown}" Padding="16" />
 

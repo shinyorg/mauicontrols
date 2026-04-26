@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Shiny.Maui.Controls;
 
-namespace Sample.Features.Sheet;
+namespace Sample.Features.FloatingPanel;
 
 public partial class SheetViewModel : ObservableObject
 {

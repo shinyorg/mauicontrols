@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui;
 using MauiDevFlow.Agent;
 using Microsoft.Extensions.Logging;
-using Sample.Features.Sheet;
+using Sample.Features.FloatingPanel;
 using Sample.Features.Diagrams;
 using Sample.Features.Fab;
 using Sample.Features.Home;

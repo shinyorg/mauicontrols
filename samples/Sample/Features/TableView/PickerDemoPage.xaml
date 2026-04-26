@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:tv="http://shiny.net/maui/controls"
     x:Class="Sample.Features.TableView.PickerDemoPage"
-    Title="Picker Demo">
+    Title="Picker">
 
     <tv:TableView>
         <tv:TableRoot>

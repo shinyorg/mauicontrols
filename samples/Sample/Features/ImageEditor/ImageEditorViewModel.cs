@@ -10,6 +10,8 @@ public partial class ImageEditorViewModel(IDialogs dialogs) : ObservableObject
     [ObservableProperty]
     ImageSource? imageSource = "dotnet_bot.png";
 
+    public Action<string>? OnImageSaved { get; set; }
+
     [ObservableProperty]
     bool canUndo;
 
@@ -65,6 +67,7 @@ public partial class ImageEditorViewModel(IDialogs dialogs) : ObservableObject
         await using (var fileStream = File.Create(filePath))
             await stream.CopyToAsync(fileStream);
 
+        OnImageSaved?.Invoke(filePath);
         await dialogs.Alert("Saved", $"Image saved to:\n{filePath}");
     }
 }

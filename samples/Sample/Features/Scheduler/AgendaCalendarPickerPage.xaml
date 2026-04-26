@@ -5,7 +5,7 @@
              xmlns:local="clr-namespace:Sample.Features.Scheduler"
              x:Class="Sample.Features.Scheduler.AgendaCalendarPickerPage"
              x:DataType="local:AgendaCalendarPickerViewModel"
-             Title="Agenda - Calendar Picker">
+             Title="Calendar Picker">
 
     <Grid RowDefinitions="Auto,*">
         <HorizontalStackLayout HorizontalOptions="End" Spacing="8" Margin="8">

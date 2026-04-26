@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:tv="http://shiny.net/maui/controls"
     x:Class="Sample.Features.TableView.BasicSettingsPage"
-    Title="Basic Settings">
+    Title="Basic">
 
     <tv:TableView x:Name="MyTableView"
                   CellSelectedColor="#E0E0E0">

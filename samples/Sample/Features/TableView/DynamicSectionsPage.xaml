@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:tv="http://shiny.net/maui/controls"
     x:Class="Sample.Features.TableView.DynamicSectionsPage"
-    Title="Dynamic Sections">
+    Title="Dynamic">
 
     <Grid RowDefinitions="Auto,*">
         <HorizontalStackLayout Spacing="10" Padding="16">

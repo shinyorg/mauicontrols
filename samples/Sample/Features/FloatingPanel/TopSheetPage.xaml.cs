@@ -1,4 +1,4 @@
-namespace Sample.Features.Sheet;
+namespace Sample.Features.FloatingPanel;
 
 public partial class TopSheetPage : Shiny.Maui.Controls.FloatingPanel.ShinyContentPage
 {
