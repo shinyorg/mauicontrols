@@ -1,0 +1,144 @@
+@namespace Shiny.Blazor.Controls
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<button type="button"
+        class="@CssClass"
+        style="@InlineStyle"
+        @onclick="HandleClick"
+        @onclick:stopPropagation="true"
+        disabled="@Disabled">
+    @if (!string.IsNullOrEmpty(Icon))
+    {
+        <span class="shiny-tts-icon" style="@IconStyle">
+            @if (IsImageUrl(Icon!))
+            {
+                <img src="@Icon" alt="" />
+            }
+            else
+            {
+                @((MarkupString)Icon!)
+            }
+        </span>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span class="shiny-tts-text">@Text</span>
+    }
+</button>
+
+@code {
+    IJSObjectReference? module;
+
+    [Parameter] public string? SpeechText { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string ButtonBackgroundColor { get; set; } = "#2196F3";
+    [Parameter] public string TextColor { get; set; } = "#FFFFFF";
+    [Parameter] public string? BorderColor { get; set; }
+    [Parameter] public double BorderThickness { get; set; }
+    [Parameter] public double FontSize { get; set; } = 14;
+    [Parameter] public double CornerRadius { get; set; } = 8;
+    [Parameter] public double IconSize { get; set; } = 24;
+    [Parameter] public bool HasShadow { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public float Pitch { get; set; } = 1.0f;
+    [Parameter] public float Rate { get; set; } = 1.0f;
+    [Parameter] public float Volume { get; set; } = 1.0f;
+    [Parameter] public string? Locale { get; set; }
+
+    [Parameter] public bool IsSpeaking { get; set; }
+    [Parameter] public EventCallback<bool> IsSpeakingChanged { get; set; }
+
+    [Parameter] public EventCallback Clicked { get; set; }
+
+    async Task SetIsSpeaking(bool value)
+    {
+        if (IsSpeaking == value) return;
+        IsSpeaking = value;
+        await IsSpeakingChanged.InvokeAsync(value);
+    }
+
+    string CssClass
+    {
+        get
+        {
+            var c = "shiny-tts-btn";
+            if (HasShadow) c += " shiny-tts-shadow";
+            if (IsSpeaking) c += " shiny-tts-speaking";
+            return c;
+        }
+    }
+
+    string InlineStyle
+    {
+        get
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append("background-color:").Append(ButtonBackgroundColor).Append(';');
+            sb.Append("color:").Append(TextColor).Append(';');
+            sb.Append("font-size:").Append(FontSize).Append("px;");
+            sb.Append("border-radius:").Append(CornerRadius).Append("px;");
+            if (BorderThickness > 0 && !string.IsNullOrEmpty(BorderColor))
+                sb.Append("border:").Append(BorderThickness).Append("px solid ").Append(BorderColor).Append(';');
+            return sb.ToString();
+        }
+    }
+
+    string IconStyle => $"width:{IconSize}px;height:{IconSize}px;";
+
+    async Task HandleClick()
+    {
+        if (Disabled) return;
+
+        if (Clicked.HasDelegate)
+            await Clicked.InvokeAsync();
+
+        if (IsSpeaking)
+        {
+            await CancelSpeech();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(SpeechText))
+            return;
+
+        module ??= await JS.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./_content/Shiny.Blazor.Controls/text-to-speech.js");
+
+        await SetIsSpeaking(true);
+        StateHasChanged();
+
+        await module.InvokeAsync<bool>("speak", SpeechText, Pitch, Rate, Volume, Locale);
+
+        await SetIsSpeaking(false);
+        StateHasChanged();
+    }
+
+    async Task CancelSpeech()
+    {
+        if (module is not null)
+            await module.InvokeVoidAsync("cancel");
+
+        await SetIsSpeaking(false);
+    }
+
+    static bool IsImageUrl(string s)
+        => s.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+           || s.StartsWith("/")
+           || s.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)
+           || s.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.InvokeVoidAsync("cancel");
+            await module.DisposeAsync();
+        }
+    }
+}
