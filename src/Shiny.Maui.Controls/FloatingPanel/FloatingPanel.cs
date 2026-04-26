@@ -16,6 +16,7 @@ public partial class FloatingPanel : ContentView
     readonly ScrollView scrollView;
     readonly ContentView contentHost;
     readonly ContentView headerHost;
+    readonly BoxView safeAreaFill;
     readonly PanGestureRecognizer panGesture;
 
     double panStartHeight;
@@ -39,11 +40,15 @@ public partial class FloatingPanel : ContentView
     double GetBottomSafeAreaInset()
     {
 #if IOS || MACCATALYST
-        var window = Window?.Handler?.PlatformView as UIKit.UIWindow
-            ?? UIKit.UIApplication.SharedApplication.ConnectedScenes
-                .OfType<UIKit.UIWindowScene>()
-                .SelectMany(s => s.Windows)
-                .FirstOrDefault(w => w.IsKeyWindow);
+        // Try the handler's native view first — most reliable after layout
+        if (Handler?.PlatformView is UIKit.UIView nativeView && nativeView.Window is UIKit.UIWindow nativeWindow)
+            return nativeWindow.SafeAreaInsets.Bottom;
+
+        // Fallback via UIApplication
+        var window = UIKit.UIApplication.SharedApplication.ConnectedScenes
+            .OfType<UIKit.UIWindowScene>()
+            .SelectMany(s => s.Windows)
+            .FirstOrDefault();
         return window?.SafeAreaInsets.Bottom ?? 0;
 #else
         return 0;
@@ -91,6 +96,14 @@ public partial class FloatingPanel : ContentView
         headerTap.Tapped += OnHeaderTapped;
         headerHost.GestureRecognizers.Add(headerTap);
 
+        // Safe area fill — sits below the Border, colored to match the header
+        safeAreaFill = new BoxView
+        {
+            HeightRequest = 0,
+            IsVisible = false,
+            Color = Colors.Transparent
+        };
+
         // Inner grid — layout set by UpdateLayoutForPosition
         sheetInnerGrid = new Grid
         {
@@ -118,7 +131,21 @@ public partial class FloatingPanel : ContentView
             Content = sheetInnerGrid
         };
 
-        Content = sheetContainer;
+        // Outer grid: Border on top, safeAreaFill below
+        var outerGrid = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Star),
+                new RowDefinition(GridLength.Auto)
+            }
+        };
+        outerGrid.Children.Add(sheetContainer);
+        Grid.SetRow(sheetContainer, 0);
+        outerGrid.Children.Add(safeAreaFill);
+        Grid.SetRow(safeAreaFill, 1);
+
+        Content = outerGrid;
 
         // Default layout
         UpdateLayoutForPosition();
@@ -132,13 +159,36 @@ public partial class FloatingPanel : ContentView
         };
     }
 
+    bool safeAreaApplied;
+
+    protected override void OnHandlerChanged()
+    {
+        base.OnHandlerChanged();
+
+        if (Handler is null || safeAreaApplied)
+            return;
+
+        // Defer so UIKit has computed safe area insets
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+        {
+            if (safeAreaApplied) return;
+
+            var inset = GetBottomSafeAreaInset();
+            if (inset <= 0) return;
+
+            safeAreaApplied = true;
+            if (IsOpen)
+                ApplyBottomSafeAreaExtension();
+            else
+                UpdateClosedState();
+        });
+    }
+
     void UpdateLayoutForPosition()
     {
         if (IsBottom)
         {
-            // Bottom: handle (top), header (below handle), content (fills remaining)
-            // Header is at the top of the visible sheet — above the slide-out content.
-            // When peeking closed, only the header shows at the bottom screen edge.
+            // Bottom: handle, header, content
             VerticalOptions = LayoutOptions.End;
             Grid.SetRow(dragHandleContainer, 0);
             Grid.SetRow(headerHost, 1);
@@ -150,9 +200,7 @@ public partial class FloatingPanel : ContentView
         }
         else
         {
-            // Top: content (fills from top), header (below content), handle (bottom)
-            // When peeking closed, only header+handle show at the top edge.
-            // When opening, height grows downward — header slides down, content revealed above it.
+            // Top: content, header, handle
             VerticalOptions = LayoutOptions.Start;
             Grid.SetRow(scrollView, 0);
             Grid.SetRow(headerHost, 1);
@@ -181,6 +229,34 @@ public partial class FloatingPanel : ContentView
         };
     }
 
+    /// <summary>
+    /// Applies negative bottom margin so the panel extends past the OverlayHost into the
+    /// iOS safe area, and adds matching bottom padding so content stays above the home indicator.
+    /// The Border background color fills the gap seamlessly.
+    /// </summary>
+    void ApplyBottomSafeAreaExtension()
+    {
+        if (Position == FloatingPanelPosition.Bottom)
+        {
+            var bottomInset = GetBottomSafeAreaInset();
+            if (bottomInset > 0)
+            {
+                Margin = new Thickness(0, 0, 0, -bottomInset);
+                safeAreaFill.HeightRequest = bottomInset;
+                // When closed (header only), match the header color; when open, match the panel content
+                safeAreaFill.Color = IsOpen
+                    ? PanelBackgroundColor
+                    : HeaderBackgroundColor ?? PanelBackgroundColor;
+                safeAreaFill.IsVisible = true;
+                return;
+            }
+        }
+
+        Margin = new Thickness(0);
+        safeAreaFill.HeightRequest = 0;
+        safeAreaFill.IsVisible = false;
+    }
+
     void UpdateClosedState()
     {
         if (IsOpen) return;
@@ -192,22 +268,13 @@ public partial class FloatingPanel : ContentView
             scrollView.IsVisible = false;
             dragHandleContainer.IsVisible = false;
             HeightRequest = -1; // auto-size to header
-
-            // For Bottom (no tabs), extend into the safe area so the header fills to the screen edge
-            if (Position == FloatingPanelPosition.Bottom)
-            {
-                var bottomInset = GetBottomSafeAreaInset();
-                Margin = bottomInset > 0 ? new Thickness(0, 0, 0, -bottomInset) : new Thickness(0);
-            }
-            else
-            {
-                Margin = new Thickness(0);
-            }
+            ApplyBottomSafeAreaExtension();
         }
         else
         {
             IsVisible = false;
             Margin = new Thickness(0);
+            sheetContainer.Padding = new Thickness(0);
         }
     }
 
@@ -245,10 +312,8 @@ public partial class FloatingPanel : ContentView
 
         isAnimating = true;
 
-        // Reset safe area margin from closed/peek state
-        Margin = new Thickness(0);
-
         IsVisible = true;
+        ApplyBottomSafeAreaExtension();
         scrollView.IsVisible = true;
         dragHandleContainer.IsVisible = ShowHandle;
 
@@ -335,11 +400,14 @@ public partial class FloatingPanel : ContentView
                     scrollView.IsVisible = false;
                     dragHandleContainer.IsVisible = false;
                     HeightRequest = -1; // auto-size to header
+                    ApplyBottomSafeAreaExtension();
                 }
                 else
                 {
                     IsVisible = false;
                     HeightRequest = -1;
+                    Margin = new Thickness(0);
+                    sheetContainer.Padding = new Thickness(0);
                 }
 
                 if (UseHapticFeedback)

@@ -65,6 +65,7 @@
                          HasBackdrop="False"
                          HandleColor="#94A3B8"
                          PanelBackgroundColor="#FEF3C7"
+                         HeaderBackgroundColor="#F59E0B"
                          PanelCornerRadius="20"
                          ShowHeaderWhenClosed="True">
         <shiny:FloatingPanel.HeaderTemplate>
@@ -138,6 +139,7 @@
                          HasBackdrop="False"
                          HandleColor="#94A3B8"
                          PanelBackgroundColor="#EDE9FE"
+                         HeaderBackgroundColor="#7C3AED"
                          PanelCornerRadius="20"
                          ShowHeaderWhenClosed="True">
         <shiny:FloatingPanel.HeaderTemplate>

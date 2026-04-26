@@ -49,6 +49,7 @@
                   CloseOnBackdropTap="True"
                   HandleColor="Gray"
                   PanelBackgroundColor="#1E1E2E"
+                  HeaderBackgroundColor="#1E1E2E"
                   PanelCornerRadius="20"
                   ShowHeaderWhenClosed="True">
         <shiny:FloatingPanel.HeaderTemplate>

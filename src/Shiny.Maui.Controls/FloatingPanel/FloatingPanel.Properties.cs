@@ -108,6 +108,27 @@ public partial class FloatingPanel
         set => SetValue(HandleColorProperty, value);
     }
 
+    public static readonly BindableProperty HeaderBackgroundColorProperty = BindableProperty.Create(
+        nameof(HeaderBackgroundColor),
+        typeof(Color),
+        typeof(FloatingPanel),
+        null,
+        propertyChanged: (b, _, n) =>
+        {
+            var panel = (FloatingPanel)b;
+            var color = n as Color;
+            panel.dragHandleContainer.BackgroundColor = color ?? Colors.Transparent;
+            panel.headerHost.BackgroundColor = color ?? Colors.Transparent;
+            if (panel.safeAreaFill.IsVisible)
+                panel.safeAreaFill.Color = color ?? panel.PanelBackgroundColor;
+        });
+
+    public Color? HeaderBackgroundColor
+    {
+        get => (Color?)GetValue(HeaderBackgroundColorProperty);
+        set => SetValue(HeaderBackgroundColorProperty, value);
+    }
+
     public static readonly BindableProperty PanelCornerRadiusProperty = BindableProperty.Create(
         nameof(PanelCornerRadius),
         typeof(double),
