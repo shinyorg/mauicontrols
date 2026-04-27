@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, FloatingPanel/OverlayHost/ShinyContentPage (bottom/top overlay panels) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, and haptic feedback support across all interactive controls
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, FloatingPanel/OverlayHost/ShinyContentPage (bottom/top overlay panels) with detents and header peek, PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, TextToSpeechButton for speaking text aloud with cancel/resume, and haptic feedback support across all interactive controls
 auto_invoke: true
 triggers:
   - tableview
@@ -101,6 +101,14 @@ triggers:
   - chat control
   - typing indicator
   - blazor chatview
+  - text to speech
+  - texttospeech
+  - texttospeechbutton
+  - tts button
+  - tts
+  - speak text
+  - speech button
+  - blazor texttospeech
 ---
 
 # Shiny Controls Skill
@@ -129,6 +137,7 @@ The library contains:
 - **AutoCompleteEntry**: A text input with debounced search, dropdown suggestions, busy indicator, custom item templates, and full styling control via CSS custom properties (Blazor) or bindable properties (MAUI)
 - **CountryPicker**: A country search control built on AutoCompleteEntry with flag emoji, country name, and dial code
 - **AddressEntry**: An address search control built on AutoCompleteEntry with geocoding (Nominatim/OpenStreetMap by default) and structured address results
+- **TextToSpeechButton**: A button that speaks bound text using the platform's TTS engine. Tapping plays the bound `SpeechText`; tapping again cancels. Customizable visuals, pitch, volume, locale, and haptic feedback
 
 ## When to Use This Skill
 
