@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -778,6 +778,72 @@ Blazor additionally exposes `Rate` (float, default 1.0) for speech rate, and `Lo
 Events: `Clicked` fires on every tap (before speak/cancel).
 
 Methods: `Cancel()` programmatically stops speech (MAUI).
+
+### SignaturePad
+
+A signature capture control that opens in a FloatingPanel overlay (MAUI) or SheetView (Blazor). Users draw on a canvas and tap Sign to export the signature as a PNG. The Sign button is disabled until the user actually draws something.
+
+**Important:** Like FloatingPanel, SignaturePad must be placed inside an `OverlayHost` or `ShinyContentPage` on MAUI — it uses a FloatingPanel internally.
+
+```xml
+<!-- MAUI — must be inside ShinyContentPage.Panels or OverlayHost -->
+<shiny:ShinyContentPage xmlns:shiny="http://shiny.net/maui/controls">
+    <shiny:ShinyContentPage.PageContent>
+        <VerticalStackLayout Padding="20" Spacing="10">
+            <Button Text="Capture Signature" Command="{Binding OpenSignatureCommand}" />
+            <Image Source="{Binding SignatureImage}" HeightRequest="150" Aspect="AspectFit" />
+        </VerticalStackLayout>
+    </shiny:ShinyContentPage.PageContent>
+    <shiny:ShinyContentPage.Panels>
+        <shiny:SignaturePad IsOpen="{Binding IsSignatureOpen}"
+                            StrokeColor="Black"
+                            SignatureBackgroundColor="#F8F8F8"
+                            StrokeWidth="3"
+                            SignButtonColor="#6C63FF"
+                            CancelButtonColor="#94A3B8"
+                            SignCommand="{Binding HandleSignedCommand}"
+                            CancelCommand="{Binding HandleCancelledCommand}" />
+    </shiny:ShinyContentPage.Panels>
+</shiny:ShinyContentPage>
+```
+
+```razor
+<!-- Blazor -->
+<SignaturePad @bind-IsOpen="isOpen"
+              StrokeColor="#000000"
+              SignatureBackgroundColor="#F8F8F8"
+              StrokeWidth="3"
+              SignButtonColor="#6C63FF"
+              CancelButtonColor="#94A3B8"
+              Signed="OnSigned"
+              Cancelled="OnCancelled" />
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| IsOpen | bool | false | Opens/closes the signature panel (TwoWay) |
+| Position | FloatingPanelPosition | Bottom | Panel slide direction (Bottom, BottomTabs, Top) |
+| IsLocked | bool | true | Prevents drag dismiss |
+| Detent | DetentValue | Half | Panel snap position |
+| StrokeColor | Color | Black | Drawing stroke color |
+| SignatureBackgroundColor | Color | White | Canvas background |
+| StrokeWidth | double | 3.0 | Drawing stroke width |
+| SignButtonText | string | "Sign" | Sign button label |
+| CancelButtonText | string | "Cancel" | Cancel button label |
+| SignButtonColor | Color | Blue | Sign button background |
+| CancelButtonColor | Color | Gray | Cancel button background |
+| ShowCancelButton | bool | true | Show/hide cancel button |
+| PanelBackgroundColor | Color | White | Panel background |
+| PanelCornerRadius | double | 16 | Panel corner radius |
+| HasBackdrop | bool | true | Backdrop behind panel |
+| ExportWidth | int | 600 | Exported PNG width |
+| ExportHeight | int | 200 | Exported PNG height |
+| SignCommand | ICommand? | null | Invoked on sign with `SignatureImageEventArgs` |
+| CancelCommand | ICommand? | null | Invoked on cancel |
+
+Blazor uses CSS color strings instead of `Color`, `SheetDirection` instead of `FloatingPanelPosition`, and `Signed` is `EventCallback<byte[]>` (raw PNG bytes).
+
+Events: `Signed` fires with `SignatureImageEventArgs` (MAUI) or `byte[]` (Blazor). `Cancelled` fires on cancel.
 
 ### TableView
 
