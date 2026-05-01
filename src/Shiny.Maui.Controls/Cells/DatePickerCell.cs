@@ -1,28 +1,29 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Shiny.Maui.Controls.FloatingPanel;
+using Shiny.Maui.Controls.Pickers;
+using Shiny.Maui.Controls.Scheduler.Internal;
 
 namespace Shiny.Maui.Controls.Cells;
 
 public class DatePickerCell : CellBase
 {
     Label valueLabel = default!;
-    DatePicker hiddenPicker = default!;
+    FloatingPanel.FloatingPanel? panel;
 
     public static readonly BindableProperty DateProperty = BindableProperty.Create(
         nameof(Date), typeof(DateTime?), typeof(DatePickerCell), null,
         BindingMode.TwoWay,
-        propertyChanged: (b, o, n) => ((DatePickerCell)b).OnDateChanged());
+        propertyChanged: (b, o, n) => ((DatePickerCell)b).UpdateDisplayText());
 
     public static readonly BindableProperty InitialDateProperty = BindableProperty.Create(
         nameof(InitialDate), typeof(DateTime), typeof(DatePickerCell), new DateTime(2000, 1, 1));
 
     public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create(
-        nameof(MinimumDate), typeof(DateTime), typeof(DatePickerCell), new DateTime(1900, 1, 1),
-        propertyChanged: (b, o, n) => ((DatePickerCell)b).SyncPickerRange());
+        nameof(MinimumDate), typeof(DateTime), typeof(DatePickerCell), new DateTime(1900, 1, 1));
 
     public static readonly BindableProperty MaximumDateProperty = BindableProperty.Create(
-        nameof(MaximumDate), typeof(DateTime), typeof(DatePickerCell), new DateTime(2100, 12, 31),
-        propertyChanged: (b, o, n) => ((DatePickerCell)b).SyncPickerRange());
+        nameof(MaximumDate), typeof(DateTime), typeof(DatePickerCell), new DateTime(2100, 12, 31));
 
     public static readonly BindableProperty FormatProperty = BindableProperty.Create(
         nameof(Format), typeof(string), typeof(DatePickerCell), "d",
@@ -75,78 +76,59 @@ public class DatePickerCell : CellBase
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.End
         };
-
-        hiddenPicker = new DatePicker
-        {
-            MinimumDate = MinimumDate,
-            MaximumDate = MaximumDate
-        };
-
-        if (!Date.HasValue)
-            hiddenPicker.Date = InitialDate;
-
-        hiddenPicker.DateSelected += (s, e) => Date = e.NewDate;
-        hiddenPicker.Unfocused += (s, e) => ClearSelectionHighlight();
-
-#if ANDROID
-        // Android: overlay the transparent picker across the entire cell so tapping
-        // anywhere opens the native date dialog (Focus() is unreliable on Android).
-        hiddenPicker.Opacity = 0.01;
-        Grid.SetColumn(hiddenPicker, 0);
-        Grid.SetColumnSpan(hiddenPicker, 3);
-        Grid.SetRow(hiddenPicker, 0);
-        Grid.SetRowSpan(hiddenPicker, 2);
-        RootGrid.Children.Add(hiddenPicker);
-
         UpdateDisplayText();
         return valueLabel;
-#else
-        // iOS/Mac: hidden zero-size picker in local Grid; Focus() opens native picker
-        hiddenPicker.Opacity = 0;
-        hiddenPicker.WidthRequest = 0;
-        hiddenPicker.HeightRequest = 0;
-
-        var layout = new Grid();
-        layout.Children.Add(hiddenPicker);
-        layout.Children.Add(valueLabel);
-
-        UpdateDisplayText();
-        return layout;
-#endif
     }
-
-#if ANDROID
-    protected override void OnCellTapped(object? sender, TappedEventArgs e)
-    {
-        // Android: native picker overlay handles all touch interaction
-    }
-#endif
 
     protected override bool ShouldKeepSelection() => true;
 
     protected override void OnTapped()
     {
-#if !ANDROID
-        if (!Date.HasValue)
-            hiddenPicker.Date = InitialDate;
+        var overlayHost = PickerHelper.FindOverlayHost(this);
+        if (overlayHost == null) return;
 
-        hiddenPicker.Focus();
-#endif
-    }
+        if (panel != null && panel.IsOpen)
+            return;
 
-    void OnDateChanged()
-    {
-        if (hiddenPicker != null && Date.HasValue)
-            hiddenPicker.Date = Date.Value;
+        var initialDate = Date.HasValue
+            ? DateOnly.FromDateTime(Date.Value)
+            : DateOnly.FromDateTime(InitialDate);
 
-        UpdateDisplayText();
-    }
+        var calendar = new CalendarSheetPicker
+        {
+            IsExpanded = true,
+            SelectedDate = initialDate
+        };
 
-    void SyncPickerRange()
-    {
-        if (hiddenPicker == null) return;
-        hiddenPicker.MinimumDate = MinimumDate;
-        hiddenPicker.MaximumDate = MaximumDate;
+        calendar.DateSelected = date =>
+        {
+            var minDate = DateOnly.FromDateTime(MinimumDate);
+            var maxDate = DateOnly.FromDateTime(MaximumDate);
+
+            if (date < minDate || date > maxDate) return;
+
+            Date = date.ToDateTime(TimeOnly.MinValue);
+            panel!.IsOpen = false;
+            ClearSelectionHighlight();
+        };
+
+        if (panel == null)
+        {
+            panel = new FloatingPanel.FloatingPanel
+            {
+                FitContent = true,
+                HasBackdrop = true,
+                CloseOnBackdropTap = true,
+                ShowHandle = false,
+                IsLocked = true,
+                PanelCornerRadius = 16
+            };
+            panel.Closed += (_, _) => ClearSelectionHighlight();
+            overlayHost.Children.Add(panel);
+        }
+
+        panel.PanelContent = calendar;
+        panel.IsOpen = true;
     }
 
     void UpdateDisplayText()

@@ -250,7 +250,7 @@ public partial class TableView : ContentView
                     rootLayout.Children.Add(new BoxView
                     {
                         HeightRequest = SectionSeparatorHeight,
-                        Color = SectionSeparatorColor ?? Colors.Transparent,
+                        Color = SectionSeparatorColor ?? GetDefaultSectionSeparatorColor(),
                     });
                 }
             }
@@ -373,6 +373,17 @@ public partial class TableView : ContentView
         => scrollView.ScrollToAsync(0, rootLayout.Height, animated);
 
     public double VisibleContentHeight => scrollView.ContentSize.Height;
+
+    Color GetDefaultSectionSeparatorColor()
+    {
+        if (BackgroundColor != null && BackgroundColor != Colors.Transparent)
+            return BackgroundColor;
+
+        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        return isDark
+            ? Color.FromRgb(28, 28, 30)
+            : Color.FromRgb(242, 242, 247);
+    }
 
 }
 

@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Sample.Features.TableView;
 
-public partial class PickerDemoPage : ContentPage
+public partial class PickerDemoPage : Shiny.Maui.Controls.FloatingPanel.ShinyContentPage
 {
     public PickerDemoPage()
     {
@@ -20,6 +20,7 @@ public class PickerDemoViewModel : INotifyPropertyChanged
     IList? selectedHobbies;
     DateTime? startDate = DateTime.Today;
     TimeSpan reminderTime = new(9, 0, 0);
+    TimeSpan? duration = new TimeSpan(1, 30, 0);
     int? repeatCount = 1;
 
     public IList<string> Colors { get; } = new List<string>
@@ -44,6 +45,7 @@ public class PickerDemoViewModel : INotifyPropertyChanged
     public IList? SelectedHobbies { get => selectedHobbies; set => SetProperty(ref selectedHobbies, value); }
     public DateTime? StartDate { get => startDate; set => SetProperty(ref startDate, value); }
     public TimeSpan ReminderTime { get => reminderTime; set => SetProperty(ref reminderTime, value); }
+    public TimeSpan? Duration { get => duration; set => SetProperty(ref duration, value); }
     public int? RepeatCount { get => repeatCount; set => SetProperty(ref repeatCount, value); }
 
     public event PropertyChangedEventHandler? PropertyChanged;

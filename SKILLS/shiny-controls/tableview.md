@@ -133,7 +133,7 @@ Inline text input.
 | `ValueTextColor` | `Color?` | `null` |
 
 ### DatePickerCell
-Opens native date picker dialog on tap.
+Opens a calendar in a FloatingPanel on tap. Selecting a date closes the panel. Requires `ShinyContentPage`.
 
 ```xml
 <shiny:DatePickerCell Title="Birthday" Date="{Binding BirthDate, Mode=TwoWay}" Format="D" />
@@ -149,7 +149,7 @@ Opens native date picker dialog on tap.
 | `ValueTextColor` | `Color?` | `null` |
 
 ### TimePickerCell
-Opens native time picker dialog on tap.
+Opens hour/minute pickers in a FloatingPanel on tap. Requires `ShinyContentPage`.
 
 ```xml
 <shiny:TimePickerCell Title="Alarm" Time="{Binding AlarmTime, Mode=TwoWay}" Format="T" />
@@ -159,6 +159,27 @@ Opens native time picker dialog on tap.
 |---|---|---|
 | `Time` | `TimeSpan` | `00:00:00` |
 | `Format` | `string` | `"t"` |
+| `MinuteInterval` | `int` | `1` |
+| `Use24Hour` | `bool` | `false` |
+| `ValueTextColor` | `Color?` | `null` |
+
+### DurationPickerCell
+Opens hour/minute pickers with hr/min labels in a FloatingPanel on tap. Requires `ShinyContentPage`.
+
+```xml
+<shiny:DurationPickerCell Title="Duration" Duration="{Binding Duration, Mode=TwoWay}"
+                          MinDuration="0:15:00" MaxDuration="4:00:00" />
+```
+
+| Property | Type | Default |
+|---|---|---|
+| `Duration` | `TimeSpan?` | `null` |
+| `MinDuration` | `TimeSpan` | `0:00:00` |
+| `MaxDuration` | `TimeSpan` | `24:00:00` |
+| `MinuteInterval` | `int` | `5` |
+| `Format` | `string` | `@"h\:mm"` |
+| `PickerTitle` | `string` | `"Select Duration"` |
+| `SelectedCommand` | `ICommand?` | `null` |
 | `ValueTextColor` | `Color?` | `null` |
 
 ### TextPickerCell

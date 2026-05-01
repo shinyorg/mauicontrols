@@ -22,6 +22,7 @@
     xmlns:countryaddress="clr-namespace:Sample.Features.CountryAddress"
     xmlns:sigpad="clr-namespace:Sample.Features.SignaturePad"
     xmlns:tts="clr-namespace:Sample.Features.TextToSpeech"
+    xmlns:pickers="clr-namespace:Sample.Features.Pickers"
     Title="Shiny Controls"
     FlyoutBackgroundColor="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}"
     FlyoutWidth="310"
@@ -400,6 +401,30 @@
                              Color="{AppThemeBinding Light=#D97706, Dark=#FBBF24}" />
         </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate tv:PickerDemoPage}" Route="picker" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Date Picker">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x1F4C5;" Size="20"
+                             Color="{AppThemeBinding Light=#2563EB, Dark=#60A5FA}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate pickers:DatePickerPage}" Route="datepicker" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Time Picker">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x23F0;" Size="20"
+                             Color="{AppThemeBinding Light=#7C3AED, Dark=#A78BFA}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate pickers:TimePickerPage}" Route="timepicker" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Duration Picker">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x23F1;" Size="20"
+                             Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate pickers:DurationPickerPage}" Route="durationpicker" />
     </FlyoutItem>
 
     <FlyoutItem Title="Styling">

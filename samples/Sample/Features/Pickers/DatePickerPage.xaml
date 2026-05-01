@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<shiny:ShinyContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Features.Pickers"
+             xmlns:shiny="http://shiny.net/maui/controls"
+             x:Class="Sample.Features.Pickers.DatePickerPage"
+             x:DataType="local:DatePickerViewModel"
+             Title="Date Picker">
+  <shiny:ShinyContentPage.PageContent>
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="ShinyDatePicker"
+                   FontSize="24"
+                   FontAttributes="Bold" />
+
+            <Label Text="A date picker that opens a calendar in a floating panel."
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Basic Date Picker" FontSize="16" FontAttributes="Bold" />
+            <shiny:ShinyDatePicker Date="{Binding SelectedDate, Mode=TwoWay}"
+                                   Placeholder="Choose a date" />
+
+            <Label Text="{Binding SelectedDate, StringFormat='Selected: {0}'}"
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="With Min/Max Constraints" FontSize="16" FontAttributes="Bold" />
+            <Label Text="Only dates in the next 30 days" FontSize="12" TextColor="Gray" />
+            <shiny:ShinyDatePicker Date="{Binding ConstrainedDate, Mode=TwoWay}"
+                                   MinDate="{Binding MinDate}"
+                                   MaxDate="{Binding MaxDate}"
+                                   Format="D"
+                                   Placeholder="Pick a date (next 30 days)" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Custom Format" FontSize="16" FontAttributes="Bold" />
+            <shiny:ShinyDatePicker Date="{Binding FormattedDate, Mode=TwoWay}"
+                                   Format="MMMM dd, yyyy"
+                                   Placeholder="Select..." />
+        </VerticalStackLayout>
+    </ScrollView>
+  </shiny:ShinyContentPage.PageContent>
+</shiny:ShinyContentPage>

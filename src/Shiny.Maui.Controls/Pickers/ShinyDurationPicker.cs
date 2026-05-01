@@ -1,43 +1,45 @@
-using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 using Shiny.Maui.Controls.FloatingPanel;
-using Shiny.Maui.Controls.Pickers;
 
-namespace Shiny.Maui.Controls.Cells;
+namespace Shiny.Maui.Controls.Pickers;
 
-public class DurationPickerCell : CellBase
+public class ShinyDurationPicker : ContentView
 {
-    Label valueLabel = default!;
+    readonly Label valueLabel;
+    readonly Border tapArea;
     FloatingPanel.FloatingPanel? panel;
 
     public static readonly BindableProperty DurationProperty = BindableProperty.Create(
-        nameof(Duration), typeof(TimeSpan?), typeof(DurationPickerCell), null,
+        nameof(Duration), typeof(TimeSpan?), typeof(ShinyDurationPicker), null,
         BindingMode.TwoWay,
-        propertyChanged: (b, o, n) => ((DurationPickerCell)b).UpdateDisplayText());
+        propertyChanged: (b, o, n) => ((ShinyDurationPicker)b).UpdateDisplayText());
 
     public static readonly BindableProperty MinDurationProperty = BindableProperty.Create(
-        nameof(MinDuration), typeof(TimeSpan), typeof(DurationPickerCell), TimeSpan.Zero);
+        nameof(MinDuration), typeof(TimeSpan), typeof(ShinyDurationPicker), TimeSpan.Zero);
 
     public static readonly BindableProperty MaxDurationProperty = BindableProperty.Create(
-        nameof(MaxDuration), typeof(TimeSpan), typeof(DurationPickerCell), TimeSpan.FromHours(24));
+        nameof(MaxDuration), typeof(TimeSpan), typeof(ShinyDurationPicker), TimeSpan.FromHours(24));
 
     public static readonly BindableProperty FormatProperty = BindableProperty.Create(
-        nameof(Format), typeof(string), typeof(DurationPickerCell), @"h\:mm",
-        propertyChanged: (b, o, n) => ((DurationPickerCell)b).UpdateDisplayText());
+        nameof(Format), typeof(string), typeof(ShinyDurationPicker), @"h\:mm",
+        propertyChanged: (b, o, n) => ((ShinyDurationPicker)b).UpdateDisplayText());
 
-    public static readonly BindableProperty PickerTitleProperty = BindableProperty.Create(
-        nameof(PickerTitle), typeof(string), typeof(DurationPickerCell), "Select Duration");
+    public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(
+        nameof(Placeholder), typeof(string), typeof(ShinyDurationPicker), "Select duration",
+        propertyChanged: (b, o, n) => ((ShinyDurationPicker)b).UpdateDisplayText());
 
-    public static readonly BindableProperty SelectedCommandProperty = BindableProperty.Create(
-        nameof(SelectedCommand), typeof(ICommand), typeof(DurationPickerCell), null);
+    public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(
+        nameof(PlaceholderColor), typeof(Color), typeof(ShinyDurationPicker), Colors.Gray);
 
-    public static readonly BindableProperty ValueTextColorProperty = BindableProperty.Create(
-        nameof(ValueTextColor), typeof(Color), typeof(DurationPickerCell), null,
-        propertyChanged: (b, o, n) => ((DurationPickerCell)b).UpdateValueColor());
+    public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
+        nameof(TextColor), typeof(Color), typeof(ShinyDurationPicker), null,
+        propertyChanged: (b, o, n) => ((ShinyDurationPicker)b).UpdateDisplayText());
+
+    public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(
+        nameof(FontSize), typeof(double), typeof(ShinyDurationPicker), 16d,
+        propertyChanged: (b, o, n) => ((ShinyDurationPicker)b).valueLabel.FontSize = (double)n);
 
     public static readonly BindableProperty MinuteIntervalProperty = BindableProperty.Create(
-        nameof(MinuteInterval), typeof(int), typeof(DurationPickerCell), 5);
+        nameof(MinuteInterval), typeof(int), typeof(ShinyDurationPicker), 5);
 
     public TimeSpan? Duration
     {
@@ -63,22 +65,28 @@ public class DurationPickerCell : CellBase
         set => SetValue(FormatProperty, value);
     }
 
-    public string PickerTitle
+    public string Placeholder
     {
-        get => (string)GetValue(PickerTitleProperty);
-        set => SetValue(PickerTitleProperty, value);
+        get => (string)GetValue(PlaceholderProperty);
+        set => SetValue(PlaceholderProperty, value);
     }
 
-    public ICommand? SelectedCommand
+    public Color PlaceholderColor
     {
-        get => (ICommand?)GetValue(SelectedCommandProperty);
-        set => SetValue(SelectedCommandProperty, value);
+        get => (Color)GetValue(PlaceholderColorProperty);
+        set => SetValue(PlaceholderColorProperty, value);
     }
 
-    public Color? ValueTextColor
+    public Color? TextColor
     {
-        get => (Color?)GetValue(ValueTextColorProperty);
-        set => SetValue(ValueTextColorProperty, value);
+        get => (Color?)GetValue(TextColorProperty);
+        set => SetValue(TextColorProperty, value);
+    }
+
+    public double FontSize
+    {
+        get => (double)GetValue(FontSizeProperty);
+        set => SetValue(FontSizeProperty, value);
     }
 
     public int MinuteInterval
@@ -87,20 +95,65 @@ public class DurationPickerCell : CellBase
         set => SetValue(MinuteIntervalProperty, value);
     }
 
-    protected override View? CreateAccessoryView()
+    public event EventHandler<TimeSpan>? DurationSelected;
+
+    public ShinyDurationPicker()
     {
         valueLabel = new Label
         {
+            FontSize = 16,
             VerticalOptions = LayoutOptions.Center,
-            HorizontalOptions = LayoutOptions.End
+            VerticalTextAlignment = TextAlignment.Center
         };
+
+        var chevron = new Label
+        {
+            Text = "▼",
+            FontSize = 10,
+            TextColor = Colors.Gray,
+            VerticalOptions = LayoutOptions.Center,
+            Margin = new Thickness(4, 0, 0, 0)
+        };
+
+        var layout = new HorizontalStackLayout
+        {
+            Children = { valueLabel, chevron },
+            VerticalOptions = LayoutOptions.Center
+        };
+
+        tapArea = new Border
+        {
+            Content = layout,
+            Padding = new Thickness(12, 8),
+            StrokeThickness = 1,
+            Stroke = Colors.LightGray,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+            BackgroundColor = Colors.Transparent
+        };
+
+        var tap = new TapGestureRecognizer();
+        tap.Tapped += OnTapped;
+        tapArea.GestureRecognizers.Add(tap);
+
+        Content = tapArea;
         UpdateDisplayText();
-        return valueLabel;
     }
 
-    protected override bool ShouldKeepSelection() => true;
+    void UpdateDisplayText()
+    {
+        if (Duration.HasValue)
+        {
+            valueLabel.Text = Duration.Value.ToString(Format);
+            valueLabel.TextColor = TextColor ?? (Color?)Label.TextColorProperty.DefaultValue ?? Colors.Black;
+        }
+        else
+        {
+            valueLabel.Text = Placeholder;
+            valueLabel.TextColor = PlaceholderColor;
+        }
+    }
 
-    protected override void OnTapped()
+    void OnTapped(object? sender, TappedEventArgs e)
     {
         var overlayHost = PickerHelper.FindOverlayHost(this);
         if (overlayHost == null) return;
@@ -121,7 +174,6 @@ public class DurationPickerCell : CellBase
                 IsLocked = true,
                 PanelCornerRadius = 16
             };
-            panel.Closed += (_, _) => ClearSelectionHighlight();
             overlayHost.Children.Add(panel);
         }
 
@@ -135,8 +187,17 @@ public class DurationPickerCell : CellBase
         var maxHours = (int)MaxDuration.TotalHours;
         var interval = Math.Max(1, MinuteInterval);
 
-        var hourPicker = new Picker { Title = "Hours", HorizontalOptions = LayoutOptions.Fill };
-        var minutePicker = new Picker { Title = "Minutes", HorizontalOptions = LayoutOptions.Fill };
+        var hourPicker = new Picker
+        {
+            Title = "Hours",
+            HorizontalOptions = LayoutOptions.Fill
+        };
+
+        var minutePicker = new Picker
+        {
+            Title = "Minutes",
+            HorizontalOptions = LayoutOptions.Fill
+        };
 
         for (var h = 0; h <= maxHours; h++)
             hourPicker.Items.Add(h.ToString());
@@ -165,11 +226,26 @@ public class DurationPickerCell : CellBase
             HorizontalOptions = LayoutOptions.Fill
         };
         pickerGrid.Add(hourPicker, 0);
-        pickerGrid.Add(new Label { Text = "hr", VerticalOptions = LayoutOptions.Center, TextColor = Colors.Gray }, 1);
+        pickerGrid.Add(new Label
+        {
+            Text = "hr",
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = Colors.Gray
+        }, 1);
         pickerGrid.Add(minutePicker, 2);
-        pickerGrid.Add(new Label { Text = "min", VerticalOptions = LayoutOptions.Center, TextColor = Colors.Gray }, 3);
+        pickerGrid.Add(new Label
+        {
+            Text = "min",
+            VerticalOptions = LayoutOptions.Center,
+            TextColor = Colors.Gray
+        }, 3);
 
-        var doneButton = new Button { Text = "Done", HorizontalOptions = LayoutOptions.Fill };
+        var doneButton = new Button
+        {
+            Text = "Done",
+            HorizontalOptions = LayoutOptions.Fill
+        };
+
         doneButton.Clicked += (_, _) =>
         {
             var hours = hourPicker.SelectedIndex >= 0 ? hourPicker.SelectedIndex : 0;
@@ -180,10 +256,7 @@ public class DurationPickerCell : CellBase
             if (duration > MaxDuration) duration = MaxDuration;
 
             Duration = duration;
-
-            if (SelectedCommand?.CanExecute(Duration) == true)
-                SelectedCommand.Execute(Duration);
-
+            DurationSelected?.Invoke(this, duration);
             panel!.IsOpen = false;
         };
 
@@ -216,7 +289,7 @@ public class DurationPickerCell : CellBase
             {
                 new Label
                 {
-                    Text = PickerTitle,
+                    Text = "Select Duration",
                     FontSize = 18,
                     FontAttributes = FontAttributes.Bold,
                     HorizontalTextAlignment = TextAlignment.Center
@@ -225,20 +298,5 @@ public class DurationPickerCell : CellBase
                 buttonGrid
             }
         };
-    }
-
-    void UpdateDisplayText()
-    {
-        if (valueLabel == null) return;
-        valueLabel.Text = Duration.HasValue ? Duration.Value.ToString(Format) : string.Empty;
-    }
-
-    void UpdateValueColor()
-    {
-        var color = ValueTextColor ?? ParentTableView?.CellValueTextColor;
-        if (color != null)
-            valueLabel.TextColor = color;
-        else
-            valueLabel.ClearValue(Label.TextColorProperty);
     }
 }

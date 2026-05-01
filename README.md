@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, Pickers (Date/Time/Duration), Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -214,6 +214,65 @@ A floating panel overlay system for MAUI. Panels slide in from the bottom or top
 | Panels | IList\<IView\> | Collection of FloatingPanels |
 | BackdropColor | Color | Forwarded to internal OverlayHost |
 | BackdropMaxOpacity | double | Forwarded to internal OverlayHost |
+
+### Pickers (Date, Time, Duration)
+
+Standalone picker controls that open a FloatingPanel for selection. These provide a consistent, cross-platform experience without relying on native platform pickers. All require `ShinyContentPage` (or an `OverlayHost` in the visual tree).
+
+**ShinyDatePicker** — Opens a calendar in a floating panel. Selecting a date auto-closes the panel.
+
+```xml
+<shiny:ShinyDatePicker Date="{Binding SelectedDate, Mode=TwoWay}"
+                       MinDate="{Binding MinDate}"
+                       MaxDate="{Binding MaxDate}"
+                       Format="D"
+                       Placeholder="Choose a date" />
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `Date` | `DateOnly?` | `null` | Selected date (TwoWay) |
+| `MinDate` | `DateOnly?` | `null` | Minimum selectable date |
+| `MaxDate` | `DateOnly?` | `null` | Maximum selectable date |
+| `Format` | `string` | `"d"` | Display format string |
+| `Placeholder` | `string` | `"Select date"` | Text shown when no date selected |
+| `FirstDayOfWeek` | `DayOfWeek` | `Sunday` | First day of week in calendar |
+
+**ShinyTimePicker** — Opens hour/minute pickers in a floating panel with Done/Cancel.
+
+```xml
+<shiny:ShinyTimePicker Time="{Binding SelectedTime, Mode=TwoWay}"
+                       Use24Hour="True"
+                       MinuteInterval="15"
+                       Placeholder="Choose a time" />
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `Time` | `TimeSpan?` | `null` | Selected time (TwoWay) |
+| `Format` | `string` | `"t"` | Display format string |
+| `Use24Hour` | `bool` | `false` | Use 24-hour format |
+| `MinuteInterval` | `int` | `1` | Minute increment step |
+| `Placeholder` | `string` | `"Select time"` | Text shown when no time selected |
+
+**ShinyDurationPicker** — Opens hour/minute pickers with labels in a floating panel.
+
+```xml
+<shiny:ShinyDurationPicker Duration="{Binding SelectedDuration, Mode=TwoWay}"
+                           MinDuration="0:15:00"
+                           MaxDuration="8:00:00"
+                           MinuteInterval="5"
+                           Placeholder="Choose duration" />
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `Duration` | `TimeSpan?` | `null` | Selected duration (TwoWay) |
+| `MinDuration` | `TimeSpan` | `0:00:00` | Minimum duration |
+| `MaxDuration` | `TimeSpan` | `24:00:00` | Maximum duration |
+| `MinuteInterval` | `int` | `5` | Minute increment step |
+| `Format` | `string` | `@"h\:mm"` | Display format string |
+| `Placeholder` | `string` | `"Select duration"` | Text shown when no duration selected |
 
 ### ImageViewer
 

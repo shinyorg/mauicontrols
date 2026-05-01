@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<shiny:ShinyContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Features.Pickers"
+             xmlns:shiny="http://shiny.net/maui/controls"
+             x:Class="Sample.Features.Pickers.DurationPickerPage"
+             x:DataType="local:DurationPickerViewModel"
+             Title="Duration Picker">
+  <shiny:ShinyContentPage.PageContent>
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="ShinyDurationPicker"
+                   FontSize="24"
+                   FontAttributes="Bold" />
+
+            <Label Text="A duration picker that opens in a floating panel with hour/minute selection."
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Basic Duration" FontSize="16" FontAttributes="Bold" />
+            <shiny:ShinyDurationPicker Duration="{Binding SelectedDuration, Mode=TwoWay}"
+                                       Placeholder="Choose duration" />
+
+            <Label Text="{Binding SelectedDuration, StringFormat='Selected: {0}'}"
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Constrained (15 min - 8 hours)" FontSize="16" FontAttributes="Bold" />
+            <shiny:ShinyDurationPicker Duration="{Binding ConstrainedDuration, Mode=TwoWay}"
+                                       MinDuration="0:15:00"
+                                       MaxDuration="8:00:00"
+                                       Placeholder="Select duration" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="1 Minute Intervals" FontSize="16" FontAttributes="Bold" />
+            <shiny:ShinyDurationPicker Duration="{Binding PreciseDuration, Mode=TwoWay}"
+                                       MinuteInterval="1"
+                                       MaxDuration="2:00:00"
+                                       Placeholder="Precise duration" />
+        </VerticalStackLayout>
+    </ScrollView>
+  </shiny:ShinyContentPage.PageContent>
+</shiny:ShinyContentPage>
