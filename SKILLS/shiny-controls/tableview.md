@@ -133,7 +133,7 @@ Inline text input.
 | `ValueTextColor` | `Color?` | `null` |
 
 ### DatePickerCell
-Opens a calendar in a FloatingPanel on tap. Selecting a date closes the panel. Requires `ShinyContentPage`.
+Opens native date picker dialog on tap.
 
 ```xml
 <shiny:DatePickerCell Title="Birthday" Date="{Binding BirthDate, Mode=TwoWay}" Format="D" />
@@ -149,18 +149,19 @@ Opens a calendar in a FloatingPanel on tap. Selecting a date closes the panel. R
 | `ValueTextColor` | `Color?` | `null` |
 
 ### TimePickerCell
-Opens hour/minute pickers in a FloatingPanel on tap. Requires `ShinyContentPage`.
+Opens native time picker dialog on tap. Supports 24-hour mode and minute intervals (iOS natively, other platforms snap to nearest interval).
 
 ```xml
-<shiny:TimePickerCell Title="Alarm" Time="{Binding AlarmTime, Mode=TwoWay}" Format="T" />
+<shiny:TimePickerCell Title="Alarm" Time="{Binding AlarmTime, Mode=TwoWay}" Format="T"
+                      Use24Hour="True" MinuteInterval="15" />
 ```
 
 | Property | Type | Default |
 |---|---|---|
 | `Time` | `TimeSpan` | `00:00:00` |
 | `Format` | `string` | `"t"` |
-| `MinuteInterval` | `int` | `1` |
 | `Use24Hour` | `bool` | `false` |
+| `MinuteInterval` | `int` | `1` |
 | `ValueTextColor` | `Color?` | `null` |
 
 ### DurationPickerCell

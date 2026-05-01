@@ -23,6 +23,7 @@
     xmlns:sigpad="clr-namespace:Sample.Features.SignaturePad"
     xmlns:tts="clr-namespace:Sample.Features.TextToSpeech"
     xmlns:pickers="clr-namespace:Sample.Features.Pickers"
+    xmlns:glass="clr-namespace:Sample.Features.FrostedGlass"
     Title="Shiny Controls"
     FlyoutBackgroundColor="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}"
     FlyoutWidth="310"
@@ -403,22 +404,6 @@
         <ShellContent ContentTemplate="{DataTemplate tv:PickerDemoPage}" Route="picker" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Date Picker">
-        <FlyoutItem.FlyoutIcon>
-            <FontImageSource Glyph="&#x1F4C5;" Size="20"
-                             Color="{AppThemeBinding Light=#2563EB, Dark=#60A5FA}" />
-        </FlyoutItem.FlyoutIcon>
-        <ShellContent ContentTemplate="{DataTemplate pickers:DatePickerPage}" Route="datepicker" />
-    </FlyoutItem>
-
-    <FlyoutItem Title="Time Picker">
-        <FlyoutItem.FlyoutIcon>
-            <FontImageSource Glyph="&#x23F0;" Size="20"
-                             Color="{AppThemeBinding Light=#7C3AED, Dark=#A78BFA}" />
-        </FlyoutItem.FlyoutIcon>
-        <ShellContent ContentTemplate="{DataTemplate pickers:TimePickerPage}" Route="timepicker" />
-    </FlyoutItem>
-
     <FlyoutItem Title="Duration Picker">
         <FlyoutItem.FlyoutIcon>
             <FontImageSource Glyph="&#x23F1;" Size="20"
@@ -530,6 +515,22 @@
                              Color="{AppThemeBinding Light=#0284C7, Dark=#38BDF8}" />
         </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate chat:ChatPage}" Route="chat" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Chat Templates">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2709;" Size="20"
+                             Color="{AppThemeBinding Light=#6D28D9, Dark=#A78BFA}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate chat:ChatTemplatePage}" Route="chattemplates" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Frosted Glass">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x25C7;" Size="20"
+                             Color="{AppThemeBinding Light=#0EA5E9, Dark=#7DD3FC}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate glass:FrostedGlassPage}" Route="frostedglass" />
     </FlyoutItem>
 
     <!-- ============================================================ -->

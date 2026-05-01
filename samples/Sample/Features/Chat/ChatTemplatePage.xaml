@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:shiny="http://shiny.net/maui/controls"
+    xmlns:local="clr-namespace:Sample.Features.Chat"
+    x:Class="Sample.Features.Chat.ChatTemplatePage"
+    x:DataType="local:ChatTemplateViewModel"
+    Title="Chat Templates">
+
+    <shiny:ChatView Messages="{Binding Messages}"
+                    Participants="{Binding Participants}"
+                    IsMultiPerson="True"
+                    SendCommand="{Binding SendCommand}"
+                    MyBubbleColor="#DCF8C6"
+                    OtherBubbleColor="White"
+                    PlaceholderText="Type a message...">
+        <shiny:ChatView.MessageTemplateSelector>
+            <local:ChatMessageTemplateSelector>
+                <local:ChatMessageTemplateSelector.TextTemplate>
+                    <DataTemplate x:DataType="shiny:ChatMessage">
+                        <Label Text="{Binding Text}"
+                               FontSize="15"
+                               LineBreakMode="WordWrap" />
+                    </DataTemplate>
+                </local:ChatMessageTemplateSelector.TextTemplate>
+                <local:ChatMessageTemplateSelector.ActionTemplate>
+                    <DataTemplate x:DataType="local:ActionChatMessage">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding Text}"
+                                   FontSize="15"
+                                   LineBreakMode="WordWrap" />
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="{Binding ActionText}"
+                                        FontSize="12"
+                                        HeightRequest="32"
+                                        Padding="12,0"
+                                        BackgroundColor="#007AFF"
+                                        TextColor="White"
+                                        CornerRadius="16"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type local:ChatTemplateViewModel}}, Path=ActionCommand}"
+                                        CommandParameter="{Binding .}" />
+                                <Button Text="Dismiss"
+                                        FontSize="12"
+                                        HeightRequest="32"
+                                        Padding="12,0"
+                                        BackgroundColor="#E5E5EA"
+                                        TextColor="#333"
+                                        CornerRadius="16"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type local:ChatTemplateViewModel}}, Path=DismissCommand}"
+                                        CommandParameter="{Binding .}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </local:ChatMessageTemplateSelector.ActionTemplate>
+                <local:ChatMessageTemplateSelector.CardTemplate>
+                    <DataTemplate x:DataType="local:CardChatMessage">
+                        <Border StrokeThickness="1"
+                                Stroke="#E0E0E0"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="0"
+                                BackgroundColor="White">
+                            <VerticalStackLayout>
+                                <Image Source="{Binding ImageUrl}"
+                                       HeightRequest="120"
+                                       Aspect="AspectFill" />
+                                <VerticalStackLayout Padding="12" Spacing="4">
+                                    <Label Text="{Binding CardTitle}"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           TextColor="Black" />
+                                    <Label Text="{Binding Text}"
+                                           FontSize="12"
+                                           TextColor="Gray"
+                                           LineBreakMode="WordWrap" />
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </local:ChatMessageTemplateSelector.CardTemplate>
+            </local:ChatMessageTemplateSelector>
+        </shiny:ChatView.MessageTemplateSelector>
+    </shiny:ChatView>
+
+</ContentPage>

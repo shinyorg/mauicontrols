@@ -1,33 +1,33 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Shiny.Maui.Controls.FloatingPanel;
-using Shiny.Maui.Controls.Pickers;
 
 namespace Shiny.Maui.Controls.Cells;
 
 public class TimePickerCell : CellBase
 {
     Label valueLabel = default!;
-    FloatingPanel.FloatingPanel? panel;
+    TimePicker hiddenPicker = default!;
 
     public static readonly BindableProperty TimeProperty = BindableProperty.Create(
         nameof(Time), typeof(TimeSpan), typeof(TimePickerCell), TimeSpan.Zero,
         BindingMode.TwoWay,
-        propertyChanged: (b, o, n) => ((TimePickerCell)b).UpdateDisplayText());
+        propertyChanged: (b, o, n) => ((TimePickerCell)b).OnTimeChanged());
 
     public static readonly BindableProperty FormatProperty = BindableProperty.Create(
         nameof(Format), typeof(string), typeof(TimePickerCell), "t",
         propertyChanged: (b, o, n) => ((TimePickerCell)b).UpdateDisplayText());
 
+    public static readonly BindableProperty MinuteIntervalProperty = BindableProperty.Create(
+        nameof(MinuteInterval), typeof(int), typeof(TimePickerCell), 1,
+        propertyChanged: (b, o, n) => ((TimePickerCell)b).SyncMinuteInterval());
+
+    public static readonly BindableProperty Use24HourProperty = BindableProperty.Create(
+        nameof(Use24Hour), typeof(bool), typeof(TimePickerCell), false,
+        propertyChanged: (b, o, n) => ((TimePickerCell)b).SyncUse24Hour());
+
     public static readonly BindableProperty ValueTextColorProperty = BindableProperty.Create(
         nameof(ValueTextColor), typeof(Color), typeof(TimePickerCell), null,
         propertyChanged: (b, o, n) => ((TimePickerCell)b).UpdateValueColor());
-
-    public static readonly BindableProperty MinuteIntervalProperty = BindableProperty.Create(
-        nameof(MinuteInterval), typeof(int), typeof(TimePickerCell), 1);
-
-    public static readonly BindableProperty Use24HourProperty = BindableProperty.Create(
-        nameof(Use24Hour), typeof(bool), typeof(TimePickerCell), false);
 
     public TimeSpan Time
     {
@@ -39,12 +39,6 @@ public class TimePickerCell : CellBase
     {
         get => (string)GetValue(FormatProperty);
         set => SetValue(FormatProperty, value);
-    }
-
-    public Color? ValueTextColor
-    {
-        get => (Color?)GetValue(ValueTextColorProperty);
-        set => SetValue(ValueTextColorProperty, value);
     }
 
     public int MinuteInterval
@@ -59,6 +53,12 @@ public class TimePickerCell : CellBase
         set => SetValue(Use24HourProperty, value);
     }
 
+    public Color? ValueTextColor
+    {
+        get => (Color?)GetValue(ValueTextColorProperty);
+        set => SetValue(ValueTextColorProperty, value);
+    }
+
     protected override View? CreateAccessoryView()
     {
         valueLabel = new Label
@@ -66,155 +66,69 @@ public class TimePickerCell : CellBase
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.End
         };
+
+        hiddenPicker = new TimePicker();
+        SyncUse24Hour();
+
+        hiddenPicker.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(TimePicker.Time))
+            {
+                var raw = hiddenPicker.Time ?? TimeSpan.Zero;
+                Time = SnapToInterval(raw);
+            }
+        };
+        hiddenPicker.Unfocused += (s, e) => ClearSelectionHighlight();
+        hiddenPicker.HandlerChanged += OnPickerHandlerChanged;
+
+#if ANDROID
+        // Android: overlay the transparent picker across the entire cell so tapping
+        // anywhere opens the native time dialog (Focus() is unreliable on Android).
+        hiddenPicker.Opacity = 0.01;
+        Grid.SetColumn(hiddenPicker, 0);
+        Grid.SetColumnSpan(hiddenPicker, 3);
+        Grid.SetRow(hiddenPicker, 0);
+        Grid.SetRowSpan(hiddenPicker, 2);
+        RootGrid.Children.Add(hiddenPicker);
+
         UpdateDisplayText();
         return valueLabel;
+#else
+        // iOS/Mac: hidden zero-size picker in local Grid; Focus() opens native picker
+        hiddenPicker.Opacity = 0;
+        hiddenPicker.WidthRequest = 0;
+        hiddenPicker.HeightRequest = 0;
+
+        var layout = new Grid();
+        layout.Children.Add(hiddenPicker);
+        layout.Children.Add(valueLabel);
+
+        UpdateDisplayText();
+        return layout;
+#endif
     }
+
+#if ANDROID
+    protected override void OnCellTapped(object? sender, TappedEventArgs e)
+    {
+        // Android: native picker overlay handles all touch interaction
+    }
+#endif
 
     protected override bool ShouldKeepSelection() => true;
 
     protected override void OnTapped()
     {
-        var overlayHost = PickerHelper.FindOverlayHost(this);
-        if (overlayHost == null) return;
-
-        if (panel != null && panel.IsOpen)
-            return;
-
-        var content = BuildTimePickerContent();
-
-        if (panel == null)
-        {
-            panel = new FloatingPanel.FloatingPanel
-            {
-                FitContent = true,
-                HasBackdrop = true,
-                CloseOnBackdropTap = true,
-                ShowHandle = false,
-                IsLocked = true,
-                PanelCornerRadius = 16
-            };
-            panel.Closed += (_, _) => ClearSelectionHighlight();
-            overlayHost.Children.Add(panel);
-        }
-
-        panel.PanelContent = content;
-        panel.IsOpen = true;
+#if !ANDROID
+        hiddenPicker.Focus();
+#endif
     }
 
-    View BuildTimePickerContent()
+    void OnTimeChanged()
     {
-        var currentTime = Time;
-        var selectedHour = currentTime.Hours;
-        var selectedMinute = currentTime.Minutes;
-        var interval = Math.Max(1, MinuteInterval);
-
-        var hourPicker = new Picker { Title = "Hour", HorizontalOptions = LayoutOptions.Fill };
-        var minutePicker = new Picker { Title = "Minute", HorizontalOptions = LayoutOptions.Fill };
-        var ampmPicker = new Picker { Title = "AM/PM", HorizontalOptions = LayoutOptions.Fill };
-
-        if (Use24Hour)
-        {
-            for (var h = 0; h < 24; h++)
-                hourPicker.Items.Add(h.ToString("D2"));
-            hourPicker.SelectedIndex = selectedHour;
-        }
-        else
-        {
-            for (var h = 1; h <= 12; h++)
-                hourPicker.Items.Add(h.ToString());
-
-            ampmPicker.Items.Add("AM");
-            ampmPicker.Items.Add("PM");
-
-            var displayHour = selectedHour % 12;
-            if (displayHour == 0) displayHour = 12;
-            hourPicker.SelectedIndex = displayHour - 1;
-            ampmPicker.SelectedIndex = selectedHour >= 12 ? 1 : 0;
-        }
-
-        for (var m = 0; m < 60; m += interval)
-            minutePicker.Items.Add(m.ToString("D2"));
-
-        var minuteIndex = selectedMinute / interval;
-        if (minuteIndex < minutePicker.Items.Count)
-            minutePicker.SelectedIndex = minuteIndex;
-
-        var pickerGrid = new Grid { ColumnSpacing = 8, HorizontalOptions = LayoutOptions.Fill };
-
-        if (Use24Hour)
-        {
-            pickerGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            pickerGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            pickerGrid.Add(hourPicker, 0);
-            pickerGrid.Add(minutePicker, 1);
-        }
-        else
-        {
-            pickerGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            pickerGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            pickerGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            pickerGrid.Add(hourPicker, 0);
-            pickerGrid.Add(minutePicker, 1);
-            pickerGrid.Add(ampmPicker, 2);
-        }
-
-        var doneButton = new Button { Text = "Done", HorizontalOptions = LayoutOptions.Fill };
-        doneButton.Clicked += (_, _) =>
-        {
-            var hour = hourPicker.SelectedIndex;
-            if (!Use24Hour)
-            {
-                hour = hourPicker.SelectedIndex + 1;
-                if (hour == 12) hour = 0;
-                if (ampmPicker.SelectedIndex == 1) hour += 12;
-            }
-
-            var minute = minutePicker.SelectedIndex * interval;
-            Time = new TimeSpan(hour, minute, 0);
-            panel!.IsOpen = false;
-        };
-
-        var cancelButton = new Button
-        {
-            Text = "Cancel",
-            BackgroundColor = Colors.Gray,
-            TextColor = Colors.White,
-            HorizontalOptions = LayoutOptions.Fill
-        };
-        cancelButton.Clicked += (_, _) =>
-        {
-            panel!.IsOpen = false;
-        };
-
-        var buttonGrid = new Grid
-        {
-            ColumnDefinitions =
-            {
-                new ColumnDefinition(GridLength.Star),
-                new ColumnDefinition(GridLength.Star)
-            },
-            ColumnSpacing = 10
-        };
-        buttonGrid.Add(cancelButton, 0);
-        buttonGrid.Add(doneButton, 1);
-
-        return new VerticalStackLayout
-        {
-            Padding = new Thickness(20),
-            Spacing = 16,
-            Children =
-            {
-                new Label
-                {
-                    Text = "Select Time",
-                    FontSize = 18,
-                    FontAttributes = FontAttributes.Bold,
-                    HorizontalTextAlignment = TextAlignment.Center
-                },
-                pickerGrid,
-                buttonGrid
-            }
-        };
+        if (hiddenPicker != null)
+            hiddenPicker.Time = Time;
+        UpdateDisplayText();
     }
 
     void UpdateDisplayText()
@@ -231,5 +145,48 @@ public class TimePickerCell : CellBase
             valueLabel.TextColor = color;
         else
             valueLabel.ClearValue(Label.TextColorProperty);
+    }
+
+    TimeSpan SnapToInterval(TimeSpan raw)
+    {
+        var interval = Math.Max(1, MinuteInterval);
+        if (interval <= 1)
+            return raw;
+
+        var snapped = (int)(Math.Round((double)raw.Minutes / interval) * interval);
+        if (snapped >= 60)
+            snapped = 60 - interval;
+
+        return new TimeSpan(raw.Hours, snapped, 0);
+    }
+
+    void SyncUse24Hour()
+    {
+        if (hiddenPicker == null)
+            return;
+
+        hiddenPicker.Format = Use24Hour ? "HH:mm" : "h:mm tt";
+    }
+
+    void SyncMinuteInterval()
+    {
+        ApplyMinuteIntervalToNative();
+    }
+
+    void OnPickerHandlerChanged(object? sender, EventArgs e)
+    {
+        ApplyMinuteIntervalToNative();
+    }
+
+    void ApplyMinuteIntervalToNative()
+    {
+        if (hiddenPicker?.Handler?.PlatformView == null)
+            return;
+
+        var interval = Math.Max(1, MinuteInterval);
+#if IOS || MACCATALYST
+        if (hiddenPicker.Handler.PlatformView is UIKit.UIDatePicker uiPicker)
+            uiPicker.MinuteInterval = (nint)interval;
+#endif
     }
 }

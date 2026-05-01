@@ -6,7 +6,43 @@
     xmlns:local="clr-namespace:Sample.Features.KitchenSink"
     x:Class="Sample.Features.KitchenSink.KitchenSinkPage"
     x:DataType="local:KitchenSinkViewModel"
+    x:Name="thisPage"
     Title="Kitchen Sink">
+
+  <shiny:ShinyContentPage.Resources>
+    <local:KitchenSinkMessageTemplateSelector x:Key="MessageTemplateSelector">
+        <local:KitchenSinkMessageTemplateSelector.TextTemplate>
+            <DataTemplate x:DataType="shiny:ChatMessage">
+                <Label Text="{Binding Text}" />
+            </DataTemplate>
+        </local:KitchenSinkMessageTemplateSelector.TextTemplate>
+        <local:KitchenSinkMessageTemplateSelector.ImageTemplate>
+            <DataTemplate x:DataType="shiny:ChatMessage">
+                <shiny:ImageViewer Source="{Binding ImageUrl}"
+                                   HeightRequest="200"
+                                   WidthRequest="280"
+                                   Aspect="AspectFill">
+                    <shiny:ImageViewer.FooterTemplate>
+                        <DataTemplate>
+                            <HorizontalStackLayout HorizontalOptions="Center"
+                                                   Spacing="12"
+                                                   Padding="16">
+                                <Button Text="Edit"
+                                        BackgroundColor="#6C63FF"
+                                        TextColor="White"
+                                        CornerRadius="20"
+                                        Padding="24,10"
+                                        FontAttributes="Bold"
+                                        Command="{Binding BindingContext.EditImageCommand, Source={x:Reference thisPage}}"
+                                        CommandParameter="{Binding ImageUrl}" />
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </shiny:ImageViewer.FooterTemplate>
+                </shiny:ImageViewer>
+            </DataTemplate>
+        </local:KitchenSinkMessageTemplateSelector.ImageTemplate>
+    </local:KitchenSinkMessageTemplateSelector>
+  </shiny:ShinyContentPage.Resources>
 
   <shiny:ShinyContentPage.PageContent>
     <Grid>
@@ -46,27 +82,6 @@
                                CommandParameter="carol" />
         </shiny:FabMenu>
 
-        <!-- ImageViewer overlay with Edit footer -->
-        <shiny:ImageViewer Source="{Binding ViewerImageSource}"
-                           IsOpen="{Binding IsImageViewerOpen}"
-                           OpenViewerOnTap="False">
-            <shiny:ImageViewer.FooterTemplate>
-                <DataTemplate x:DataType="local:KitchenSinkViewModel">
-                    <HorizontalStackLayout HorizontalOptions="Center"
-                                           Spacing="12"
-                                           Padding="16">
-                        <Button Text="Edit"
-                                BackgroundColor="#6C63FF"
-                                TextColor="White"
-                                CornerRadius="20"
-                                Padding="24,10"
-                                FontAttributes="Bold"
-                                Command="{Binding EditImageCommand}" />
-                    </HorizontalStackLayout>
-                </DataTemplate>
-            </shiny:ImageViewer.FooterTemplate>
-        </shiny:ImageViewer>
-
     </Grid>
   </shiny:ShinyContentPage.PageContent>
 
@@ -96,7 +111,7 @@
                         IsMultiPerson="False"
                         ShowAvatarsInSingleChat="True"
                         SendCommand="{Binding SendCommand}"
-                        MessageTappedCommand="{Binding MessageTappedCommand}"
+                        MessageTemplateSelector="{StaticResource MessageTemplateSelector}"
                         MyBubbleColor="#DCF8C6"
                         OtherBubbleColor="White"
                         PlaceholderText="Type a message..."

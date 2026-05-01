@@ -1,0 +1,25 @@
+@namespace Shiny.Blazor.Controls
+
+<div class="shiny-frosted-glass" style="@ComputedStyle">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public double BlurRadius { get; set; } = 20;
+    [Parameter] public string TintColor { get; set; } = "rgba(255, 255, 255, 0.6)";
+    [Parameter] public double CornerRadius { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? Style { get; set; }
+
+    string ComputedStyle => string.Join(";",
+        new[]
+        {
+            $"backdrop-filter: blur({BlurRadius}px)",
+            $"-webkit-backdrop-filter: blur({BlurRadius}px)",
+            $"background-color: {TintColor}",
+            CornerRadius > 0 ? $"border-radius: {CornerRadius}px" : null,
+            "overflow: hidden",
+            Style
+        }.Where(s => !string.IsNullOrEmpty(s)));
+}

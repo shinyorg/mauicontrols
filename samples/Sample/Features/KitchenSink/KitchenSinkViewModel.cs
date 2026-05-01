@@ -35,8 +35,6 @@ public partial class KitchenSinkViewModel(INavigator navigator) : ObservableObje
     ];
 
     [ObservableProperty] bool isChatOpen;
-    [ObservableProperty] bool isImageViewerOpen;
-    [ObservableProperty] string? viewerImageSource;
     [ObservableProperty] string chatTitle = string.Empty;
     [ObservableProperty] ObservableCollection<ChatMessage> messages = [];
     [ObservableProperty] ObservableCollection<ChatParticipant> participants = [];
@@ -104,27 +102,14 @@ public partial class KitchenSinkViewModel(INavigator navigator) : ObservableObje
     }
 
     [RelayCommand]
-    void MessageTapped(ChatMessage msg)
+    async Task EditImage(string? imageUrl)
     {
-        if (msg.ImageUrl is null)
+        if (imageUrl is null)
             return;
 
-        ViewerImageSource = msg.ImageUrl;
-        IsImageViewerOpen = true;
-    }
-
-    [RelayCommand]
-    async Task EditImage()
-    {
-        if (ViewerImageSource is null)
-            return;
-
-        IsImageViewerOpen = false;
-
-        var imageUri = ViewerImageSource;
         await navigator.NavigateTo<ImageEditor.ImageEditorViewModel>(vm =>
         {
-            vm.ImageSource = ImageSource.FromUri(new Uri(imageUri));
+            vm.ImageSource = ImageSource.FromUri(new Uri(imageUrl));
             vm.OnImageSaved = filePath =>
             {
                 Messages.Add(new ChatMessage
@@ -173,4 +158,18 @@ public partial class KitchenSinkViewModel(INavigator navigator) : ObservableObje
         string DisplayName,
         string BubbleColorHex,
         (string Content, int MinutesAgo)[] SeedMessages);
+}
+
+public class KitchenSinkMessageTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate? TextTemplate { get; set; }
+    public DataTemplate? ImageTemplate { get; set; }
+
+    protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
+    {
+        if (item is ChatMessage msg && !string.IsNullOrEmpty(msg.ImageUrl))
+            return ImageTemplate;
+
+        return TextTemplate;
+    }
 }

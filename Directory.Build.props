@@ -33,4 +33,13 @@
         <PublishRepositoryUrl>True</PublishRepositoryUrl>
         <EmbedUntrackedSources>True</EmbedUntrackedSources>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)nuget.png" Pack="true" PackagePath="icon.png" />
+        <None Include="$(MSBuildThisFileDirectory)readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 </Project>

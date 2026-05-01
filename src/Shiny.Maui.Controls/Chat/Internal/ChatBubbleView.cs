@@ -16,9 +16,11 @@ partial class ChatBubbleView : ContentView
     readonly Image avatarImage;
     readonly Label nameLabel;
     readonly Border bubbleBorder;
+    readonly VerticalStackLayout defaultContentLayout;
     readonly Label textLabel;
     readonly Image imageView;
     readonly Label timestampLabel;
+    View? customTemplateView;
 
     public ChatBubbleView(ChatView chatView, bool isMe)
     {
@@ -86,6 +88,11 @@ partial class ChatBubbleView : ContentView
             IsVisible = false
         };
 
+        defaultContentLayout = new VerticalStackLayout
+        {
+            Children = { textLabel, imageView }
+        };
+
         bubbleBorder = new Border
         {
             Padding = new Thickness(12, 8),
@@ -93,10 +100,7 @@ partial class ChatBubbleView : ContentView
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 18 },
 
             MaximumWidthRequest = 280,
-            Content = new VerticalStackLayout
-            {
-                Children = { textLabel, imageView }
-            }
+            Content = defaultContentLayout
         };
 
         var bubbleTap = new TapGestureRecognizer();
@@ -207,9 +211,24 @@ partial class ChatBubbleView : ContentView
             ? new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(18, 18, 18, tailRadius) }
             : new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(18, 18, tailRadius, 18) };
 
-        // Content: text or image
-        if (!string.IsNullOrEmpty(message.ImageUrl))
+        // Content: custom template, text, or image
+        var template = chatView.MessageTemplateSelector?.SelectTemplate(message, this)
+                    ?? chatView.MessageTemplate;
+
+        if (template != null)
         {
+            customTemplateView = (View)template.CreateContent();
+            customTemplateView.BindingContext = message;
+            bubbleBorder.Content = customTemplateView;
+            bubbleBorder.Padding = new Thickness(12, 8);
+        }
+        else if (!string.IsNullOrEmpty(message.ImageUrl))
+        {
+            if (customTemplateView != null)
+            {
+                bubbleBorder.Content = defaultContentLayout;
+                customTemplateView = null;
+            }
             textLabel.IsVisible = false;
             imageView.IsVisible = true;
             imageView.Source = message.ImageUrl;
@@ -217,6 +236,11 @@ partial class ChatBubbleView : ContentView
         }
         else
         {
+            if (customTemplateView != null)
+            {
+                bubbleBorder.Content = defaultContentLayout;
+                customTemplateView = null;
+            }
             textLabel.IsVisible = true;
             imageView.IsVisible = false;
             textLabel.TextColor = textColor;

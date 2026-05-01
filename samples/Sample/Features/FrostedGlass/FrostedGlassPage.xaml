@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:shiny="http://shiny.net/maui/controls"
+    x:Class="Sample.Features.FrostedGlass.FrostedGlassPage"
+    Title="Frosted Glass">
+
+    <Grid>
+        <!-- Background image to show blur effect against -->
+        <Image Source="https://picsum.photos/800/1200"
+               Aspect="AspectFill" />
+
+        <VerticalStackLayout Spacing="20" Padding="20"
+                             VerticalOptions="Center">
+
+            <!-- Basic frosted glass card -->
+            <shiny:FrostedGlassView CornerRadius="16"
+                                    BlurRadius="20"
+                                    TintColor="#80FFFFFF"
+                                    TintOpacity="0.6">
+                <VerticalStackLayout Padding="20" Spacing="8">
+                    <Label Text="Frosted Glass Card"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="Black" />
+                    <Label Text="This card has a frosted glass effect that blurs the content behind it."
+                           FontSize="14"
+                           TextColor="#333333" />
+                </VerticalStackLayout>
+            </shiny:FrostedGlassView>
+
+            <!-- Dark frosted glass -->
+            <shiny:FrostedGlassView CornerRadius="12"
+                                    BlurRadius="30"
+                                    TintColor="#80000000"
+                                    TintOpacity="0.5">
+                <VerticalStackLayout Padding="16" Spacing="6">
+                    <Label Text="Dark Glass"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="White" />
+                    <Label Text="A darker tint for contrast against light backgrounds."
+                           FontSize="13"
+                           TextColor="#DDDDDD" />
+                </VerticalStackLayout>
+            </shiny:FrostedGlassView>
+
+            <!-- Colored frosted glass -->
+            <shiny:FrostedGlassView CornerRadius="20"
+                                    BlurRadius="15"
+                                    TintColor="#607C3AED"
+                                    TintOpacity="0.7">
+                <HorizontalStackLayout Padding="16" Spacing="12">
+                    <Label Text="&#x2728;" FontSize="24" VerticalOptions="Center" />
+                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="Purple Tinted"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label Text="Custom color tint"
+                               FontSize="12"
+                               TextColor="#EEEEEE" />
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+            </shiny:FrostedGlassView>
+
+            <!-- Pill-shaped glass button -->
+            <shiny:FrostedGlassView CornerRadius="24"
+                                    BlurRadius="25"
+                                    TintColor="#99FFFFFF"
+                                    TintOpacity="0.8"
+                                    HorizontalOptions="Center">
+                <Label Text="Glass Button"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       TextColor="Black"
+                       Padding="24,12" />
+            </shiny:FrostedGlassView>
+
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>

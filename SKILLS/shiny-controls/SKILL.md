@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, FloatingPanel/OverlayHost/ShinyContentPage (bottom/top overlay panels) with detents and header peek, Pickers (ShinyDatePicker with calendar panel, ShinyTimePicker with hour/minute panel, ShinyDurationPicker with hour/minute panel), PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, TextToSpeechButton for speaking text aloud with cancel/resume, SignaturePad for capturing signatures with canvas drawing and PNG export, and haptic feedback support across all interactive controls
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, FloatingPanel/OverlayHost/ShinyContentPage (bottom/top overlay panels) with detents and header peek, ShinyDurationPicker (duration picker with FloatingPanel), FrostedGlassView (native blur/glass effect), PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar and custom MessageTemplate/MessageTemplateSelector for per-message rendering, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, TextToSpeechButton for speaking text aloud with cancel/resume, SignaturePad for capturing signatures with canvas drawing and PNG export, and haptic feedback support across all interactive controls
 auto_invoke: true
 triggers:
   - tableview
@@ -119,15 +119,20 @@ triggers:
   - draw signature
   - blazor signaturepad
   - blazor signature
-  - date picker
-  - datepicker
-  - shinydatepicker
-  - time picker
-  - timepicker
-  - shinytimepicker
   - duration picker
   - durationpicker
   - shinydurationpicker
+  - frosted glass
+  - frostedglass
+  - glass effect
+  - blur effect
+  - acrylic
+  - backdrop blur
+  - glassmorphism
+  - chat template
+  - message template
+  - chat button
+  - action message
 references:
   - tableview.md
   - floating-panel.md
@@ -145,6 +150,7 @@ references:
   - address-entry.md
   - signature-pad.md
   - pickers.md
+  - frosted-glass.md
 ---
 
 # Shiny Controls Skill

@@ -148,6 +148,88 @@ public partial class ChatViewModel : ObservableObject
 }
 ```
 
+## Custom Message Templates
+
+Control how each message bubble's content is rendered using `MessageTemplate` or `MessageTemplateSelector`. The bubble chrome (avatar, name, timestamp, colors, corner radius, alignment) is still managed by ChatView — you only control what renders *inside* the bubble.
+
+### MessageTemplate (single template for all messages)
+
+```xml
+<shiny:ChatView Messages="{Binding Messages}">
+    <shiny:ChatView.MessageTemplate>
+        <DataTemplate x:DataType="shiny:ChatMessage">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="{Binding Text}" />
+                <Button Text="Reply" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyViewModel}}, Path=ReplyCommand}"
+                        CommandParameter="{Binding .}" />
+            </VerticalStackLayout>
+        </DataTemplate>
+    </shiny:ChatView.MessageTemplate>
+</shiny:ChatView>
+```
+
+### MessageTemplateSelector (different templates per message type)
+
+Subclass `ChatMessage` for different message types, then use a `DataTemplateSelector`:
+
+```csharp
+public class ActionChatMessage : ChatMessage
+{
+    public string ActionText { get; set; } = "Accept";
+}
+
+public class CardChatMessage : ChatMessage
+{
+    public string CardTitle { get; set; } = string.Empty;
+}
+
+public class ChatMessageTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate? TextTemplate { get; set; }
+    public DataTemplate? ActionTemplate { get; set; }
+    public DataTemplate? CardTemplate { get; set; }
+
+    protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
+    {
+        return item switch
+        {
+            ActionChatMessage => ActionTemplate,
+            CardChatMessage => CardTemplate,
+            _ => TextTemplate
+        };
+    }
+}
+```
+
+```xml
+<shiny:ChatView Messages="{Binding Messages}">
+    <shiny:ChatView.MessageTemplateSelector>
+        <local:ChatMessageTemplateSelector>
+            <local:ChatMessageTemplateSelector.TextTemplate>
+                <DataTemplate x:DataType="shiny:ChatMessage">
+                    <Label Text="{Binding Text}" />
+                </DataTemplate>
+            </local:ChatMessageTemplateSelector.TextTemplate>
+            <local:ChatMessageTemplateSelector.ActionTemplate>
+                <DataTemplate x:DataType="local:ActionChatMessage">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="{Binding Text}" />
+                        <Button Text="{Binding ActionText}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </local:ChatMessageTemplateSelector.ActionTemplate>
+        </local:ChatMessageTemplateSelector>
+    </shiny:ChatView.MessageTemplateSelector>
+</shiny:ChatView>
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `MessageTemplate` | `DataTemplate?` | `null` | Single template for all message bubble content |
+| `MessageTemplateSelector` | `DataTemplateSelector?` | `null` | Per-message-type template selector (takes priority) |
+
+When neither is set, the default text/image rendering is used.
+
 ## Code Generation Guidance
 
 - Use `ChatView` for any chat/messaging/conversation UI — do not hand-build bubble layouts with `CollectionView`
@@ -157,3 +239,5 @@ public partial class ChatViewModel : ObservableObject
 - `LoadMoreCommand` fires when the user scrolls near the top; prepend older messages with `Insert(0, msg)`
 - `TypingParticipants` should never include the local user (the "you are typing" is excluded by design)
 - Set `IsInputBarVisible = false` for read-only chat views (e.g., chat history, support logs)
+- Use `MessageTemplate` for simple customization (e.g., adding action buttons to every message)
+- Use `MessageTemplateSelector` when you have multiple message types (text, action buttons, cards, etc.) — subclass `ChatMessage` for each type

@@ -242,6 +242,33 @@ public partial class ChatView
         set => SetValue(FirstUnreadMessageIdProperty, value);
     }
 
+    // Message template
+    public static readonly BindableProperty MessageTemplateProperty = BindableProperty.Create(
+        nameof(MessageTemplate),
+        typeof(DataTemplate),
+        typeof(ChatView),
+        null,
+        propertyChanged: (b, _, _) => ((ChatView)b).RefreshBubbles());
+
+    public DataTemplate? MessageTemplate
+    {
+        get => (DataTemplate?)GetValue(MessageTemplateProperty);
+        set => SetValue(MessageTemplateProperty, value);
+    }
+
+    public static readonly BindableProperty MessageTemplateSelectorProperty = BindableProperty.Create(
+        nameof(MessageTemplateSelector),
+        typeof(DataTemplateSelector),
+        typeof(ChatView),
+        null,
+        propertyChanged: (b, _, _) => ((ChatView)b).RefreshBubbles());
+
+    public DataTemplateSelector? MessageTemplateSelector
+    {
+        get => (DataTemplateSelector?)GetValue(MessageTemplateSelectorProperty);
+        set => SetValue(MessageTemplateSelectorProperty, value);
+    }
+
     // Haptic
     public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
         nameof(UseHapticFeedback),

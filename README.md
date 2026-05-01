@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, Pickers (Date/Time/Duration), Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, ShinyDurationPicker, FrostedGlassView, Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -215,47 +215,9 @@ A floating panel overlay system for MAUI. Panels slide in from the bottom or top
 | BackdropColor | Color | Forwarded to internal OverlayHost |
 | BackdropMaxOpacity | double | Forwarded to internal OverlayHost |
 
-### Pickers (Date, Time, Duration)
+### ShinyDurationPicker
 
-Standalone picker controls that open a FloatingPanel for selection. These provide a consistent, cross-platform experience without relying on native platform pickers. All require `ShinyContentPage` (or an `OverlayHost` in the visual tree).
-
-**ShinyDatePicker** — Opens a calendar in a floating panel. Selecting a date auto-closes the panel.
-
-```xml
-<shiny:ShinyDatePicker Date="{Binding SelectedDate, Mode=TwoWay}"
-                       MinDate="{Binding MinDate}"
-                       MaxDate="{Binding MaxDate}"
-                       Format="D"
-                       Placeholder="Choose a date" />
-```
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `Date` | `DateOnly?` | `null` | Selected date (TwoWay) |
-| `MinDate` | `DateOnly?` | `null` | Minimum selectable date |
-| `MaxDate` | `DateOnly?` | `null` | Maximum selectable date |
-| `Format` | `string` | `"d"` | Display format string |
-| `Placeholder` | `string` | `"Select date"` | Text shown when no date selected |
-| `FirstDayOfWeek` | `DayOfWeek` | `Sunday` | First day of week in calendar |
-
-**ShinyTimePicker** — Opens hour/minute pickers in a floating panel with Done/Cancel.
-
-```xml
-<shiny:ShinyTimePicker Time="{Binding SelectedTime, Mode=TwoWay}"
-                       Use24Hour="True"
-                       MinuteInterval="15"
-                       Placeholder="Choose a time" />
-```
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `Time` | `TimeSpan?` | `null` | Selected time (TwoWay) |
-| `Format` | `string` | `"t"` | Display format string |
-| `Use24Hour` | `bool` | `false` | Use 24-hour format |
-| `MinuteInterval` | `int` | `1` | Minute increment step |
-| `Placeholder` | `string` | `"Select time"` | Text shown when no time selected |
-
-**ShinyDurationPicker** — Opens hour/minute pickers with labels in a floating panel.
+A standalone duration picker control that opens a FloatingPanel for selection with hour/minute pickers and "hr"/"min" labels. Requires `ShinyContentPage` (or an `OverlayHost` in the visual tree).
 
 ```xml
 <shiny:ShinyDurationPicker Duration="{Binding SelectedDuration, Mode=TwoWay}"
@@ -424,9 +386,38 @@ A modern chat UI control with message bubbles, typing indicators, load-more pagi
 | FirstUnreadMessageId | string? | null | ID of the first unread message |
 | UseHapticFeedback | bool | true | Haptic feedback on send |
 
-**Commands:** `SendCommand` (ICommand, receives text string), `AttachImageCommand` (ICommand), `LoadMoreCommand` (ICommand)
+**Commands:** `SendCommand` (ICommand, receives text string), `AttachImageCommand` (ICommand), `LoadMoreCommand` (ICommand), `MessageTappedCommand` (ICommand, receives ChatMessage)
 
 **Methods:** `ScrollToEnd(bool animate)`, `ScrollToMessage(string messageId, bool animate)`
+
+**Custom Message Templates:** Control how each bubble's content renders using `MessageTemplate` (single DataTemplate for all messages) or `MessageTemplateSelector` (per-message-type selection). The bubble chrome (avatar, name, timestamp, colors, alignment) is still managed by ChatView.
+
+```xml
+<shiny:ChatView Messages="{Binding Messages}">
+    <shiny:ChatView.MessageTemplateSelector>
+        <local:MyTemplateSelector>
+            <local:MyTemplateSelector.TextTemplate>
+                <DataTemplate x:DataType="shiny:ChatMessage">
+                    <Label Text="{Binding Text}" />
+                </DataTemplate>
+            </local:MyTemplateSelector.TextTemplate>
+            <local:MyTemplateSelector.ActionTemplate>
+                <DataTemplate x:DataType="local:ActionMessage">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="{Binding Text}" />
+                        <Button Text="{Binding ActionText}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </local:MyTemplateSelector.ActionTemplate>
+        </local:MyTemplateSelector>
+    </shiny:ChatView.MessageTemplateSelector>
+</shiny:ChatView>
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| MessageTemplate | DataTemplate? | null | Single template for all message content |
+| MessageTemplateSelector | DataTemplateSelector? | null | Per-message-type template (takes priority) |
 
 **Features:**
 - Chat bubbles with left/right alignment and customizable colors per participant
@@ -440,6 +431,7 @@ A modern chat UI control with message bubbles, typing indicators, load-more pagi
 - Image messages (text and image are mutually exclusive per message)
 - Bottom input bar with Enter key and Send button; optional attach button
 - Entire input bar can be hidden for read-only use
+- Custom message templates for action buttons, cards, or any custom content
 
 ### ColorPicker
 
@@ -904,6 +896,40 @@ Blazor uses CSS color strings instead of `Color`, `SheetDirection` instead of `F
 
 Events: `Signed` fires with `SignatureImageEventArgs` (MAUI) or `byte[]` (Blazor). `Cancelled` fires on cancel.
 
+### FrostedGlassView
+
+A view that applies a native frosted glass (blur) effect behind its content. Place over images or busy backgrounds for a glassmorphism effect.
+
+```xml
+<shiny:FrostedGlassView BlurRadius="20"
+                        TintColor="#80FFFFFF"
+                        TintOpacity="0.6"
+                        CornerRadius="16">
+    <VerticalStackLayout Padding="20" Spacing="8">
+        <Label Text="Glass Card" FontSize="20" FontAttributes="Bold" />
+        <Label Text="Content over blurred background." FontSize="14" />
+    </VerticalStackLayout>
+</shiny:FrostedGlassView>
+```
+
+```razor
+<!-- Blazor -->
+<FrostedGlass BlurRadius="20" TintColor="rgba(255,255,255,0.6)" CornerRadius="16">
+    <h3>Glass Card</h3>
+    <p>Content over blurred background.</p>
+</FrostedGlass>
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| GlassContent / ChildContent | View / RenderFragment | - | Content rendered on top of the glass |
+| BlurRadius | double | 20 | Blur strength in pixels |
+| TintColor | Color / string | #80FFFFFF / rgba(255,255,255,0.6) | Glass tint overlay |
+| TintOpacity | double | 0.6 | Tint opacity (MAUI only) |
+| CornerRadius | double | 0 | Corner radius for clipping |
+
+**Platform implementation:** iOS uses `UIVisualEffectView`, Android 12+ uses `RenderEffect.CreateBlurEffect`, Blazor uses CSS `backdrop-filter: blur()`.
+
 ### TableView
 
 A settings-style table view with 14+ built-in cell types, section grouping, drag-to-reorder, and dynamic data binding.
@@ -938,7 +964,7 @@ A settings-style table view with 14+ built-in cell types, section grouping, drag
 | PickerCell | Single or multi-select picker |
 | TextPickerCell | String list picker |
 | DatePickerCell | Date selection with min/max bounds |
-| TimePickerCell | Time selection |
+| TimePickerCell | Time selection with 24-hour mode and minute interval |
 | DurationPickerCell | TimeSpan picker with min/max |
 | NumberPickerCell | Integer picker with min/max/unit |
 | SimpleCheckCell | Checkmark indicator |
