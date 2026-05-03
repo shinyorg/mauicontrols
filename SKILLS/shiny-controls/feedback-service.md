@@ -55,14 +55,22 @@ public class HapticFeedbackService : IFeedbackService
 | `FloatingPanel` | `Opened` | — | Panel opened |
 | `FloatingPanel` | `Closed` | — | Panel closed |
 | `FloatingPanel` | `DetentChanged` | — | Panel snapped to detent |
+| `ImageViewer` | `Opened` | — | Viewer opened |
+| `ImageViewer` | `Closed` | — | Viewer closed |
 | `ImageViewer` | `DoubleTapped` | — | Double-tap zoom |
+| `ImageEditor` | `ToolModeChanged` | mode name | Tool changed |
+| `ImageEditor` | `Undo` | — | Undo |
+| `ImageEditor` | `Redo` | — | Redo |
+| `ImageEditor` | `Rotate` | — | Rotated |
+| `ImageEditor` | `Reset` | — | Reset |
+| `ImageEditor` | `CropApplied` | — | Crop applied |
+| `ImageEditor` | `Saved` | — | Saved |
 | `SecurityPin` | `Completed` | `"LongPress"` | All digits entered |
 | `SecurityPin` | `DigitEntered` | — | Digit entered |
 | `SchedulerCalendarView` | `DaySelected` | — | Day tapped |
 | `SchedulerCalendarView` | `EventSelected` | — | Event tapped |
 | `SchedulerAgendaView` | `EventSelected` | — | Event tapped |
 | `SchedulerAgendaView` | `TimeSlotSelected` | — | Time slot tapped |
-| `TextToSpeechButton` | `Clicked` | — | Button tapped |
 | `CellBase` | `Tapped` | — | Table cell tapped |
 | `Toaster` | `Show` | toast text | Toast shown |
 

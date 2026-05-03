@@ -9,35 +9,67 @@ public partial class ToastViewModel(IToaster toaster) : ObservableObject
     IDisposable? manualToast;
 
     [ObservableProperty]
-    string statusMessage = "Tap a button to show a toast";
+    string statusMessage = "Configure and tap Show Toast";
+
+    [ObservableProperty]
+    string toastText = "Hello from Shiny!";
+
+    // --- Configuration properties ---
+
+    public List<ToastPosition> Positions { get; } = Enum.GetValues<ToastPosition>().ToList();
+    public List<ToastDisplayMode> DisplayModes { get; } = Enum.GetValues<ToastDisplayMode>().ToList();
+    public List<ToastQueueMode> QueueModes { get; } = Enum.GetValues<ToastQueueMode>().ToList();
+    public List<ToastSpinnerPosition> SpinnerPositions { get; } = Enum.GetValues<ToastSpinnerPosition>().ToList();
+
+    [ObservableProperty]
+    ToastPosition selectedPosition = ToastPosition.Bottom;
+
+    [ObservableProperty]
+    ToastDisplayMode selectedDisplayMode = ToastDisplayMode.Pill;
+
+    [ObservableProperty]
+    ToastQueueMode selectedQueueMode = ToastQueueMode.Queue;
+
+    [ObservableProperty]
+    ToastSpinnerPosition selectedSpinner = ToastSpinnerPosition.None;
+
+    [ObservableProperty]
+    double durationSeconds = 3;
+
+    [ObservableProperty]
+    double cornerRadius = 20;
+
+    [ObservableProperty]
+    bool dismissOnTap = true;
+
+    [ObservableProperty]
+    bool showProgressBar;
+
+    [ObservableProperty]
+    bool useFeedback = true;
+
+    [ObservableProperty]
+    bool announceToScreenReader = true;
+
+    // --- Commands ---
 
     [RelayCommand]
-    async Task BasicToast()
+    async Task ShowConfiguredToast()
     {
-        await toaster.ShowAsync("Item saved successfully!");
-        StatusMessage = "Basic toast shown";
-    }
-
-    [RelayCommand]
-    async Task TopToast()
-    {
-        await toaster.ShowAsync("New message received", cfg =>
+        await toaster.ShowAsync(ToastText, cfg =>
         {
-            cfg.Position = ToastPosition.Top;
+            cfg.Position = SelectedPosition;
+            cfg.DisplayMode = SelectedDisplayMode;
+            cfg.QueueMode = SelectedQueueMode;
+            cfg.Spinner = SelectedSpinner;
+            cfg.Duration = TimeSpan.FromSeconds(DurationSeconds);
+            cfg.CornerRadius = CornerRadius;
+            cfg.DismissOnTap = DismissOnTap;
+            cfg.ShowProgressBar = ShowProgressBar;
+            cfg.UseFeedback = UseFeedback;
+            cfg.AnnounceToScreenReader = AnnounceToScreenReader;
         });
-        StatusMessage = "Top toast shown";
-    }
-
-    [RelayCommand]
-    async Task FillToast()
-    {
-        await toaster.ShowAsync("No internet connection", cfg =>
-        {
-            cfg.DisplayMode = ToastDisplayMode.FillHorizontal;
-            cfg.BackgroundColor = Colors.OrangeRed;
-            cfg.Duration = TimeSpan.FromSeconds(4);
-        });
-        StatusMessage = "Fill horizontal toast shown";
+        StatusMessage = "Configured toast shown";
     }
 
     [RelayCommand]
@@ -50,7 +82,7 @@ public partial class ToastViewModel(IToaster toaster) : ObservableObject
             cfg.Duration = TimeSpan.Zero;
             cfg.DismissOnTap = false;
         });
-        StatusMessage = "Spinner toast shown (tap Dismiss to close)";
+        StatusMessage = "Persistent toast shown (tap Dismiss to close)";
     }
 
     [RelayCommand]
@@ -59,20 +91,6 @@ public partial class ToastViewModel(IToaster toaster) : ObservableObject
         manualToast?.Dispose();
         manualToast = null;
         StatusMessage = "Manual toast dismissed";
-    }
-
-    [RelayCommand]
-    async Task StackedToasts()
-    {
-        for (var i = 1; i <= 3; i++)
-        {
-            await toaster.ShowAsync($"Notification {i}", cfg =>
-            {
-                cfg.QueueMode = ToastQueueMode.Stack;
-                cfg.Duration = TimeSpan.FromSeconds(3 + i);
-            });
-        }
-        StatusMessage = "3 stacked toasts shown";
     }
 
     [RelayCommand]
@@ -87,40 +105,6 @@ public partial class ToastViewModel(IToaster toaster) : ObservableObject
             cfg.CornerRadius = 12;
         });
         StatusMessage = "Styled toast shown";
-    }
-
-    [RelayCommand]
-    async Task IconToast()
-    {
-        await toaster.ShowAsync("Download complete", cfg =>
-        {
-            cfg.Icon = ImageSource.FromFile("dotnet_bot.png");
-            cfg.Duration = TimeSpan.FromSeconds(4);
-        });
-        StatusMessage = "Icon toast shown";
-    }
-
-    [RelayCommand]
-    async Task ProgressToast()
-    {
-        await toaster.ShowAsync("Processing request...", cfg =>
-        {
-            cfg.ShowProgressBar = true;
-            cfg.Duration = TimeSpan.FromSeconds(5);
-            cfg.BackgroundColor = Color.FromArgb("#0F766E");
-        });
-        StatusMessage = "Progress bar toast shown";
-    }
-
-    [RelayCommand]
-    async Task TapCommandToast()
-    {
-        await toaster.ShowAsync("Tap me for details!", cfg =>
-        {
-            cfg.Duration = TimeSpan.FromSeconds(5);
-            cfg.TapCommand = new Command(() => StatusMessage = "Toast was tapped!");
-        });
-        StatusMessage = "Tap command toast shown";
     }
 
     [RelayCommand]

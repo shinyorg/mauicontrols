@@ -24,6 +24,7 @@
     xmlns:pickers="clr-namespace:Sample.Features.Pickers"
     xmlns:glass="clr-namespace:Sample.Features.FrostedGlass"
     xmlns:toast="clr-namespace:Sample.Features.Toast"
+    xmlns:feedback="clr-namespace:Sample.Features.Feedback"
     Title="Shiny Controls"
     FlyoutBackgroundColor="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}"
     FlyoutWidth="310"
@@ -351,6 +352,14 @@
                              Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
         </FlyoutItem.FlyoutIcon>
         <ShellContent ContentTemplate="{DataTemplate countryaddress:CountryAddressPage}" Route="countryaddress" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Feedback">
+        <FlyoutItem.FlyoutIcon>
+            <FontImageSource Glyph="&#x2606;" Size="20"
+                             Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
+        </FlyoutItem.FlyoutIcon>
+        <ShellContent ContentTemplate="{DataTemplate feedback:FeedbackPage}" Route="feedback" />
     </FlyoutItem>
 
     <FlyoutItem Title="Toast">

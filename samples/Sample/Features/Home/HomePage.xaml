@@ -1,12 +1,99 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:md="http://shiny.net/maui/markdown"
              xmlns:local="clr-namespace:Sample.Features.Home"
              x:Class="Sample.Features.Home.HomePage"
              x:DataType="local:HomeViewModel"
-             Title="Home">
+             Title="Home"
+             Shell.NavBarIsVisible="False">
 
-    <md:MarkdownView Markdown="{Binding Markdown}" Padding="16" />
+    <Grid BackgroundColor="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}">
+        <!-- Gradient background -->
+        <BoxView>
+            <BoxView.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="{AppThemeBinding Light=#EDE9FE, Dark=#1E1B4B}" Offset="0.0" />
+                    <GradientStop Color="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}" Offset="0.5" />
+                    <GradientStop Color="{AppThemeBinding Light=#DBEAFE, Dark=#172554}" Offset="1.0" />
+                </LinearGradientBrush>
+            </BoxView.Background>
+        </BoxView>
+
+        <!-- Decorative circles -->
+        <BoxView CornerRadius="120"
+                 WidthRequest="240" HeightRequest="240"
+                 Color="{AppThemeBinding Light=#7C3AED, Dark=#6D28D9}" Opacity="0.06"
+                 HorizontalOptions="End" VerticalOptions="Start"
+                 Margin="0,-60,-80,0" />
+        <BoxView CornerRadius="80"
+                 WidthRequest="160" HeightRequest="160"
+                 Color="{AppThemeBinding Light=#4F46E5, Dark=#4338CA}" Opacity="0.05"
+                 HorizontalOptions="Start" VerticalOptions="End"
+                 Margin="-40,0,0,-40" />
+
+        <!-- Content -->
+        <VerticalStackLayout VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="16"
+                             Padding="32">
+
+            <!-- Logo with glow -->
+            <Border StrokeThickness="0"
+                    BackgroundColor="Transparent"
+                    HorizontalOptions="Center"
+                    WidthRequest="120" HeightRequest="120">
+                <Border.Shadow>
+                    <Shadow Brush="#8B5CF6"
+                            Offset="0,6"
+                            Radius="30"
+                            Opacity="0.5" />
+                </Border.Shadow>
+                <Image Source="shiny_logo.png"
+                       HeightRequest="120"
+                       WidthRequest="120" />
+            </Border>
+
+            <!-- Title -->
+            <Label Text="Shiny Controls"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#1E1B4B, Dark=#E0E7FF}"
+                   HorizontalTextAlignment="Center">
+                <Label.Shadow>
+                    <Shadow Brush="{AppThemeBinding Light=#7C3AED, Dark=#000000}"
+                            Offset="0,2"
+                            Radius="12"
+                            Opacity="0.15" />
+                </Label.Shadow>
+            </Label>
+
+            <!-- Accent line -->
+            <Border BackgroundColor="{AppThemeBinding Light=#7C3AED, Dark=#6D28D9}"
+                    Opacity="0.4"
+                    StrokeThickness="0"
+                    HeightRequest="2"
+                    WidthRequest="80"
+                    HorizontalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="1" />
+                </Border.StrokeShape>
+            </Border>
+
+            <!-- Subtitle -->
+            <Label Text="MAUI &amp; Blazor Component Gallery"
+                   FontSize="14"
+                   TextColor="{AppThemeBinding Light=#6D28D9, Dark=#A78BFA}"
+                   HorizontalTextAlignment="Center"
+                   CharacterSpacing="0.5" />
+
+            <!-- Description -->
+            <Label Text="Explore the full suite of controls using the menu."
+                   FontSize="13"
+                   TextColor="{AppThemeBinding Light=#6B7280, Dark=#9CA3AF}"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,8,0,0" />
+
+        </VerticalStackLayout>
+    </Grid>
 
 </ContentPage>

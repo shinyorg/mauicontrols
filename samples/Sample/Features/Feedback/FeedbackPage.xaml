@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Features.Feedback"
+             x:Class="Sample.Features.Feedback.FeedbackPage"
+             x:DataType="local:FeedbackViewModel"
+             Title="Feedback Service">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16">
+
+            <Label Text="MAUI Control Feedback"
+                   FontSize="22"
+                   FontAttributes="Bold" />
+
+            <Label Text="These standard MAUI controls are hooked into IFeedbackService via MauiControlFeedbackIntegrator. Interact with each to trigger feedback."
+                   FontSize="13"
+                   TextColor="Gray" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Button -->
+            <Label Text="Button" FontAttributes="Bold" />
+            <Button Text="Tap Me" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Entry -->
+            <Label Text="Entry" FontAttributes="Bold" />
+            <Entry Placeholder="Type something..." />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Editor -->
+            <Label Text="Editor" FontAttributes="Bold" />
+            <Editor Placeholder="Multi-line text..."
+                    HeightRequest="80" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Slider -->
+            <Label Text="Slider" FontAttributes="Bold" />
+            <Slider Minimum="0" Maximum="100" Value="50" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Switch -->
+            <Label Text="Switch" FontAttributes="Bold" />
+            <Switch IsToggled="False" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- CheckBox -->
+            <Label Text="CheckBox" FontAttributes="Bold" />
+            <CheckBox IsChecked="False" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- RadioButton -->
+            <Label Text="RadioButton" FontAttributes="Bold" />
+            <HorizontalStackLayout Spacing="12">
+                <RadioButton Content="Option A" GroupName="demo" />
+                <RadioButton Content="Option B" GroupName="demo" />
+                <RadioButton Content="Option C" GroupName="demo" />
+            </HorizontalStackLayout>
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- DatePicker -->
+            <Label Text="DatePicker" FontAttributes="Bold" />
+            <DatePicker />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- TimePicker -->
+            <Label Text="TimePicker" FontAttributes="Bold" />
+            <TimePicker />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Picker -->
+            <Label Text="Picker" FontAttributes="Bold" />
+            <Picker Title="Select an item">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Alpha</x:String>
+                        <x:String>Beta</x:String>
+                        <x:String>Gamma</x:String>
+                        <x:String>Delta</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- SearchBar -->
+            <Label Text="SearchBar" FontAttributes="Bold" />
+            <SearchBar Placeholder="Search and press enter..." />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <!-- Stepper -->
+            <Label Text="Stepper" FontAttributes="Bold" />
+            <HorizontalStackLayout Spacing="12">
+                <Stepper Minimum="0" Maximum="10" Increment="1" />
+                <Label Text="Tap +/- to trigger feedback"
+                       VerticalOptions="Center"
+                       FontSize="12"
+                       TextColor="Gray" />
+            </HorizontalStackLayout>
+
+            <!-- Bottom padding for safe area -->
+            <BoxView HeightRequest="40" Color="Transparent" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

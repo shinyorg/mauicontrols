@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using Shiny.Maui.Controls.ImageEditor.EditActions;
+using Shiny.Maui.Controls.Infrastructure;
 
 namespace Shiny.Maui.Controls.ImageEditor;
 
@@ -40,18 +41,24 @@ public partial class ImageEditor
     {
         state.Undo();
         Invalidate();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageEditor), "Undo");
     }
 
     public void Redo()
     {
         state.Redo();
         Invalidate();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageEditor), "Redo");
     }
 
     public void Rotate(float degrees)
     {
         state.Push(new RotateAction { AngleDegrees = degrees });
         Invalidate();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageEditor), "Rotate");
     }
 
     public void Reset()
@@ -62,6 +69,8 @@ public partial class ImageEditor
         CurrentToolMode = ImageEditorToolMode.Move;
         ResetViewTransform();
         Invalidate();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageEditor), "Reset");
     }
 
     public void ApplyCrop()
@@ -79,6 +88,8 @@ public partial class ImageEditor
         state.Push(new CropAction { CropRect = cropRect });
         drawable.ActiveCropRect = null;
         CurrentToolMode = ImageEditorToolMode.Move;
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageEditor), "CropApplied");
     }
 
     public EditedImage? GetEditedImage()
@@ -98,6 +109,10 @@ public partial class ImageEditor
             return;
 
         if (SaveCommand?.CanExecute(editedImage) == true)
+        {
             SaveCommand.Execute(editedImage);
+            if (UseFeedback)
+                FeedbackHelper.Execute(typeof(ImageEditor), "Saved");
+        }
     }
 }

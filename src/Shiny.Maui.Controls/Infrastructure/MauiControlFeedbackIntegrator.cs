@@ -1,5 +1,3 @@
-using Shiny.Blazor.Controls;
-
 namespace Shiny.Maui.Controls.Infrastructure;
 
 public class MauiControlFeedbackIntegrator : IMauiInitializeService

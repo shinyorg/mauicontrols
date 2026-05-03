@@ -399,6 +399,9 @@ public class ImageViewer : ContentView
         overlayGrid.BindingContext = BindingContext;
         overlayParent.Children.Add(overlayGrid);
 
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageViewer), "Opened");
+
         var fadeTargets = new List<VisualElement> { backdrop, overlayImage, closeView };
         if (headerView != null) fadeTargets.Add(headerView);
         if (footerView != null) fadeTargets.Add(footerView);
@@ -419,6 +422,9 @@ public class ImageViewer : ContentView
         if (footerView != null) fadeTargets.Add(footerView);
 
         await Task.WhenAll(fadeTargets.Select(v => v.FadeTo(0, AnimationDuration)));
+
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageViewer), "Closed");
 
         // Remove overlay from host
         overlayParent?.Children.Remove(overlayGrid);

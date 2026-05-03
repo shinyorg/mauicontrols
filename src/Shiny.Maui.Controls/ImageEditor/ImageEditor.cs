@@ -1,6 +1,7 @@
 using Shiny.Maui.Controls.ColorPicker;
 using Shiny.Maui.Controls.FontPicker;
 using Shiny.Maui.Controls.ImageEditor.EditActions;
+using Shiny.Maui.Controls.Infrastructure;
 
 namespace Shiny.Maui.Controls.ImageEditor;
 
@@ -445,6 +446,9 @@ public partial class ImageEditor : ContentView
     {
         // Finalize any in-progress operations
         FinalizeCurrentOperation();
+
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageEditor), "ToolModeChanged", mode.ToString());
 
         drawable.ToolMode = mode;
 

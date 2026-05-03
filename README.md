@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, ShinyDurationPicker, FrostedGlassView, Toast, Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, ShinyDurationPicker, FrostedGlassView, Toast, Fab/FabMenu, PillView, SecurityPin, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -786,50 +786,6 @@ A PIN entry control with individually rendered cells that captures input through
 Events: `Completed` fires with a `SecurityPinCompletedEventArgs` once the entered value reaches `Length`.
 
 Methods: `Focus()`, `Unfocus()`, `Clear()`.
-
-### TextToSpeechButton
-
-A button that speaks bound text using the platform's text-to-speech engine. Fully customizable visually like a normal button, but instead of a Command binding, tapping plays the bound `SpeechText`. Tapping again while speaking cancels playback. Works on both MAUI (native TTS) and Blazor (Web Speech API).
-
-```xml
-<shiny:TextToSpeechButton Text="Listen"
-                          SpeechText="{Binding ArticleText}"
-                          ButtonBackgroundColor="#2196F3"
-                          TextColor="White" />
-```
-
-```razor
-<!-- Blazor -->
-<TextToSpeechButton Text="Listen"
-                    SpeechText="@articleText"
-                    ButtonBackgroundColor="#2196F3" />
-```
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| SpeechText | string? | null | The text to speak when tapped |
-| Text | string? | null | Button label |
-| Icon | ImageSource? | null | Button icon |
-| ButtonBackgroundColor | Color | #2196F3 | Fill color |
-| TextColor | Color | White | Label color |
-| FontSize | double | 14 | Label font size |
-| FontAttributes | FontAttributes | None | Label font attributes |
-| CornerRadius | double | 8 | Border corner radius |
-| BorderColor | Color? | null | Outline stroke color |
-| BorderThickness | double | 0 | Outline stroke thickness |
-| IconSize | double | 24 | Icon dimensions |
-| IsSpeaking | bool | false | Whether speech is in progress (OneWayToSource in MAUI, two-way bindable in Blazor) |
-| Pitch | float | 1.0 | Speech pitch |
-| Volume | float | 1.0 | Speech volume |
-| Locale | Locale? | null | Speech locale (MAUI only) |
-| UseFeedback | bool | true | Feedback on tap (MAUI only) |
-| HasShadow | bool | false | Drop shadow |
-
-Blazor additionally exposes `Rate` (float, default 1.0) for speech rate, and `Locale` is a string (BCP-47 language tag).
-
-Events: `Clicked` fires on every tap (before speak/cancel).
-
-Methods: `Cancel()` programmatically stops speech (MAUI).
 
 ### SignaturePad
 
