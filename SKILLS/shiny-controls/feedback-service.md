@@ -76,7 +76,9 @@ public class HapticFeedbackService : IFeedbackService
 
 ## Standard MAUI Control Integration
 
-Opt-in integration that hooks feedback into standard MAUI controls (Button, Entry, Slider, etc.) without modifying those controls. Uses `Application.DescendantAdded`/`DescendantRemoved` to automatically bind/unbind events across the visual tree.
+Pluggable, AOT-compatible integration that hooks feedback into standard MAUI controls without modifying them. Uses `Application.DescendantAdded`/`DescendantRemoved` to automatically bind/unbind events across the visual tree.
+
+### With all defaults (Button, Entry, Slider, etc.)
 
 ```csharp
 builder.UseShinyControls(cfg =>
@@ -85,7 +87,38 @@ builder.UseShinyControls(cfg =>
 });
 ```
 
-### Integrated MAUI Controls
+### Defaults + custom hooks
+
+```csharp
+cfg.AddDefaultMauiControlFeedback(x =>
+{
+    // Add your own control hooks on top of the defaults
+    x.Hook<MyCustomControl>(nameof(MyCustomControl.Tapped),
+        (c, h) => c.Tapped += h,
+        (c, h) => c.Tapped -= h);
+});
+```
+
+### Custom hooks only (no defaults)
+
+```csharp
+cfg.AddMauiControlFeedback(x =>
+{
+    x.Hook<Button>(nameof(Button.Clicked),
+        (btn, h) => btn.Clicked += h,
+        (btn, h) => btn.Clicked -= h);
+
+    x.Hook<Slider, ValueChangedEventArgs>(nameof(Slider.ValueChanged),
+        (s, h) => s.ValueChanged += h,
+        (s, h) => s.ValueChanged -= h);
+});
+```
+
+Two `Hook` overloads:
+- `Hook<TControl>(eventName, subscribe, unsubscribe)` — for `EventHandler` events (args passed as `EventArgs`)
+- `Hook<TControl, TEventArgs>(eventName, subscribe, unsubscribe)` — for `EventHandler<TEventArgs>` events (typed args passed through)
+
+### Default MAUI Control Hooks
 
 | Control | Event | Args |
 |---|---|---|

@@ -63,11 +63,29 @@ public class ShinyControlConfiguration(IServiceCollection services)
 
 
     /// <summary>
-    /// Integrate the default Maui control feedback service. This will ensure that the default feedback mechanisms (such as haptic feedback on supported devices) are properly integrated with the controls in your application. By adding this service, you can leverage the built-in feedback capabilities of the Maui framework, providing a more responsive and engaging user experience when interacting with the controls.
+    /// Integrate feedback for standard MAUI controls. Calls AddDefaults() to register all built-in hooks
+    /// (Button, Entry, Slider, Switch, etc.) then applies any additional configuration.
     /// </summary>
-    /// <returns></returns>
-    public ShinyControlConfiguration AddDefaultMauiControlFeedback()
+    public ShinyControlConfiguration AddDefaultMauiControlFeedback(Action<MauiControlFeedbackBuilder>? configure = null)
     {
+        var builder = new MauiControlFeedbackBuilder();
+        builder.AddDefaults();
+        configure?.Invoke(builder);
+
+        services.AddSingleton<IReadOnlyList<IControlFeedbackHook>>(builder.Hooks);
+        services.AddSingleton<IMauiInitializeService, MauiControlFeedbackIntegrator>();
+        return this;
+    }
+
+    /// <summary>
+    /// Integrate feedback for standard MAUI controls with only the hooks you configure — no defaults.
+    /// </summary>
+    public ShinyControlConfiguration AddMauiControlFeedback(Action<MauiControlFeedbackBuilder> configure)
+    {
+        var builder = new MauiControlFeedbackBuilder();
+        configure(builder);
+
+        services.AddSingleton<IReadOnlyList<IControlFeedbackHook>>(builder.Hooks);
         services.AddSingleton<IMauiInitializeService, MauiControlFeedbackIntegrator>();
         return this;
     }
