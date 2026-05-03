@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Handlers;
-using Shiny.Blazor.Controls;
 using Shiny.Maui.Controls;
 using Shiny.Maui.Controls.Infrastructure;
 using Shiny.Maui.Controls.Toast;
