@@ -377,8 +377,8 @@ public partial class FloatingPanel : ContentView
                 isAnimating = false;
                 UpdateScrollEnabled();
 
-                if (UseHapticFeedback)
-                    HapticHelper.PerformClick();
+                if (UseFeedback)
+                    FeedbackHelper.Execute(typeof(FloatingPanel), nameof(Opened));
 
                 Opened?.Invoke(this, EventArgs.Empty);
             });
@@ -434,8 +434,8 @@ public partial class FloatingPanel : ContentView
                     sheetContainer.Padding = new Thickness(0);
                 }
 
-                if (UseHapticFeedback)
-                    HapticHelper.PerformClick();
+                if (UseFeedback)
+                    FeedbackHelper.Execute(typeof(FloatingPanel), nameof(Closed));
 
                 Closed?.Invoke(this, EventArgs.Empty);
             });
@@ -552,8 +552,8 @@ public partial class FloatingPanel : ContentView
                 UpdateScrollEnabled();
                 isAnimating = false;
 
-                if (UseHapticFeedback)
-                    HapticHelper.PerformClick();
+                if (UseFeedback)
+                    FeedbackHelper.Execute(typeof(FloatingPanel), nameof(DetentChanged));
 
                 DetentChanged?.Invoke(this, bestDetent);
             });

@@ -37,7 +37,7 @@ A full-screen image overlay with pinch-to-zoom, pan (when zoomed), double-tap to
 | `CloseButtonTemplate` | `DataTemplate?` | `null` | OneWay | Custom close button template (tapping the templated view closes the viewer) |
 | `HeaderTemplate` | `DataTemplate?` | `null` | OneWay | Custom header overlay at the top of the viewer |
 | `FooterTemplate` | `DataTemplate?` | `null` | OneWay | Custom footer overlay at the bottom of the viewer |
-| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic feedback on double-tap zoom |
+| `UseFeedback` | `bool` | `true` | OneWay | Feedback on double-tap zoom |
 
 ## ImageViewer Features
 

@@ -1,0 +1,99 @@
+@namespace Shiny.Blazor.Controls.Toast
+@implements IDisposable
+@inject ToastService ToastService
+
+<div class="shiny-toast-host">
+    @{ var toastIndex = 0; }
+    @foreach (var entry in ToastService.ActiveToasts)
+    {
+        var index = toastIndex++;
+        var isBottom = entry.Config.Position == ToastPosition.Bottom;
+        var isPill = entry.Config.DisplayMode == ToastDisplayMode.Pill;
+        var isDismissing = entry.IsDismissing;
+
+        var positionClass = isBottom ? "shiny-toast-bottom" : "shiny-toast-top";
+        var modeClass = isPill ? "shiny-toast-pill" : "shiny-toast-fill";
+        var animClass = isDismissing ? "shiny-toast-exit" : "shiny-toast-enter";
+        var clickable = entry.Config.DismissOnTap || entry.Config.TapCallback is not null;
+
+        <div class="shiny-toast @positionClass @modeClass @animClass"
+             style="@GetStyle(entry, index)"
+             @onclick="() => OnClick(entry)"
+             role="alert"
+             aria-live="polite">
+            <div class="shiny-toast-content">
+                @if (entry.Config.Spinner == ToastSpinnerPosition.Left)
+                {
+                    <div class="shiny-toast-spinner"></div>
+                }
+                @if (!string.IsNullOrEmpty(entry.Config.IconHtml))
+                {
+                    <span class="shiny-toast-icon">@((MarkupString)entry.Config.IconHtml)</span>
+                }
+                <span class="shiny-toast-text">@entry.Config.Text</span>
+                @if (entry.Config.Spinner == ToastSpinnerPosition.Right)
+                {
+                    <div class="shiny-toast-spinner"></div>
+                }
+            </div>
+            @if (entry.Config.ShowProgressBar && entry.Config.Duration > TimeSpan.Zero)
+            {
+                <div class="shiny-toast-progress"
+                     style="animation-duration: @(entry.Config.Duration.TotalMilliseconds)ms;">
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        ToastService.OnChanged += StateHasChanged;
+    }
+
+    string GetStyle(ToastEntry entry, int index)
+    {
+        var sb = new System.Text.StringBuilder();
+        var config = entry.Config;
+
+        if (!string.IsNullOrEmpty(config.BackgroundColor))
+            sb.Append("background-color:").Append(config.BackgroundColor).Append(';');
+        if (!string.IsNullOrEmpty(config.TextColor))
+            sb.Append("color:").Append(config.TextColor).Append(';');
+        if (!string.IsNullOrEmpty(config.BorderColor))
+            sb.Append("border:").Append(config.BorderThickness > 0 ? config.BorderThickness : 1)
+              .Append("px solid ").Append(config.BorderColor).Append(';');
+        if (config.DisplayMode == ToastDisplayMode.Pill)
+            sb.Append("border-radius:").Append(config.CornerRadius).Append("px;");
+
+        // Stack offset
+        if (config.QueueMode == ToastQueueMode.Stack && index > 0)
+        {
+            var offset = index * 58; // approximate toast height + gap
+            if (config.Position == ToastPosition.Bottom)
+                sb.Append("margin-bottom:").Append(config.Offset + offset).Append("px;");
+            else
+                sb.Append("margin-top:").Append(config.Offset + offset).Append("px;");
+        }
+        else if (config.DisplayMode == ToastDisplayMode.Pill)
+        {
+            if (config.Position == ToastPosition.Bottom)
+                sb.Append("margin-bottom:").Append(config.Offset).Append("px;");
+            else
+                sb.Append("margin-top:").Append(config.Offset).Append("px;");
+        }
+
+        return sb.ToString();
+    }
+
+    void OnClick(ToastEntry entry)
+    {
+        ToastService.HandleTap(entry);
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnChanged -= StateHasChanged;
+    }
+}

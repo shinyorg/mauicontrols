@@ -301,13 +301,13 @@ public partial class ImageEditor : ContentView
         set => SetValue(ToolbarPositionProperty, value);
     }
 
-    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
-        nameof(UseHapticFeedback), typeof(bool), typeof(ImageEditor), true);
+    public static readonly BindableProperty UseFeedbackProperty = BindableProperty.Create(
+        nameof(UseFeedback), typeof(bool), typeof(ImageEditor), true);
 
-    public bool UseHapticFeedback
+    public bool UseFeedback
     {
-        get => (bool)GetValue(UseHapticFeedbackProperty);
-        set => SetValue(UseHapticFeedbackProperty, value);
+        get => (bool)GetValue(UseFeedbackProperty);
+        set => SetValue(UseFeedbackProperty, value);
     }
 
     public static readonly BindableProperty CropApplyTextProperty = BindableProperty.Create(

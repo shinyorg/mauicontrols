@@ -1,28 +1,20 @@
+using Shiny.Blazor.Controls;
+
 namespace Shiny.Maui.Controls.Infrastructure;
 
-static class HapticHelper
+static class FeedbackHelper
 {
-    public static void PerformClick()
-    {
-        try
-        {
-            HapticFeedback.Default.Perform(HapticFeedbackType.Click);
-        }
-        catch
-        {
-            // Haptic feedback may not be available on all platforms/devices
-        }
-    }
+    static IFeedbackService? resolved;
 
-    public static void PerformLongPress()
+    static IFeedbackService? Service => resolved ??=
+#if ANDROID || IOS || MACCATALYST
+        IPlatformApplication.Current?.Services?.GetService<IFeedbackService>();
+#else
+        null;
+#endif
+
+    public static void Execute(Type controlType, string eventName, string? details = null)
     {
-        try
-        {
-            HapticFeedback.Default.Perform(HapticFeedbackType.LongPress);
-        }
-        catch
-        {
-            // Haptic feedback may not be available on all platforms/devices
-        }
+        Service?.OnRequested(controlType, eventName, details);
     }
 }

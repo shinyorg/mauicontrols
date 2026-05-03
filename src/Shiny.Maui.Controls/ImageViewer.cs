@@ -218,16 +218,16 @@ public class ImageViewer : ContentView
         set => SetValue(FooterTemplateProperty, value);
     }
 
-    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
-        nameof(UseHapticFeedback),
+    public static readonly BindableProperty UseFeedbackProperty = BindableProperty.Create(
+        nameof(UseFeedback),
         typeof(bool),
         typeof(ImageViewer),
         true);
 
-    public bool UseHapticFeedback
+    public bool UseFeedback
     {
-        get => (bool)GetValue(UseHapticFeedbackProperty);
-        set => SetValue(UseHapticFeedbackProperty, value);
+        get => (bool)GetValue(UseFeedbackProperty);
+        set => SetValue(UseFeedbackProperty, value);
     }
 
     public static readonly BindableProperty OpenViewerOnTapProperty = BindableProperty.Create(
@@ -509,8 +509,8 @@ public class ImageViewer : ContentView
     {
         if (isAnimating) return;
 
-        if (UseHapticFeedback)
-            HapticHelper.PerformClick();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ImageViewer), "DoubleTapped");
 
         if (currentScale > MinScale)
             _ = AnimateResetAsync();

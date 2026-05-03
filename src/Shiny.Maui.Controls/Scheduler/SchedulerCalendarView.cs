@@ -179,13 +179,13 @@ public class SchedulerCalendarView : ContentView
         set => SetValue(AllowZoomProperty, value);
     }
 
-    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
-        nameof(UseHapticFeedback), typeof(bool), typeof(SchedulerCalendarView), true);
+    public static readonly BindableProperty UseFeedbackProperty = BindableProperty.Create(
+        nameof(UseFeedback), typeof(bool), typeof(SchedulerCalendarView), true);
 
-    public bool UseHapticFeedback
+    public bool UseFeedback
     {
-        get => (bool)GetValue(UseHapticFeedbackProperty);
-        set => SetValue(UseHapticFeedbackProperty, value);
+        get => (bool)GetValue(UseFeedbackProperty);
+        set => SetValue(UseFeedbackProperty, value);
     }
 
 
@@ -500,8 +500,8 @@ public class SchedulerCalendarView : ContentView
         if (Provider != null && !Provider.CanCalendarSelect(date))
             return;
 
-        if (UseHapticFeedback)
-            HapticHelper.PerformClick();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(SchedulerCalendarView), "DaySelected");
 
         SelectedDate = date;
 
@@ -513,8 +513,8 @@ public class SchedulerCalendarView : ContentView
 
     void OnEventTapped(SchedulerEvent evt)
     {
-        if (UseHapticFeedback)
-            HapticHelper.PerformClick();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(SchedulerCalendarView), "EventSelected");
         Provider?.OnEventSelected(evt);
     }
 }

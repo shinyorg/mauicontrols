@@ -117,7 +117,7 @@ Monthly calendar grid with swipe navigation, event display per cell, and pinch-t
 | `FirstDayOfWeek` | `DayOfWeek` | `Sunday` |
 | `AllowPan` | `bool` | `true` |
 | `AllowZoom` | `bool` | `false` |
-| `UseHapticFeedback` | `bool` | `true` |
+| `UseFeedback` | `bool` | `true` |
 
 ## SchedulerAgendaView
 
@@ -159,7 +159,7 @@ Day/multi-day timeline with overlap detection, Apple Calendar-style date picker,
 | `AllowZoom` | `bool` | `false` |
 | `ShowAdditionalTimezones` | `bool` | `false` |
 | `AdditionalTimezones` | `IList<TimeZoneInfo>` | empty |
-| `UseHapticFeedback` | `bool` | `true` |
+| `UseFeedback` | `bool` | `true` |
 
 ## SchedulerCalendarListView
 

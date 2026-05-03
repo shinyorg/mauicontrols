@@ -221,13 +221,13 @@ public class SchedulerAgendaView : ContentView
         set => SetValue(ShowAdditionalTimezonesProperty, value);
     }
 
-    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
-        nameof(UseHapticFeedback), typeof(bool), typeof(SchedulerAgendaView), true);
+    public static readonly BindableProperty UseFeedbackProperty = BindableProperty.Create(
+        nameof(UseFeedback), typeof(bool), typeof(SchedulerAgendaView), true);
 
-    public bool UseHapticFeedback
+    public bool UseFeedback
     {
-        get => (bool)GetValue(UseHapticFeedbackProperty);
-        set => SetValue(UseHapticFeedbackProperty, value);
+        get => (bool)GetValue(UseFeedbackProperty);
+        set => SetValue(UseFeedbackProperty, value);
     }
 
     public IList<TimeZoneInfo> AdditionalTimezones { get; } = new List<TimeZoneInfo>();
@@ -612,8 +612,8 @@ public class SchedulerAgendaView : ContentView
 
     void OnEventTapped(SchedulerEvent evt)
     {
-        if (UseHapticFeedback)
-            HapticHelper.PerformClick();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(SchedulerAgendaView), "EventSelected");
         Provider?.OnEventSelected(evt);
     }
 
@@ -622,8 +622,8 @@ public class SchedulerAgendaView : ContentView
         if (Provider == null) return;
         if (!Provider.CanSelectAgendaTime(time)) return;
 
-        if (UseHapticFeedback)
-            HapticHelper.PerformClick();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(SchedulerAgendaView), "TimeSlotSelected");
         Provider.OnAgendaTimeSelected(time);
     }
 

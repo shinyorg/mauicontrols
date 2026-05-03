@@ -297,7 +297,7 @@ All cells inherit these properties:
 | `BorderColor` | `Color?` | `null` | Border color |
 | `BorderWidth` | `double` | `-1` | Border width |
 | `BorderRadius` | `double` | `-1` | Border corner radius |
-| `UseHapticFeedback` | `bool` | `true` | Haptic feedback on cell tap |
+| `UseFeedback` | `bool` | `true` | Feedback on cell tap |
 
 ## TableSection Properties
 

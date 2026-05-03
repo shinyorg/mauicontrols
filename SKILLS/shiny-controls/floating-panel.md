@@ -1,6 +1,6 @@
 # FloatingPanel + OverlayHost (MAUI)
 
-A floating panel overlay system for .NET MAUI. Panels slide in from the bottom or top edge of the page with configurable detents, header peek when closed, backdrop dimming, drag-handle gestures, keyboard handling, and haptic feedback. Multiple panels can coexist on the same page without blocking touches on content underneath.
+A floating panel overlay system for .NET MAUI. Panels slide in from the bottom or top edge of the page with configurable detents, header peek when closed, backdrop dimming, drag-handle gestures, keyboard handling, and feedback. Multiple panels can coexist on the same page without blocking touches on content underneath.
 
 **Architecture:**
 - **OverlayHost**: A transparent `Grid` layer with `InputTransparent=true, CascadeInputTransparent=false` — touches pass through to content underneath, but panels and backdrop still receive input on their visible areas. Manages a shared backdrop.
@@ -72,7 +72,7 @@ A floating panel overlay system for .NET MAUI. Panels slide in from the bottom o
 | `ExpandOnInputFocus` | `bool` | `true` | Auto-expands to highest detent when an input is focused |
 | `IsLocked` | `bool` | `false` | Prevents all user dismissal (drag, header tap close, backdrop tap); panel can only be closed via code. Header tap still opens the panel |
 | `FitContent` | `bool` | `false` | Measures content and auto-computes a single detent to fit it (ignores Detents when true) |
-| `UseHapticFeedback` | `bool` | `true` | Haptic feedback on open, close, and detent snap |
+| `UseFeedback` | `bool` | `true` | Feedback on open, close, and detent snap |
 
 ## OverlayHost Properties
 
@@ -129,7 +129,7 @@ Custom detent: `new DetentValue(0.33)` for 33% height.
 - **Fit content**: When `FitContent="True"`, the panel measures its content and auto-computes a single detent to fit it
 - **Position**: Slides from bottom (`Position="Bottom"`, default), top (`Position="Top"`), or bottom with tabs (`Position="BottomTabs"` — clips above the tab bar)
 - **Header peek**: Set `ShowHeaderWhenClosed="True"` with a `HeaderTemplate` to show a persistent header bar when the panel is closed — tapping it opens the panel
-- **Haptic feedback**: Subtle haptic on open, close, and detent snap; disable with `UseHapticFeedback="False"`
+- **Feedback**: Subtle haptic on open, close, and detent snap; disable with `UseFeedback="False"`
 
 ## FloatingPanel Locked Example
 

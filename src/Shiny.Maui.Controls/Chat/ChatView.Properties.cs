@@ -270,15 +270,15 @@ public partial class ChatView
     }
 
     // Haptic
-    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
-        nameof(UseHapticFeedback),
+    public static readonly BindableProperty UseFeedbackProperty = BindableProperty.Create(
+        nameof(UseFeedback),
         typeof(bool),
         typeof(ChatView),
         true);
 
-    public bool UseHapticFeedback
+    public bool UseFeedback
     {
-        get => (bool)GetValue(UseHapticFeedbackProperty);
-        set => SetValue(UseHapticFeedbackProperty, value);
+        get => (bool)GetValue(UseFeedbackProperty);
+        set => SetValue(UseFeedbackProperty, value);
     }
 }

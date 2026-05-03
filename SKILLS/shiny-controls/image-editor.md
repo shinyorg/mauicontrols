@@ -34,7 +34,7 @@ An inline image editor with cropping, rotation, freehand drawing with color, tex
 | `AnnotationTextColor` | `Color` | `White` | OneWay | Text annotation color |
 | `ToolbarTemplate` | `DataTemplate?` | `null` | OneWay | Custom toolbar (replaces the default toolbar entirely) |
 | `ToolbarPosition` | `ToolbarPosition` | `Bottom` | OneWay | Toolbar placement: Top or Bottom |
-| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic feedback on tool actions |
+| `UseFeedback` | `bool` | `true` | OneWay | Feedback on tool actions |
 
 ## ImageEditor Commands
 

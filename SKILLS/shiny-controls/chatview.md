@@ -73,7 +73,7 @@ public class ChatParticipant
 | `TypingParticipants` | `IList<ChatParticipant>` | `null` | Currently typing participants (do not include "me") |
 | `ScrollToFirstUnread` | `bool` | `false` | Scroll to first unread message instead of end |
 | `FirstUnreadMessageId` | `string?` | `null` | ID of the first unread message |
-| `UseHapticFeedback` | `bool` | `true` | Haptic feedback on send (MAUI only) |
+| `UseFeedback` | `bool` | `true` | Feedback on send (MAUI only) |
 
 ## Commands (MAUI ICommand) / Events (Blazor EventCallback)
 

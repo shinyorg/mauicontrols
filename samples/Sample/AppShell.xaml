@@ -21,9 +21,9 @@
     xmlns:autocomplete="clr-namespace:Sample.Features.AutoComplete"
     xmlns:countryaddress="clr-namespace:Sample.Features.CountryAddress"
     xmlns:sigpad="clr-namespace:Sample.Features.SignaturePad"
-    xmlns:tts="clr-namespace:Sample.Features.TextToSpeech"
     xmlns:pickers="clr-namespace:Sample.Features.Pickers"
     xmlns:glass="clr-namespace:Sample.Features.FrostedGlass"
+    xmlns:toast="clr-namespace:Sample.Features.Toast"
     Title="Shiny Controls"
     FlyoutBackgroundColor="{AppThemeBinding Light=#F5F3FF, Dark=#0F0D1A}"
     FlyoutWidth="310"
@@ -353,12 +353,12 @@
         <ShellContent ContentTemplate="{DataTemplate countryaddress:CountryAddressPage}" Route="countryaddress" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Text to Speech">
+    <FlyoutItem Title="Toast">
         <FlyoutItem.FlyoutIcon>
-            <FontImageSource Glyph="&#x266A;" Size="20"
+            <FontImageSource Glyph="&#x25AC;" Size="20"
                              Color="{AppThemeBinding Light=#059669, Dark=#34D399}" />
         </FlyoutItem.FlyoutIcon>
-        <ShellContent ContentTemplate="{DataTemplate tts:TextToSpeechPage}" Route="texttospeech" />
+        <ShellContent ContentTemplate="{DataTemplate toast:ToastPage}" Route="toast" />
     </FlyoutItem>
 
     <!-- ============================================================ -->

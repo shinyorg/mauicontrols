@@ -1,6 +1,6 @@
 # Shiny Controls
 
-A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, ShinyDurationPicker, FrostedGlassView, Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
+A rich, ready-to-use UI controls library for both **.NET MAUI** and **Blazor**. One package per host covers TableView, Scheduler, FloatingPanel/OverlayHost, ShinyDurationPicker, FrostedGlassView, Toast, Fab/FabMenu, PillView, SecurityPin, TextToSpeechButton, SignaturePad, ImageViewer, ImageEditor, ChatView, ColorPicker, FontPicker, AutoCompleteEntry, CountryPicker, and AddressEntry. Markdown and Mermaid Diagrams ship as separate add-on packages per host.
 
 [![MAUI NuGet](https://img.shields.io/nuget/v/Shiny.Maui.Controls.svg?label=Shiny.Maui.Controls)](https://www.nuget.org/packages/Shiny.Maui.Controls)
 [![Blazor NuGet](https://img.shields.io/nuget/v/Shiny.Blazor.Controls.svg?label=Shiny.Blazor.Controls)](https://www.nuget.org/packages/Shiny.Blazor.Controls)
@@ -86,6 +86,7 @@ No DI registration is required — drop the components into any `.razor` page.
 | `Color` type (e.g. `Colors.Blue`) | CSS color string (e.g. `"#2196F3"`) |
 | `Fab.Icon="add.png"` (ImageSource) | `<Fab Icon="+">` (inline text/SVG string) |
 | `ItemTemplate` as `DataTemplate` | `ItemTemplate` as `RenderFragment<object>` |
+| `IToaster.ShowAsync(text, cfg => {})` (DI) | `IToastService.ShowAsync(text, cfg => {})` (DI + `<ToastHost />`) |
 
 `ISchedulerEventProvider` is identical across both hosts.
 
@@ -145,7 +146,7 @@ public class MyEventProvider : ISchedulerEventProvider
 
 ### FloatingPanel + OverlayHost
 
-A floating panel overlay system for MAUI. Panels slide in from the bottom or top of the screen with configurable snap positions (detents), optional header peek when closed, backdrop dimming, and haptic feedback. Multiple panels can coexist on the same page without blocking touches on content underneath.
+A floating panel overlay system for MAUI. Panels slide in from the bottom or top of the screen with configurable snap positions (detents), optional header peek when closed, backdrop dimming, and feedback. Multiple panels can coexist on the same page without blocking touches on content underneath.
 
 **OverlayHost** is a transparent Grid layer that manages backdrop and touch passthrough. **FloatingPanel** is a panel that lives inside an OverlayHost. **ShinyContentPage** is a convenience ContentPage with a built-in OverlayHost.
 
@@ -197,7 +198,7 @@ A floating panel overlay system for MAUI. Panels slide in from the bottom or top
 | ExpandOnInputFocus | bool | Auto-expand when input focused |
 | IsLocked | bool | Prevents drag dismiss; code-only control |
 | FitContent | bool | Auto-computes detent from content size |
-| UseHapticFeedback | bool | Haptic feedback on open, close, and detent snap (default: true) |
+| UseFeedback | bool | Feedback on open, close, and detent snap (default: true) |
 
 **OverlayHost Properties:**
 
@@ -273,7 +274,7 @@ A full-screen image overlay with pinch-to-zoom, pan, double-tap zoom, and animat
 | CloseButtonTemplate | DataTemplate? | Custom close button (tapping closes viewer) |
 | HeaderTemplate | DataTemplate? | Custom header overlay |
 | FooterTemplate | DataTemplate? | Custom footer overlay |
-| UseHapticFeedback | bool | Enable/disable haptic feedback on double-tap zoom (default: true) |
+| UseFeedback | bool | Enable/disable feedback on double-tap zoom (default: true) |
 
 **Features:**
 - Pinch-to-zoom with origin tracking
@@ -328,7 +329,7 @@ An inline image editor with cropping, rotation, freehand drawing, line and arrow
 | CropCancelText | string | "Cancel" | Crop cancel button label |
 | ToolbarTemplate | DataTemplate? | null | Custom toolbar (replaces default) |
 | ToolbarPosition | ToolbarPosition | Bottom | Toolbar placement (Top or Bottom) |
-| UseHapticFeedback | bool | true | Haptic feedback on actions |
+| UseFeedback | bool | true | Feedback on actions |
 
 **Features:**
 - Move mode with pinch-to-zoom and pan (origin-aware, double-tap to toggle)
@@ -384,7 +385,7 @@ A modern chat UI control with message bubbles, typing indicators, load-more pagi
 | TypingParticipants | IList\<ChatParticipant\> | null | Currently typing participants |
 | ScrollToFirstUnread | bool | false | Scroll to first unread instead of end |
 | FirstUnreadMessageId | string? | null | ID of the first unread message |
-| UseHapticFeedback | bool | true | Haptic feedback on send |
+| UseFeedback | bool | true | Feedback on send |
 
 **Commands:** `SendCommand` (ICommand, receives text string), `AttachImageCommand` (ICommand), `LoadMoreCommand` (ICommand), `MessageTappedCommand` (ICommand, receives ChatMessage)
 
@@ -709,7 +710,7 @@ A Material Design-style floating action button, plus an expanding multi-action m
 | Size | double | 56 | Height of the Fab (diameter when circular) |
 | IconSize | double | 24 | Icon image size |
 | HasShadow | bool | true | Show drop shadow |
-| UseHapticFeedback | bool | true | Haptic feedback on tap |
+| UseFeedback | bool | true | Feedback on tap |
 
 Events: `Clicked`.
 
@@ -725,7 +726,7 @@ Events: `Clicked`.
 | CloseOnBackdropTap | bool | true | Close when backdrop is tapped |
 | CloseOnItemTap | bool | true | Close after any item is tapped |
 | AnimationDuration | uint | 200 | Open/close animation duration (ms) |
-| UseHapticFeedback | bool | true | Haptic feedback on toggle |
+| UseFeedback | bool | true | Feedback on toggle |
 
 Events: `ItemTapped` — fires the `FabMenuItem` that was tapped.
 
@@ -747,7 +748,7 @@ Methods: `Open()`, `Close()`, `Toggle()`.
 | FontSize | double | 13 | Side-label font size |
 | Size | double | 44 | Icon button diameter |
 | IconSize | double | 20 | Icon image size |
-| UseHapticFeedback | bool | true | Haptic feedback on tap |
+| UseFeedback | bool | true | Feedback on tap |
 
 **Placement tip**: `FabMenu` should live in a `Grid` that fills the page (the same placement pattern as `ImageViewer`) so the backdrop can cover the page content. Alternatively, use `ShinyContentPage` with `OverlayHost` for easier overlay management.
 
@@ -780,7 +781,7 @@ A PIN entry control with individually rendered cells that captures input through
 | CellTextColor | Color? | null | Entered character color |
 | FontSize | double | 24 | Character font size |
 
-| UseHapticFeedback | bool | Enable/disable haptic feedback on digit entry (click) and completion (long press) (default: true) |
+| UseFeedback | bool | Enable/disable feedback on digit entry (click) and completion (long press) (default: true) |
 
 Events: `Completed` fires with a `SecurityPinCompletedEventArgs` once the entered value reaches `Length`.
 
@@ -821,7 +822,7 @@ A button that speaks bound text using the platform's text-to-speech engine. Full
 | Pitch | float | 1.0 | Speech pitch |
 | Volume | float | 1.0 | Speech volume |
 | Locale | Locale? | null | Speech locale (MAUI only) |
-| UseHapticFeedback | bool | true | Haptic on tap (MAUI only) |
+| UseFeedback | bool | true | Feedback on tap (MAUI only) |
 | HasShadow | bool | false | Drop shadow |
 
 Blazor additionally exposes `Rate` (float, default 1.0) for speech rate, and `Locale` is a string (BCP-47 language tag).
@@ -929,6 +930,71 @@ A view that applies a native frosted glass (blur) effect behind its content. Pla
 | CornerRadius | double | 0 | Corner radius for clipping |
 
 **Platform implementation:** iOS uses `UIVisualEffectView`, Android 12+ uses `RenderEffect.CreateBlurEffect`, Blazor uses CSS `backdrop-filter: blur()`.
+
+### Toast
+
+A service-first toast notification system — inject `IToaster` (registered by `UseShinyControls()`) and call from code. No XAML or OverlayHost required. The overlay auto-attaches to the current page on first use.
+
+```csharp
+using Shiny.Maui.Controls.Toast;
+
+public class MyViewModel(IToaster toaster)
+{
+    // Simple
+    await toaster.ShowAsync("Item saved!");
+
+    // With spinner + manual dismiss
+    IDisposable toast = await toaster.ShowAsync("Uploading...", cfg =>
+    {
+        cfg.Spinner = ToastSpinnerPosition.Left;
+        cfg.Duration = TimeSpan.Zero;
+    });
+    // Later: toast.Dispose();
+}
+```
+
+**Themed methods** — colors from MAUI Styles or built-in defaults:
+
+```csharp
+await toaster.InfoAsync("Update available");        // Blue
+await toaster.SuccessAsync("File saved");           // Green
+await toaster.WarningAsync("Storage almost full");  // Amber
+await toaster.DangerAsync("Save failed");           // Orange
+await toaster.CriticalAsync("System error");        // Red
+```
+
+```razor
+<!-- Blazor: register AddShinyToast() in DI, place <ToastHost /> in layout -->
+@inject IToastService ToastService
+
+await ToastService.ShowAsync("Saved!", cfg =>
+{
+    cfg.Duration = TimeSpan.FromSeconds(3);
+    cfg.ShowProgressBar = true;
+});
+
+// Blazor themed methods also available:
+await ToastService.InfoAsync("Update available");
+await ToastService.SuccessAsync("File saved");
+```
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| Text | string | (required) | Toast message |
+| Duration | TimeSpan | 3s | Auto-dismiss. Zero = manual only |
+| Position | ToastPosition | Bottom | Top or Bottom |
+| DisplayMode | ToastDisplayMode | Pill | Pill (rounded) or FillHorizontal (full width) |
+| DismissOnTap | bool | true | Tap to dismiss |
+| QueueMode | ToastQueueMode | Queue | Queue (sequential) or Stack (multiple visible) |
+| Spinner | ToastSpinnerPosition | None | None, Left, or Right |
+| ShowProgressBar | bool | false | Countdown drain bar |
+| Icon | ImageSource? | null | Optional icon (MAUI) |
+| TapCommand | ICommand? | null | Tap action (MAUI) |
+| UseFeedback | bool | true | Feedback on show/dismiss |
+| BackgroundColor | Color? | dark gray | Background fill |
+| TextColor | Color? | white | Text color |
+| BorderColor | Color? | null | Border stroke |
+| CornerRadius | double | 20 | Corner radius (pill mode) |
 
 ### TableView
 

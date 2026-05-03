@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Features.Toast"
+             x:Class="Sample.Features.Toast.ToastPage"
+             x:DataType="local:ToastViewModel"
+             Title="Toast">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16">
+
+            <Label Text="Toast Service"
+                   FontSize="22"
+                   FontAttributes="Bold" />
+
+            <Label Text="{Binding StatusMessage}"
+                   FontSize="14"
+                   TextColor="Gray" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Basic" FontAttributes="Bold" />
+            <Button Text="Show Basic Toast"
+                    Command="{Binding BasicToastCommand}" />
+
+            <Label Text="Position" FontAttributes="Bold" />
+            <Button Text="Show Top Toast"
+                    Command="{Binding TopToastCommand}" />
+
+            <Label Text="Display Mode" FontAttributes="Bold" />
+            <Button Text="Show Fill Horizontal"
+                    Command="{Binding FillToastCommand}" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Spinner &amp; Manual Dismiss" FontAttributes="Bold" />
+            <HorizontalStackLayout Spacing="12">
+                <Button Text="Show Spinner Toast"
+                        Command="{Binding SpinnerToastCommand}" />
+                <Button Text="Dismiss"
+                        Command="{Binding DismissManualCommand}"
+                        BackgroundColor="#DC2626"
+                        TextColor="White" />
+            </HorizontalStackLayout>
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Stacking" FontAttributes="Bold" />
+            <Button Text="Show 3 Stacked Toasts"
+                    Command="{Binding StackedToastsCommand}" />
+
+            <Label Text="Styling" FontAttributes="Bold" />
+            <Button Text="Custom Colors &amp; Border"
+                    Command="{Binding StyledToastCommand}" />
+
+            <Label Text="Icon" FontAttributes="Bold" />
+            <Button Text="Toast with Icon"
+                    Command="{Binding IconToastCommand}" />
+
+            <Label Text="Progress Bar" FontAttributes="Bold" />
+            <Button Text="Toast with Progress"
+                    Command="{Binding ProgressToastCommand}" />
+
+            <Label Text="Tap Command" FontAttributes="Bold" />
+            <Button Text="Toast with Tap Action"
+                    Command="{Binding TapCommandToastCommand}" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Themed Types" FontAttributes="Bold" FontSize="18" />
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Info"
+                        Command="{Binding InfoToastCommand}"
+                        BackgroundColor="#1E40AF"
+                        TextColor="White" />
+                <Button Text="Success"
+                        Command="{Binding SuccessToastCommand}"
+                        BackgroundColor="#166534"
+                        TextColor="White" />
+                <Button Text="Warning"
+                        Command="{Binding WarningToastCommand}"
+                        BackgroundColor="#854D0E"
+                        TextColor="White" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Danger"
+                        Command="{Binding DangerToastCommand}"
+                        BackgroundColor="#9A3412"
+                        TextColor="White" />
+                <Button Text="Critical"
+                        Command="{Binding CriticalToastCommand}"
+                        BackgroundColor="#991B1B"
+                        TextColor="White" />
+            </HorizontalStackLayout>
+
+            <!-- Bottom padding for safe area -->
+            <BoxView HeightRequest="40" Color="Transparent" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,208 @@
+@page "/toast"
+@inject IToastService ToastService
+
+<PageTitle>Toast</PageTitle>
+
+<h1>Toast Service</h1>
+
+<p style="color:gray;">@statusMessage</p>
+
+<hr />
+
+<section class="demo-section">
+    <h2>Basic</h2>
+    <button @onclick="BasicToast">Show Basic Toast</button>
+</section>
+
+<section class="demo-section">
+    <h2>Position</h2>
+    <button @onclick="TopToast">Show Top Toast</button>
+</section>
+
+<section class="demo-section">
+    <h2>Display Mode</h2>
+    <button @onclick="FillToast">Show Fill Horizontal</button>
+</section>
+
+<section class="demo-section">
+    <h2>Spinner &amp; Manual Dismiss</h2>
+    <button @onclick="SpinnerToast">Show Spinner Toast</button>
+    <button @onclick="DismissManual" style="background:#DC2626;color:white;">Dismiss</button>
+</section>
+
+<section class="demo-section">
+    <h2>Stacking</h2>
+    <button @onclick="StackedToasts">Show 3 Stacked Toasts</button>
+</section>
+
+<section class="demo-section">
+    <h2>Styling</h2>
+    <button @onclick="StyledToast">Custom Colors &amp; Border</button>
+</section>
+
+<section class="demo-section">
+    <h2>Icon</h2>
+    <button @onclick="IconToast">Toast with Icon</button>
+</section>
+
+<section class="demo-section">
+    <h2>Progress Bar</h2>
+    <button @onclick="ProgressToast">Toast with Progress</button>
+</section>
+
+<section class="demo-section">
+    <h2>Tap Callback</h2>
+    <button @onclick="TapCallbackToast">Toast with Tap Action</button>
+</section>
+
+<section class="demo-section">
+    <h2>Themed Types</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button @onclick="InfoToast" style="background:#1E40AF;color:white;">Info</button>
+        <button @onclick="SuccessToast" style="background:#166534;color:white;">Success</button>
+        <button @onclick="WarningToast" style="background:#854D0E;color:white;">Warning</button>
+        <button @onclick="DangerToast" style="background:#9A3412;color:white;">Danger</button>
+        <button @onclick="CriticalToast" style="background:#991B1B;color:white;">Critical</button>
+    </div>
+</section>
+
+@code {
+    string statusMessage = "Tap a button to show a toast";
+    IDisposable? manualToast;
+
+    async Task BasicToast()
+    {
+        await ToastService.ShowAsync("Item saved successfully!");
+        statusMessage = "Basic toast shown";
+    }
+
+    async Task TopToast()
+    {
+        await ToastService.ShowAsync("New message received", cfg =>
+        {
+            cfg.Position = ToastPosition.Top;
+        });
+        statusMessage = "Top toast shown";
+    }
+
+    async Task FillToast()
+    {
+        await ToastService.ShowAsync("No internet connection", cfg =>
+        {
+            cfg.DisplayMode = ToastDisplayMode.FillHorizontal;
+            cfg.BackgroundColor = "#FF4500";
+            cfg.Duration = TimeSpan.FromSeconds(4);
+        });
+        statusMessage = "Fill horizontal toast shown";
+    }
+
+    async Task SpinnerToast()
+    {
+        manualToast?.Dispose();
+        manualToast = await ToastService.ShowAsync("Uploading file...", cfg =>
+        {
+            cfg.Spinner = ToastSpinnerPosition.Left;
+            cfg.Duration = TimeSpan.Zero;
+            cfg.DismissOnTap = false;
+        });
+        statusMessage = "Spinner toast shown (tap Dismiss to close)";
+    }
+
+    void DismissManual()
+    {
+        manualToast?.Dispose();
+        manualToast = null;
+        statusMessage = "Manual toast dismissed";
+    }
+
+    async Task StackedToasts()
+    {
+        for (var i = 1; i <= 3; i++)
+        {
+            await ToastService.ShowAsync($"Notification {i}", cfg =>
+            {
+                cfg.QueueMode = ToastQueueMode.Stack;
+                cfg.Duration = TimeSpan.FromSeconds(3 + i);
+            });
+        }
+        statusMessage = "3 stacked toasts shown";
+    }
+
+    async Task StyledToast()
+    {
+        await ToastService.ShowAsync("Custom styled toast", cfg =>
+        {
+            cfg.BackgroundColor = "#312E81";
+            cfg.TextColor = "#E0E7FF";
+            cfg.BorderColor = "#6D28D9";
+            cfg.BorderThickness = 1.5;
+            cfg.CornerRadius = 12;
+        });
+        statusMessage = "Styled toast shown";
+    }
+
+    async Task IconToast()
+    {
+        await ToastService.ShowAsync("Download complete", cfg =>
+        {
+            cfg.IconHtml = "<svg width='18' height='18' viewBox='0 0 24 24' fill='currentColor'><path d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/></svg>";
+            cfg.Duration = TimeSpan.FromSeconds(4);
+        });
+        statusMessage = "Icon toast shown";
+    }
+
+    async Task ProgressToast()
+    {
+        await ToastService.ShowAsync("Processing request...", cfg =>
+        {
+            cfg.ShowProgressBar = true;
+            cfg.Duration = TimeSpan.FromSeconds(5);
+            cfg.BackgroundColor = "#0F766E";
+        });
+        statusMessage = "Progress bar toast shown";
+    }
+
+    async Task TapCallbackToast()
+    {
+        await ToastService.ShowAsync("Tap me for details!", cfg =>
+        {
+            cfg.Duration = TimeSpan.FromSeconds(5);
+            cfg.TapCallback = () =>
+            {
+                statusMessage = "Toast was tapped!";
+                StateHasChanged();
+            };
+        });
+        statusMessage = "Tap callback toast shown";
+    }
+
+    async Task InfoToast()
+    {
+        await ToastService.InfoAsync("New update available");
+        statusMessage = "Info toast shown";
+    }
+
+    async Task SuccessToast()
+    {
+        await ToastService.SuccessAsync("File uploaded successfully");
+        statusMessage = "Success toast shown";
+    }
+
+    async Task WarningToast()
+    {
+        await ToastService.WarningAsync("Storage almost full");
+        statusMessage = "Warning toast shown";
+    }
+
+    async Task DangerToast()
+    {
+        await ToastService.DangerAsync("Failed to save changes");
+        statusMessage = "Danger toast shown";
+    }
+
+    async Task CriticalToast()
+    {
+        await ToastService.CriticalAsync("System error - contact support");
+        statusMessage = "Critical toast shown";
+    }
+}

@@ -1,6 +1,6 @@
 ---
 name: shiny-controls
-description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, FloatingPanel/OverlayHost/ShinyContentPage (bottom/top overlay panels) with detents and header peek, ShinyDurationPicker (duration picker with FloatingPanel), FrostedGlassView (native blur/glass effect), PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar and custom MessageTemplate/MessageTemplateSelector for per-message rendering, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, TextToSpeechButton for speaking text aloud with cancel/resume, SignaturePad for capturing signatures with canvas drawing and PNG export, and haptic feedback support across all interactive controls
+description: Generate UI for .NET MAUI (Shiny.Maui.Controls) and Blazor (Shiny.Blazor.Controls) - includes TableView with 14 cell types, FloatingPanel/OverlayHost/ShinyContentPage (bottom/top overlay panels) with detents and header peek, ShinyDurationPicker (duration picker with FloatingPanel), FrostedGlassView (native blur/glass effect), Toast service (code-invoked toast notifications with queue/stack, auto-dismiss, spinner, progress bar, pill/fill modes), PillView status badges, ImageViewer with pinch/pan/double-tap zoom, ImageEditor with crop/rotate/draw/text/undo/redo/export, ChatView with bubbles/typing/load-more/input-bar and custom MessageTemplate/MessageTemplateSelector for per-message rendering, SecurityPin entry, Fab and FabMenu (floating action button and expanding action menu), Scheduler views (calendar grid, agenda timeline, event list), Markdown controls (MarkdownView renderer, MarkdownEditor with toolbar), AutoCompleteEntry with debounced search and dropdown suggestions, CountryPicker with flag/dial code, AddressEntry with geocoding, TextToSpeechButton for speaking text aloud with cancel/resume, SignaturePad for capturing signatures with canvas drawing and PNG export, Feedback Service (extensible IFeedbackService with haptic default, replaceable with TTS/sound/analytics), and UseFeedback support across all interactive controls
 auto_invoke: true
 triggers:
   - tableview
@@ -133,6 +133,18 @@ triggers:
   - message template
   - chat button
   - action message
+  - toast
+  - toast notification
+  - toast service
+  - snackbar
+  - show toast
+  - blazor toast
+  - feedback service
+  - ifeedbackservice
+  - haptic
+  - haptic feedback
+  - custom feedback
+  - usefeedback
 references:
   - tableview.md
   - floating-panel.md
@@ -151,6 +163,8 @@ references:
   - signature-pad.md
   - pickers.md
   - frosted-glass.md
+  - toast.md
+  - feedback-service.md
 ---
 
 # Shiny Controls Skill
@@ -163,7 +177,7 @@ Every control below is available on **both** MAUI and Blazor. The feature set (p
 
 The library contains:
 - **TableView**: A pure MAUI settings-style TableView with 14 cell types, cascading styles, sections, drag-sort reordering, and full MVVM/binding support
-- **FloatingPanel + OverlayHost**: A floating panel overlay system (MAUI only). Panels slide from bottom or top with configurable detents, header peek when closed, backdrop dimming, and haptic feedback. Multiple panels coexist without blocking touches. Use with `OverlayHost` (manual Grid setup) or `ShinyContentPage` (convenience ContentPage with built-in overlay). Blazor uses `SheetView` with CSS-based overlays instead
+- **FloatingPanel + OverlayHost**: A floating panel overlay system (MAUI only). Panels slide from bottom or top with configurable detents, header peek when closed, backdrop dimming, and feedback. Multiple panels coexist without blocking touches. Use with `OverlayHost` (manual Grid setup) or `ShinyContentPage` (convenience ContentPage with built-in overlay). Blazor uses `SheetView` with CSS-based overlays instead
 - **PillView**: A status badge/label control with 6 preset themes, custom colors, and WCAG-accessible contrast
 - **ImageViewer**: A full-screen image overlay with pinch-to-zoom, pan when zoomed, double-tap to toggle zoom, animated open/close, and a close button
 - **ImageEditor**: An inline image editor with cropping (drag-handle selection with dimmed overlay), rotation, freehand drawing with color, text annotations, undo/redo, reset, and export to PNG/JPEG/WEBP at configurable resolutions
@@ -179,8 +193,10 @@ The library contains:
 - **AutoCompleteEntry**: A text input with debounced search, dropdown suggestions, busy indicator, custom item templates, and full styling control via CSS custom properties (Blazor) or bindable properties (MAUI)
 - **CountryPicker**: A country search control built on AutoCompleteEntry with flag emoji, country name, and dial code
 - **AddressEntry**: An address search control built on AutoCompleteEntry with geocoding (Nominatim/OpenStreetMap by default) and structured address results
-- **TextToSpeechButton**: A button that speaks bound text using the platform's TTS engine. Tapping plays the bound `SpeechText`; tapping again cancels. Customizable visuals, pitch, volume, locale, and haptic feedback
+- **TextToSpeechButton**: A button that speaks bound text using the platform's TTS engine. Tapping plays the bound `SpeechText`; tapping again cancels. Customizable visuals, pitch, volume, locale, and feedback
 - **SignaturePad**: A signature capture control that opens in a FloatingPanel (MAUI) or SheetView (Blazor). Users draw on a canvas and export to PNG. Configurable stroke color/width, background, export dimensions, sign/cancel buttons, and panel styling. Like FloatingPanel, it must be placed inside an `OverlayHost` or `ShinyContentPage` (MAUI). The Sign button is disabled until the user draws something
+- **Toast**: A service-first toast notification system invoked via DI-injected `IToaster` (registered by `UseShinyControls()`). Supports auto-dismiss with configurable duration, manual dismiss via `IDisposable`, pill or fill-horizontal display modes, top/bottom positioning, queue or stack mode for multiple toasts, indeterminate spinner, countdown progress bar, icon, tap command, feedback, and screen reader announcement. No XAML or OverlayHost required — the overlay auto-attaches to the current page. Blazor uses `IToastService` with `<ToastHost>` component
+- **Feedback Service**: All interactive controls fire events through `IFeedbackService`. Default `HapticFeedbackService` provides tactile feedback. Replace with `SetCustomFeedback<T>()` in `UseShinyControls()` for TTS, sounds, analytics, or custom responses. ChatView passes message text as `details` for TTS integration
 
 ## When to Use This Skill
 
@@ -223,6 +239,12 @@ Invoke this skill when the user wants to:
 - Capture a signature or e-signature from the user
 - Add a signature pad / drawing pad to a page
 - Export a captured signature as a PNG image
+- Show toast notifications, snackbar messages, or transient alerts from code
+- Display progress/loading toasts with spinner while operations complete
+- Queue or stack multiple notifications
+- Replace haptic feedback with custom feedback (text-to-speech, sounds, analytics)
+- Wire up IFeedbackService for control interaction events
+- Enable text-to-speech on incoming chat messages via feedback service
 
 ## Library Overview
 
@@ -307,6 +329,7 @@ All controls exist on both hosts, but the Blazor surface is idiomatic Razor, not
 | `shiny:CountryPicker`  | `<CountryPicker>` | Colors are CSS strings on Blazor |
 | `shiny:AddressEntry`   | `<AddressEntry>`  | Colors are CSS strings on Blazor; uses `IAddressSearchProvider` on both hosts |
 | Scheduler views        | `<SchedulerCalendarView>`, `<SchedulerAgendaView>`, `<SchedulerCalendarListView>` | Same names |
+| `IToaster.ShowAsync(text, cfg => {})` | `IToastService.ShowAsync(text, cfg => {})` | MAUI uses DI-injected `IToaster` (registered by `UseShinyControls()`); Blazor uses DI-injected `IToastService`. Blazor requires `AddShinyToast()` in DI and `<ToastHost />` in layout |
 
 ### Binding, events, content
 

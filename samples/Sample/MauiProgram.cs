@@ -18,7 +18,7 @@ using Sample.Features.AutoComplete;
 using Sample.Features.CountryAddress;
 using Sample.Features.TableView;
 using Sample.Features.SignaturePad;
-using Sample.Features.TextToSpeech;
+using Sample.Features.Toast;
 using Shiny;
 using Shiny.Maui.Controls.Scheduler;
 #if IOS
@@ -36,7 +36,10 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
-            .UseShinyControls()
+            .UseShinyControls(cfg =>
+            {
+                cfg.AddDefaultMauiControlFeedback();
+            })
             .UseShinyShell(x => x
                 .Add<HomePage, HomeViewModel>(registerRoute: false)
                 .Add<SheetPage, SheetViewModel>(registerRoute: false)
@@ -66,7 +69,7 @@ public static class MauiProgram
                 .Add<AutoCompletePage, AutoCompleteViewModel>(registerRoute: false)
                 .Add<CountryAddressPage, CountryAddressViewModel>(registerRoute: false)
                 .Add<SignaturePadPage, SignaturePadViewModel>(registerRoute: false)
-                .Add<TextToSpeechPage, TextToSpeechViewModel>(registerRoute: false)
+                .Add<ToastPage, ToastViewModel>(registerRoute: false)
             )
             .ConfigureFonts(fonts =>
             {

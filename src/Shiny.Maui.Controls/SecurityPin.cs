@@ -247,15 +247,15 @@ public class SecurityPin : ContentView
     }
 
 
-    public static readonly BindableProperty UseHapticFeedbackProperty = BindableProperty.Create(
-        nameof(UseHapticFeedback),
+    public static readonly BindableProperty UseFeedbackProperty = BindableProperty.Create(
+        nameof(UseFeedback),
         typeof(bool),
         typeof(SecurityPin),
         true);
-    public bool UseHapticFeedback
+    public bool UseFeedback
     {
-        get => (bool)GetValue(UseHapticFeedbackProperty);
-        set => SetValue(UseHapticFeedbackProperty, value);
+        get => (bool)GetValue(UseFeedbackProperty);
+        set => SetValue(UseFeedbackProperty, value);
     }
 
 
@@ -374,15 +374,15 @@ public class SecurityPin : ContentView
 
         if (newText.Length >= max)
         {
-            if (UseHapticFeedback)
-                HapticHelper.PerformLongPress();
+            if (UseFeedback)
+                FeedbackHelper.Execute(typeof(SecurityPin), nameof(Completed), "LongPress");
 
             Completed?.Invoke(this, new SecurityPinCompletedEventArgs(newText));
         }
         else if (newText.Length > (e.OldTextValue?.Length ?? 0))
         {
-            if (UseHapticFeedback)
-                HapticHelper.PerformClick();
+            if (UseFeedback)
+                FeedbackHelper.Execute(typeof(SecurityPin), "DigitEntered");
         }
     }
 

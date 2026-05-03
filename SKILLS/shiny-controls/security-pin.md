@@ -34,7 +34,7 @@ A PIN/OTP entry control with individually rendered cells. Input is captured by a
 | `CellFocusedBackgroundColor` | `Color?` | `null` | OneWay | Background color for the currently active cell |
 | `CellTextColor` | `Color?` | `null` | OneWay | Color for the rendered digit/character |
 | `FontSize` | `double` | `24` | OneWay | Font size for the rendered character |
-| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic click on digit entry, long press on completion |
+| `UseFeedback` | `bool` | `true` | OneWay | Haptic click on digit entry, long press on completion |
 
 ## Events
 

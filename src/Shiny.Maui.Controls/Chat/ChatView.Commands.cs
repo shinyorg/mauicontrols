@@ -39,6 +39,12 @@ public partial class ChatView
 
         var newMessage = Messages[e.NewStartingIndex];
 
+        if (UseFeedback)
+        {
+            var eventName = newMessage.IsFromMe ? "MessageSent" : "MessageReceived";
+            FeedbackHelper.Execute(typeof(ChatView), eventName, newMessage.Text);
+        }
+
         if (newMessage.IsFromMe || isNearBottom)
         {
             unreadCount = 0;
@@ -149,8 +155,8 @@ public partial class ChatView
 
     void OnSendRequested(string text)
     {
-        if (UseHapticFeedback)
-            HapticHelper.PerformClick();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ChatView), "MessageSent", text);
 
         if (SendCommand?.CanExecute(text) == true)
             SendCommand.Execute(text);
@@ -158,8 +164,8 @@ public partial class ChatView
 
     void OnAttachRequested()
     {
-        if (UseHapticFeedback)
-            HapticHelper.PerformClick();
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ChatView), "AttachImage");
 
         if (AttachImageCommand?.CanExecute(null) == true)
             AttachImageCommand.Execute(null);
@@ -167,6 +173,9 @@ public partial class ChatView
 
     internal void OnMessageTapped(ChatMessage message)
     {
+        if (UseFeedback)
+            FeedbackHelper.Execute(typeof(ChatView), "MessageTapped", message.Text);
+
         MessageTapped?.Invoke(this, message);
 
         if (MessageTappedCommand?.CanExecute(message) == true)

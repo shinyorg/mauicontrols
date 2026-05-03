@@ -72,7 +72,7 @@ Place the `Fab` / `FabMenu` inside a `Grid` that fills the page — same pattern
 | `Size` | `double` | `56` | OneWay | Height (diameter when circular) |
 | `IconSize` | `double` | `24` | OneWay | Icon image size |
 | `HasShadow` | `bool` | `true` | OneWay | Drop shadow on/off |
-| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic feedback on tap |
+| `UseFeedback` | `bool` | `true` | OneWay | Feedback on tap |
 
 Events: `Clicked`.
 
@@ -90,7 +90,7 @@ In addition to the main-Fab pass-throughs (`Icon`, `Text`, `FabBackgroundColor`,
 | `CloseOnBackdropTap` | `bool` | `true` | OneWay | Close when backdrop tapped |
 | `CloseOnItemTap` | `bool` | `true` | OneWay | Close after item tap |
 | `AnimationDuration` | `uint` | `200` | OneWay | Open/close animation duration (ms) |
-| `UseHapticFeedback` | `bool` | `true` | OneWay | Haptic feedback on toggle |
+| `UseFeedback` | `bool` | `true` | OneWay | Feedback on toggle |
 
 Events: `ItemTapped(FabMenuItem)`.
 Methods: `Open()`, `Close()`, `Toggle()`.
@@ -111,7 +111,7 @@ Methods: `Open()`, `Close()`, `Toggle()`.
 | `FontSize` | `double` | `13` | Side-label font size |
 | `Size` | `double` | `44` | Icon button diameter |
 | `IconSize` | `double` | `20` | Icon image size |
-| `UseHapticFeedback` | `bool` | `true` | Haptic feedback on tap |
+| `UseFeedback` | `bool` | `true` | Feedback on tap |
 
 Events: `Clicked`.
 
