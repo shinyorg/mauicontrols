@@ -3,8 +3,18 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Sample.Features.SecurityPin;
 
-public partial class SecurityPinViewModel : ObservableObject
+public partial class SecurityPinViewModel(AppSettings appSettings) : ObservableObject
 {
+    public bool IsSecurityBeepEnabled
+    {
+        get => appSettings.IsSecurityBeepEnabled;
+        set
+        {
+            appSettings.IsSecurityBeepEnabled = value;
+            OnPropertyChanged();
+        }
+    }
+
     [ObservableProperty]
     string hiddenPin = string.Empty;
 

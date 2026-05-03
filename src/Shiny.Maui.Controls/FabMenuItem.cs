@@ -303,7 +303,7 @@ public class FabMenuItem : ContentView
     internal void Invoke()
     {
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(FabMenuItem), nameof(Clicked));
+            FeedbackHelper.Execute(this, nameof(Clicked));
 
         Clicked?.Invoke(this, EventArgs.Empty);
         if (Command?.CanExecute(CommandParameter) == true)

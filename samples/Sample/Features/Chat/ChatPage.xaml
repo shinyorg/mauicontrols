@@ -8,7 +8,7 @@
     x:DataType="local:ChatViewModel"
     Title="Chat">
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
         <HorizontalStackLayout Grid.Row="0" Spacing="8" Padding="12,8">
             <Button Text="Simulate Incoming"
@@ -24,9 +24,21 @@
             <Label Text="Multi-Person"
                    VerticalOptions="Center"
                    FontSize="12" />
+            <Switch IsToggled="{Binding IsChatSpeakingEnabled}"
+                    VerticalOptions="Center" />
+            <Label Text="TTS"
+                   VerticalOptions="Center"
+                   FontSize="12" />
         </HorizontalStackLayout>
 
-        <shiny:ChatView Grid.Row="1"
+        <Label Grid.Row="1"
+               Text="TTS is powered by a custom IFeedbackService using Shiny.Speech (ITextToSpeechService). Incoming messages are spoken aloud when enabled."
+               FontSize="11"
+               TextColor="Gray"
+               Padding="12,0,12,4"
+               LineBreakMode="WordWrap" />
+
+        <shiny:ChatView Grid.Row="2"
                         Messages="{Binding Messages}"
                         Participants="{Binding Participants}"
                         IsMultiPerson="{Binding IsMultiPerson}"

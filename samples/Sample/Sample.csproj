@@ -41,8 +41,10 @@
 		<PackageReference Include="CommunityToolkit.Mvvm"/>
 		<PackageReference Include="Microsoft.Maui.Controls"/>
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug"/>
+		<PackageReference Include="Plugin.Maui.Audio" />
 		<PackageReference Include="Redth.MauiDevFlow.Agent"/>
 		<PackageReference Include="Shiny.Maui.Shell"/>
+		<PackageReference Include="Shiny.Speech" />
 	</ItemGroup>
 
 	<ItemGroup>

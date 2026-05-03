@@ -42,7 +42,7 @@ public partial class ChatView
         if (UseFeedback)
         {
             var eventName = newMessage.IsFromMe ? "MessageSent" : "MessageReceived";
-            FeedbackHelper.Execute(typeof(ChatView), eventName, newMessage.Text);
+            FeedbackHelper.Execute(this, eventName, newMessage);
         }
 
         if (newMessage.IsFromMe || isNearBottom)
@@ -156,7 +156,7 @@ public partial class ChatView
     void OnSendRequested(string text)
     {
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ChatView), "MessageSent", text);
+            FeedbackHelper.Execute(this, "MessageSent");
 
         if (SendCommand?.CanExecute(text) == true)
             SendCommand.Execute(text);
@@ -165,7 +165,7 @@ public partial class ChatView
     void OnAttachRequested()
     {
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ChatView), "AttachImage");
+            FeedbackHelper.Execute(this, "AttachImage");
 
         if (AttachImageCommand?.CanExecute(null) == true)
             AttachImageCommand.Execute(null);
@@ -174,7 +174,7 @@ public partial class ChatView
     internal void OnMessageTapped(ChatMessage message)
     {
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ChatView), "MessageTapped", message.Text);
+            FeedbackHelper.Execute(this, "MessageTapped", message);
 
         MessageTapped?.Invoke(this, message);
 

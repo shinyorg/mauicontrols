@@ -160,43 +160,43 @@ public class MauiControlFeedbackIntegrator : IMauiInitializeService
     // --- Event handlers (instance methods for proper unsubscription) ---
 
     void OnButtonClicked(object? sender, EventArgs e)
-        => feedback?.OnRequested(typeof(Button), nameof(Button.Clicked));
+        => feedback?.OnRequested(sender!, nameof(Button.Clicked), e);
 
     void OnEntryTextChanged(object? sender, TextChangedEventArgs e)
-        => feedback?.OnRequested(typeof(Entry), nameof(Entry.TextChanged), e.NewTextValue);
+        => feedback?.OnRequested(sender!, nameof(Entry.TextChanged), e);
 
     void OnSliderValueChanged(object? sender, ValueChangedEventArgs e)
-        => feedback?.OnRequested(typeof(Slider), nameof(Slider.ValueChanged), e.NewValue.ToString("F2"));
+        => feedback?.OnRequested(sender!, nameof(Slider.ValueChanged), e);
 
     void OnSwitchToggled(object? sender, ToggledEventArgs e)
-        => feedback?.OnRequested(typeof(Switch), nameof(Switch.Toggled), e.Value.ToString());
+        => feedback?.OnRequested(sender!, nameof(Switch.Toggled), e);
 
     void OnCheckBoxCheckedChanged(object? sender, CheckedChangedEventArgs e)
-        => feedback?.OnRequested(typeof(CheckBox), nameof(CheckBox.CheckedChanged), e.Value.ToString());
+        => feedback?.OnRequested(sender!, nameof(CheckBox.CheckedChanged), e);
 
     void OnDatePickerDateSelected(object? sender, DateChangedEventArgs e)
-        => feedback?.OnRequested(typeof(DatePicker), nameof(DatePicker.DateSelected), e.NewDate.ToString());
+        => feedback?.OnRequested(sender!, nameof(DatePicker.DateSelected), e);
 
     void OnTimePickerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == TimePicker.TimeProperty.PropertyName)
-            feedback?.OnRequested(typeof(TimePicker), "TimeChanged");
+            feedback?.OnRequested(sender!, "TimeChanged", e);
     }
 
     void OnPickerSelectedIndexChanged(object? sender, EventArgs e)
-        => feedback?.OnRequested(typeof(Picker), nameof(Picker.SelectedIndexChanged));
+        => feedback?.OnRequested(sender!, nameof(Picker.SelectedIndexChanged), e);
 
     void OnSearchBarSearchPressed(object? sender, EventArgs e)
-        => feedback?.OnRequested(typeof(SearchBar), nameof(SearchBar.SearchButtonPressed));
+        => feedback?.OnRequested(sender!, nameof(SearchBar.SearchButtonPressed), e);
 
     void OnStepperValueChanged(object? sender, ValueChangedEventArgs e)
-        => feedback?.OnRequested(typeof(Stepper), nameof(Stepper.ValueChanged), e.NewValue.ToString("F2"));
+        => feedback?.OnRequested(sender!, nameof(Stepper.ValueChanged), e);
 
     void OnEditorTextChanged(object? sender, TextChangedEventArgs e)
-        => feedback?.OnRequested(typeof(Editor), nameof(Editor.TextChanged), e.NewTextValue);
+        => feedback?.OnRequested(sender!, nameof(Editor.TextChanged), e);
 
     void OnRadioButtonCheckedChanged(object? sender, CheckedChangedEventArgs e)
-        => feedback?.OnRequested(typeof(RadioButton), nameof(RadioButton.CheckedChanged), e.Value.ToString());
+        => feedback?.OnRequested(sender!, nameof(RadioButton.CheckedChanged), e);
 
     // void OnCollectionViewScrolled(object? sender, ItemsViewScrolledEventArgs e)
     //     => feedback?.OnRequested(typeof(CollectionView), nameof(CollectionView.Scrolled));

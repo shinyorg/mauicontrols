@@ -19,6 +19,20 @@
                    TextColor="Gray"
                    HorizontalTextAlignment="Center" />
 
+            <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                <Switch IsToggled="{Binding IsSecurityBeepEnabled}"
+                        VerticalOptions="Center" />
+                <Label Text="Sound Effects"
+                       VerticalOptions="Center"
+                       FontSize="14" />
+            </HorizontalStackLayout>
+
+            <Label Text="Sound effects are powered by a custom IFeedbackService using Plugin.Maui.Audio (IAudioManager). A click plays on each digit and a success tone plays on completion."
+                   FontSize="11"
+                   TextColor="Gray"
+                   HorizontalTextAlignment="Center"
+                   LineBreakMode="WordWrap" />
+
             <!-- Hidden PIN (masked) -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="4-digit masked PIN (HideCharacter='*')"

@@ -375,14 +375,14 @@ public class SecurityPin : ContentView
         if (newText.Length >= max)
         {
             if (UseFeedback)
-                FeedbackHelper.Execute(typeof(SecurityPin), nameof(Completed), "LongPress");
+                FeedbackHelper.Execute(this, nameof(Completed), "LongPress");
 
             Completed?.Invoke(this, new SecurityPinCompletedEventArgs(newText));
         }
         else if (newText.Length > (e.OldTextValue?.Length ?? 0))
         {
             if (UseFeedback)
-                FeedbackHelper.Execute(typeof(SecurityPin), "DigitEntered");
+                FeedbackHelper.Execute(this, "DigitEntered");
         }
     }
 

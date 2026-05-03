@@ -300,7 +300,7 @@ public class Fab : ContentView
     void OnTapped(object? sender, TappedEventArgs e)
     {
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(Fab), nameof(Clicked));
+            FeedbackHelper.Execute(this, nameof(Clicked));
 
         Clicked?.Invoke(this, EventArgs.Empty);
         if (Command?.CanExecute(CommandParameter) == true)

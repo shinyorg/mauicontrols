@@ -25,23 +25,20 @@ public sealed class Toaster : IToaster
     public Task<IDisposable> CriticalAsync(string text, Action<ToastConfig>? configure = null)
         => ShowTypedAsync(ToastType.Critical, text, configure);
 
-    static Task<IDisposable> ShowTypedAsync(ToastType type, string text, Action<ToastConfig>? configure)
+    Task<IDisposable> ShowTypedAsync(ToastType type, string text, Action<ToastConfig>? configure) => ShowCoreAsync(text, cfg =>
     {
-        return ShowCoreAsync(text, cfg =>
-        {
-            ToastStyles.TryApplyStyle(type, cfg);
-            ToastStyles.ApplyDefaults(type, cfg);
-            configure?.Invoke(cfg);
-        });
-    }
+        ToastStyles.TryApplyStyle(type, cfg);
+        ToastStyles.ApplyDefaults(type, cfg);
+        configure?.Invoke(cfg);
+    });
 
-    static Task<IDisposable> ShowCoreAsync(string text, Action<ToastConfig>? configure)
+    Task<IDisposable> ShowCoreAsync(string text, Action<ToastConfig>? configure)
     {
         var config = new ToastConfig { Text = text };
         configure?.Invoke(config);
 
         if (config.UseFeedback)
-            FeedbackHelper.Execute(typeof(Toaster), "Show", text);
+            FeedbackHelper.Execute(this, "Show", text);
 
         return ToastManager.ShowAsync(config);
     }

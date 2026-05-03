@@ -378,7 +378,7 @@ public partial class FloatingPanel : ContentView
                 UpdateScrollEnabled();
 
                 if (UseFeedback)
-                    FeedbackHelper.Execute(typeof(FloatingPanel), nameof(Opened));
+                    FeedbackHelper.Execute(this, nameof(Opened));
 
                 Opened?.Invoke(this, EventArgs.Empty);
             });
@@ -435,7 +435,7 @@ public partial class FloatingPanel : ContentView
                 }
 
                 if (UseFeedback)
-                    FeedbackHelper.Execute(typeof(FloatingPanel), nameof(Closed));
+                    FeedbackHelper.Execute(this, nameof(Closed));
 
                 Closed?.Invoke(this, EventArgs.Empty);
             });
@@ -553,7 +553,7 @@ public partial class FloatingPanel : ContentView
                 isAnimating = false;
 
                 if (UseFeedback)
-                    FeedbackHelper.Execute(typeof(FloatingPanel), nameof(DetentChanged));
+                    FeedbackHelper.Execute(this, nameof(DetentChanged));
 
                 DetentChanged?.Invoke(this, bestDetent);
             });

@@ -42,7 +42,7 @@ public partial class ImageEditor
         state.Undo();
         Invalidate();
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageEditor), "Undo");
+            FeedbackHelper.Execute(this, "Undo");
     }
 
     public void Redo()
@@ -50,7 +50,7 @@ public partial class ImageEditor
         state.Redo();
         Invalidate();
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageEditor), "Redo");
+            FeedbackHelper.Execute(this, "Redo");
     }
 
     public void Rotate(float degrees)
@@ -58,7 +58,7 @@ public partial class ImageEditor
         state.Push(new RotateAction { AngleDegrees = degrees });
         Invalidate();
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageEditor), "Rotate");
+            FeedbackHelper.Execute(this, "Rotate");
     }
 
     public void Reset()
@@ -70,7 +70,7 @@ public partial class ImageEditor
         ResetViewTransform();
         Invalidate();
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageEditor), "Reset");
+            FeedbackHelper.Execute(this, "Reset");
     }
 
     public void ApplyCrop()
@@ -89,7 +89,7 @@ public partial class ImageEditor
         drawable.ActiveCropRect = null;
         CurrentToolMode = ImageEditorToolMode.Move;
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageEditor), "CropApplied");
+            FeedbackHelper.Execute(this, "CropApplied");
     }
 
     public EditedImage? GetEditedImage()
@@ -112,7 +112,7 @@ public partial class ImageEditor
         {
             SaveCommand.Execute(editedImage);
             if (UseFeedback)
-                FeedbackHelper.Execute(typeof(ImageEditor), "Saved");
+                FeedbackHelper.Execute(this, "Saved");
         }
     }
 }

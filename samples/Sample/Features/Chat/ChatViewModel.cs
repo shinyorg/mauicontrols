@@ -7,6 +7,7 @@ namespace Sample.Features.Chat;
 
 public partial class ChatViewModel : ObservableObject
 {
+    readonly AppSettings appSettings;
     readonly string myId = "me";
 
     readonly ChatParticipant alice = new()
@@ -24,17 +25,28 @@ public partial class ChatViewModel : ObservableObject
         BubbleColor = Color.FromArgb("#FFF3E0")
     };
 
-    [ObservableProperty] ObservableCollection<ChatMessage> messages = [];
-    [ObservableProperty] ObservableCollection<ChatParticipant> participants = [];
-    [ObservableProperty] ObservableCollection<ChatParticipant> typingParticipants = [];
-    [ObservableProperty] bool isMultiPerson = true;
-
-    public ChatViewModel()
+    public ChatViewModel(AppSettings appSettings)
     {
+        this.appSettings = appSettings;
         participants.Add(alice);
         participants.Add(bob);
         LoadSampleMessages();
     }
+
+    public bool IsChatSpeakingEnabled
+    {
+        get => appSettings.IsChatSpeakingEnabled;
+        set
+        {
+            appSettings.IsChatSpeakingEnabled = value;
+            OnPropertyChanged();
+        }
+    }
+
+    [ObservableProperty] ObservableCollection<ChatMessage> messages = [];
+    [ObservableProperty] ObservableCollection<ChatParticipant> participants = [];
+    [ObservableProperty] ObservableCollection<ChatParticipant> typingParticipants = [];
+    [ObservableProperty] bool isMultiPerson = true;
 
     [RelayCommand]
     void Send(string text)

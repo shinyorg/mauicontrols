@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui;
 using MauiDevFlow.Agent;
 using Microsoft.Extensions.Logging;
+using Plugin.Maui.Audio;
 using Sample.Features.FloatingPanel;
 using Sample.Features.Diagrams;
 using Sample.Features.Fab;
@@ -37,8 +38,10 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
+            .AddAudio()
             .UseShinyControls(cfg =>
             {
+                cfg.SetCustomFeedback<MyCustomFeedbackService>(); // haptic is installed by default, but we want more fun
                 cfg.AddDefaultMauiControlFeedback();
             })
             .UseShinyShell(x => x
@@ -85,6 +88,8 @@ public static class MauiProgram
             handlers.AddHandler<Shell, SolidTabBarRenderer>();
 #endif
         });
+        builder.Services.AddSpeechServices();
+        builder.Services.AddSingleton<AppSettings>();
 
         builder.Services.AddTransient<MusicBrowsePage>();
         builder.Services.AddTransient<MusicLibraryPage>();

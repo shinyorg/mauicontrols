@@ -3,14 +3,14 @@ namespace Shiny.Maui.Controls.Infrastructure;
 
 public class HapticFeedbackService : IFeedbackService
 {
-    public virtual void OnRequested(Type controlType, string eventName, string? details)
+    public virtual void OnRequested(object control, string eventName, object? args)
     {
         try
         {
             if (!HapticFeedback.IsSupported)
                 return;
-            
-            if (details?.Equals("LongPress") ?? false)
+
+            if (eventName.Equals("LongPress", StringComparison.OrdinalIgnoreCase))
                 HapticFeedback.Default.Perform(HapticFeedbackType.LongPress);
             else
                 HapticFeedback.Default.Perform(HapticFeedbackType.Click);
@@ -25,7 +25,7 @@ public class HapticFeedbackService : IFeedbackService
 
 class NoFeedbackService : IFeedbackService
 {
-    public void OnRequested(Type controlType, string eventName, string? details = null)
+    public void OnRequested(object control, string eventName, object? args = null)
     {
     }
 }

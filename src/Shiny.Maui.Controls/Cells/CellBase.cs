@@ -599,7 +599,7 @@ public abstract class CellBase : ContentView
             return;
 
         if (UseFeedback)
-            FeedbackHelper.Execute(GetType(), nameof(Tapped));
+            FeedbackHelper.Execute(this, nameof(Tapped));
 
         ShowTapFeedback();
         Tapped?.Invoke(this, EventArgs.Empty);

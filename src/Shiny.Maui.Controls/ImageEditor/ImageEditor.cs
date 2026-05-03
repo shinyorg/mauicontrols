@@ -448,7 +448,7 @@ public partial class ImageEditor : ContentView
         FinalizeCurrentOperation();
 
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageEditor), "ToolModeChanged", mode.ToString());
+            FeedbackHelper.Execute(this, "ToolModeChanged", mode.ToString());
 
         drawable.ToolMode = mode;
 

@@ -613,7 +613,7 @@ public class SchedulerAgendaView : ContentView
     void OnEventTapped(SchedulerEvent evt)
     {
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(SchedulerAgendaView), "EventSelected");
+            FeedbackHelper.Execute(this, "EventSelected");
         Provider?.OnEventSelected(evt);
     }
 
@@ -623,7 +623,7 @@ public class SchedulerAgendaView : ContentView
         if (!Provider.CanSelectAgendaTime(time)) return;
 
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(SchedulerAgendaView), "TimeSlotSelected");
+            FeedbackHelper.Execute(this, "TimeSlotSelected");
         Provider.OnAgendaTimeSelected(time);
     }
 

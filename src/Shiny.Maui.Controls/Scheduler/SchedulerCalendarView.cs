@@ -501,7 +501,7 @@ public class SchedulerCalendarView : ContentView
             return;
 
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(SchedulerCalendarView), "DaySelected");
+            FeedbackHelper.Execute(this, "DaySelected");
 
         SelectedDate = date;
 
@@ -514,7 +514,7 @@ public class SchedulerCalendarView : ContentView
     void OnEventTapped(SchedulerEvent evt)
     {
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(SchedulerCalendarView), "EventSelected");
+            FeedbackHelper.Execute(this, "EventSelected");
         Provider?.OnEventSelected(evt);
     }
 }

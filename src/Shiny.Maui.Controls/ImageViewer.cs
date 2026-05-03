@@ -400,7 +400,7 @@ public class ImageViewer : ContentView
         overlayParent.Children.Add(overlayGrid);
 
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageViewer), "Opened");
+            FeedbackHelper.Execute(this, "Opened");
 
         var fadeTargets = new List<VisualElement> { backdrop, overlayImage, closeView };
         if (headerView != null) fadeTargets.Add(headerView);
@@ -424,7 +424,7 @@ public class ImageViewer : ContentView
         await Task.WhenAll(fadeTargets.Select(v => v.FadeTo(0, AnimationDuration)));
 
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageViewer), "Closed");
+            FeedbackHelper.Execute(this, "Closed");
 
         // Remove overlay from host
         overlayParent?.Children.Remove(overlayGrid);
@@ -516,7 +516,7 @@ public class ImageViewer : ContentView
         if (isAnimating) return;
 
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(ImageViewer), "DoubleTapped");
+            FeedbackHelper.Execute(this, "DoubleTapped");
 
         if (currentScale > MinScale)
             _ = AnimateResetAsync();

@@ -11,8 +11,8 @@ static class FeedbackHelper
         null;
 #endif
 
-    public static void Execute(Type controlType, string eventName, string? details = null)
+    public static void Execute(object control, string eventName, object? args = null)
     {
-        Service?.OnRequested(controlType, eventName, details);
+        Service?.OnRequested(control, eventName, args);
     }
 }

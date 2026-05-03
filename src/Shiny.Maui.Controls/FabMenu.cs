@@ -291,7 +291,7 @@ public class FabMenu : ContentView
     void OnMainFabClicked(object? sender, EventArgs e)
     {
         if (UseFeedback)
-            FeedbackHelper.Execute(typeof(FabMenu), "Toggled");
+            FeedbackHelper.Execute(this, "Toggled");
         Toggle();
     }
 
