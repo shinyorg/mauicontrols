@@ -56,6 +56,16 @@
 </section>
 
 <section class="demo-section">
+    <h2>Text Overflow</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button @onclick="EllipsisToast">Ellipsis (default)</button>
+        <button @onclick="MultiLineToast">Multi-Line</button>
+        <button @onclick="MarqueeToast">Marquee</button>
+        <button @onclick="MarqueeFastToast">Marquee (Fast)</button>
+    </div>
+</section>
+
+<section class="demo-section">
     <h2>Themed Types</h2>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button @onclick="InfoToast" style="background:#1E40AF;color:white;">Info</button>
@@ -174,6 +184,49 @@
             };
         });
         statusMessage = "Tap callback toast shown";
+    }
+
+    const string LongText = "This is a really long toast message that is meant to demonstrate what happens when the text content exceeds the available width of the toast container";
+
+    async Task EllipsisToast()
+    {
+        await ToastService.ShowAsync(LongText, cfg =>
+        {
+            cfg.TextOverflow = ToastTextOverflow.Ellipsis;
+            cfg.Duration = TimeSpan.FromSeconds(5);
+        });
+        statusMessage = "Ellipsis toast shown";
+    }
+
+    async Task MultiLineToast()
+    {
+        await ToastService.ShowAsync(LongText, cfg =>
+        {
+            cfg.TextOverflow = ToastTextOverflow.MultiLine;
+            cfg.Duration = TimeSpan.FromSeconds(5);
+        });
+        statusMessage = "Multi-line toast shown";
+    }
+
+    async Task MarqueeToast()
+    {
+        await ToastService.ShowAsync(LongText, cfg =>
+        {
+            cfg.TextOverflow = ToastTextOverflow.Marquee;
+            cfg.Duration = TimeSpan.FromSeconds(10);
+        });
+        statusMessage = "Marquee toast shown";
+    }
+
+    async Task MarqueeFastToast()
+    {
+        await ToastService.ShowAsync(LongText, cfg =>
+        {
+            cfg.TextOverflow = ToastTextOverflow.Marquee;
+            cfg.MarqueeSpeedPixelsPerSecond = 120;
+            cfg.Duration = TimeSpan.FromSeconds(10);
+        });
+        statusMessage = "Fast marquee toast shown";
     }
 
     async Task InfoToast()

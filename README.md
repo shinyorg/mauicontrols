@@ -951,6 +951,13 @@ await ToastService.SuccessAsync("File saved");
 | TextColor | Color? | white | Text color |
 | BorderColor | Color? | null | Border stroke |
 | CornerRadius | double | 20 | Corner radius (pill mode) |
+| TextOverflow | ToastTextOverflow | Ellipsis | Ellipsis, MultiLine, or Marquee |
+| MarqueeSpeedPixelsPerSecond | double | 40 | Scroll speed for marquee mode |
+
+**Text Overflow modes:**
+- `Ellipsis` — truncates long text with "…" (default)
+- `MultiLine` — wraps text to multiple lines
+- `Marquee` — scrolling ticker animation (configure speed via `MarqueeSpeedPixelsPerSecond`)
 
 ### TableView
 

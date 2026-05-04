@@ -149,7 +149,35 @@ await ToastService.CriticalAsync("System error");
 | `IconHtml` | — / `string?` | `null` | Optional HTML/SVG icon (Blazor) |
 | `TapCommand` | `ICommand?` / — | `null` | Command on tap (MAUI) |
 | `TapCallback` | — / `Action?` | `null` | Callback on tap (Blazor) |
+| `TextOverflow` | `ToastTextOverflow` | `Ellipsis` | `Ellipsis` (truncate with …), `MultiLine` (word wrap), or `Marquee` (scrolling ticker) |
+| `MarqueeSpeedPixelsPerSecond` | `double` | `40` | Scroll speed for marquee mode (pixels per second) |
 | `AnnounceToScreenReader` | `bool` / — | `true` | Announce via SemanticScreenReader (MAUI) |
+
+## Text Overflow
+
+Controls how long text is displayed when it exceeds the toast width:
+
+```csharp
+// Ellipsis (default) — truncates with "..."
+await toaster.ShowAsync("Very long message that will be truncated...", cfg =>
+{
+    cfg.TextOverflow = ToastTextOverflow.Ellipsis;
+});
+
+// Multi-line — wraps text to multiple lines
+await toaster.ShowAsync("Very long message that will wrap to the next line", cfg =>
+{
+    cfg.TextOverflow = ToastTextOverflow.MultiLine;
+});
+
+// Marquee — scrolling ticker animation
+await toaster.ShowAsync("Very long message that scrolls continuously", cfg =>
+{
+    cfg.TextOverflow = ToastTextOverflow.Marquee;
+    cfg.MarqueeSpeedPixelsPerSecond = 80; // faster scroll (default: 40)
+    cfg.Duration = TimeSpan.FromSeconds(10); // give time to read
+});
+```
 
 ## Behavior
 
@@ -171,6 +199,8 @@ await ToastService.CriticalAsync("System error");
 - Default to `Pill` mode for brief notifications, `FillHorizontal` for connectivity/status bars
 - Use `Spinner` for ongoing operations (uploads, syncing)
 - Use `ShowProgressBar` when the user should see remaining time
+- Use `TextOverflow = MultiLine` for important messages that shouldn't be truncated
+- Use `TextOverflow = Marquee` for long messages in constrained pill toasts; increase `Duration` to give time to read
 - Stack mode is best for rapid-fire notifications; queue mode for sequential alerts
 
 ## ViewModel Pattern

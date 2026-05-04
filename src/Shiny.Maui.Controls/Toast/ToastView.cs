@@ -57,8 +57,12 @@ sealed class ToastView : ContentView
             FontSize = 14,
             VerticalOptions = LayoutOptions.Center,
             HorizontalOptions = LayoutOptions.Fill,
-            LineBreakMode = LineBreakMode.TailTruncation,
-            MaxLines = 2
+            LineBreakMode = config.TextOverflow switch
+            {
+                ToastTextOverflow.MultiLine => LineBreakMode.WordWrap,
+                _ => LineBreakMode.TailTruncation
+            },
+            MaxLines = config.TextOverflow == ToastTextOverflow.MultiLine ? int.MaxValue : 1
         };
 
         // Content layout
@@ -186,6 +190,7 @@ sealed class ToastView : ContentView
 
         StartAutoDismiss();
         StartProgressBar();
+        StartMarquee();
     }
 
     public async Task AnimateOutAsync()
@@ -246,6 +251,34 @@ sealed class ToastView : ContentView
             "ProgressCountdown",
             length: (uint)config.Duration.TotalMilliseconds,
             easing: Easing.Linear
+        );
+    }
+
+    void StartMarquee()
+    {
+        if (config.TextOverflow != ToastTextOverflow.Marquee)
+            return;
+
+        // Estimate text width (~8px per character at 14pt)
+        var estimatedTextWidth = Math.Max(config.Text.Length * 8.0, 200);
+        var speed = config.MarqueeSpeedPixelsPerSecond > 0 ? config.MarqueeSpeedPixelsPerSecond : 40;
+        var duration = (uint)(estimatedTextWidth * 2 / speed * 1000);
+
+        label.LineBreakMode = LineBreakMode.NoWrap;
+        label.MaxLines = 1;
+        label.HorizontalOptions = LayoutOptions.Start;
+
+        var animation = new Animation(
+            v => label.TranslationX = v,
+            estimatedTextWidth,
+            -estimatedTextWidth
+        );
+        animation.Commit(
+            this,
+            "MarqueeScroll",
+            length: duration,
+            easing: Easing.Linear,
+            repeat: () => true
         );
     }
 }

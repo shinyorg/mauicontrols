@@ -17,5 +17,7 @@ public class ToastConfig
     public double BorderThickness { get; set; }
     public double CornerRadius { get; set; } = 20;
     public string? IconHtml { get; set; }
+    public ToastTextOverflow TextOverflow { get; set; } = ToastTextOverflow.Ellipsis;
+    public double MarqueeSpeedPixelsPerSecond { get; set; } = 40;
     public Action? TapCallback { get; set; }
 }

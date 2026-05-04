@@ -26,7 +26,7 @@
             <Entry Text="{Binding ToastText}"
                    Placeholder="Toast message text" />
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
 
                 <!-- Position -->
                 <Label Text="Position" VerticalOptions="Center" />
@@ -51,9 +51,15 @@
                 <Picker Grid.Row="3" Grid.Column="1"
                         ItemsSource="{Binding SpinnerPositions}"
                         SelectedItem="{Binding SelectedSpinner}" />
+
+                <!-- Text Overflow -->
+                <Label Grid.Row="4" Text="Text Overflow" VerticalOptions="Center" />
+                <Picker Grid.Row="4" Grid.Column="1"
+                        ItemsSource="{Binding TextOverflows}"
+                        SelectedItem="{Binding SelectedTextOverflow}" />
             </Grid>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto" RowSpacing="8">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
                 <Label Text="Duration (seconds)" VerticalOptions="Center" />
                 <HorizontalStackLayout Grid.Column="1" Spacing="8">
                     <Stepper Minimum="0" Maximum="30" Increment="1"
@@ -67,6 +73,14 @@
                     <Stepper Minimum="0" Maximum="40" Increment="2"
                              Value="{Binding CornerRadius}" />
                     <Label Text="{Binding CornerRadius, StringFormat='{0}'}"
+                           VerticalOptions="Center" FontSize="13" />
+                </HorizontalStackLayout>
+
+                <Label Grid.Row="2" Text="Marquee Speed (px/s)" VerticalOptions="Center" />
+                <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Spacing="8">
+                    <Stepper Minimum="10" Maximum="200" Increment="10"
+                             Value="{Binding MarqueeSpeed}" />
+                    <Label Text="{Binding MarqueeSpeed, StringFormat='{0}'}"
                            VerticalOptions="Center" FontSize="13" />
                 </HorizontalStackLayout>
             </Grid>

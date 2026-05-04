@@ -149,6 +149,28 @@
     white-space: nowrap;
 }
 
+.shiny-toast-text-multiline {
+    white-space: normal;
+    text-overflow: unset;
+    word-break: break-word;
+}
+
+.shiny-toast-text-marquee {
+    text-overflow: unset;
+    position: relative;
+}
+
+.shiny-toast-marquee-inner {
+    display: inline-block;
+    white-space: nowrap;
+    animation: shiny-toast-marquee linear infinite;
+}
+
+@keyframes shiny-toast-marquee {
+    0%   { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
 .shiny-toast-icon {
     flex-shrink: 0;
     font-size: 18px;

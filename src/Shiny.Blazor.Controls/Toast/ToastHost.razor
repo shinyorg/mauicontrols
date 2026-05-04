@@ -30,7 +30,22 @@
                 {
                     <span class="shiny-toast-icon">@((MarkupString)entry.Config.IconHtml)</span>
                 }
-                <span class="shiny-toast-text">@entry.Config.Text</span>
+                @if (entry.Config.TextOverflow == ToastTextOverflow.Marquee)
+                {
+                    <span class="shiny-toast-text shiny-toast-text-marquee">
+                        <span class="shiny-toast-marquee-inner"
+                              style="animation-duration: @(GetMarqueeDuration(entry.Config))s;">
+                            @entry.Config.Text
+                        </span>
+                    </span>
+                }
+                else
+                {
+                    var overflowClass = entry.Config.TextOverflow == ToastTextOverflow.MultiLine
+                        ? "shiny-toast-text shiny-toast-text-multiline"
+                        : "shiny-toast-text";
+                    <span class="@overflowClass">@entry.Config.Text</span>
+                }
                 @if (entry.Config.Spinner == ToastSpinnerPosition.Right)
                 {
                     <div class="shiny-toast-spinner"></div>
@@ -85,6 +100,14 @@
         }
 
         return sb.ToString();
+    }
+
+    double GetMarqueeDuration(ToastConfig config)
+    {
+        // Estimate width: ~8px per character, scroll full width
+        var estimatedWidth = Math.Max(config.Text.Length * 8, 200);
+        var speed = config.MarqueeSpeedPixelsPerSecond > 0 ? config.MarqueeSpeedPixelsPerSecond : 40;
+        return estimatedWidth / speed;
     }
 
     void OnClick(ToastEntry entry)

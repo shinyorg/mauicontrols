@@ -20,6 +20,7 @@ public partial class ToastViewModel(IToaster toaster) : ObservableObject
     public List<ToastDisplayMode> DisplayModes { get; } = Enum.GetValues<ToastDisplayMode>().ToList();
     public List<ToastQueueMode> QueueModes { get; } = Enum.GetValues<ToastQueueMode>().ToList();
     public List<ToastSpinnerPosition> SpinnerPositions { get; } = Enum.GetValues<ToastSpinnerPosition>().ToList();
+    public List<ToastTextOverflow> TextOverflows { get; } = Enum.GetValues<ToastTextOverflow>().ToList();
 
     [ObservableProperty]
     ToastPosition selectedPosition = ToastPosition.Bottom;
@@ -51,6 +52,12 @@ public partial class ToastViewModel(IToaster toaster) : ObservableObject
     [ObservableProperty]
     bool announceToScreenReader = true;
 
+    [ObservableProperty]
+    ToastTextOverflow selectedTextOverflow = ToastTextOverflow.Ellipsis;
+
+    [ObservableProperty]
+    double marqueeSpeed = 40;
+
     // --- Commands ---
 
     [RelayCommand]
@@ -68,6 +75,8 @@ public partial class ToastViewModel(IToaster toaster) : ObservableObject
             cfg.ShowProgressBar = ShowProgressBar;
             cfg.UseFeedback = UseFeedback;
             cfg.AnnounceToScreenReader = AnnounceToScreenReader;
+            cfg.TextOverflow = SelectedTextOverflow;
+            cfg.MarqueeSpeedPixelsPerSecond = MarqueeSpeed;
         });
         StatusMessage = "Configured toast shown";
     }
